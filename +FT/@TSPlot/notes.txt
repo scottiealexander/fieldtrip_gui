@@ -1,0 +1,4 @@
+%methods
+	1) Add
+	2) Move
+	3) Set
