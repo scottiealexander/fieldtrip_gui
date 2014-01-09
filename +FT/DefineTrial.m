@@ -260,8 +260,7 @@ function BtnCtrl(obj,evt)
         case 'cancel'
             if ishandle(h)
                 close(h);
-            end
-            disp(EPOCH);
+            end            
         otherwise
             %should never happen
     end
