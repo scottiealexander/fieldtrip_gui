@@ -1,0 +1,17 @@
+#FIELDTRIP_GUI master TODO list
+
+#ITEM 1
+	- seperate GUI's from all processing functions
+	- GUI figure helper class
+
+#ITEM 2
+	- templating system
+
+#ITEM 3
+	- surrogate signal
+
+#ITEM 4
+	- perfect trigger pulse reader (pusle width and interval)
+
+#ITEM 5
+	- grand average ERPS for new emotion
