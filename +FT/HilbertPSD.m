@@ -2,7 +2,7 @@ function data = HilbertPSD()
 
 % FT.HilbertPSD
 %
-% Description:
+% Description: time-frequency decomposition based on the Hilbert transform
 %
 % Syntax: FT.HilbertPSD
 %
@@ -10,7 +10,8 @@ function data = HilbertPSD()
 %
 % Out:
 %
-% Updated: 2014-01-09 Scottie Alexander
+% Updated: 2014-01-10
+% Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
 
@@ -20,7 +21,6 @@ function data = HilbertPSD()
 %   2) hilbert xfm
 %   3) construct trial definition
 %   4) segment data
-%   5) view average spectrogram
 
 nFreq = 42;
 
@@ -35,9 +35,11 @@ if ~isfield(FT_DATA,'epoch') || isempty(FT_DATA.epoch)
     end
 end
 
+%caclulate frequency bin centers
 fEnd = (FS/2) - (FS/2)*.1;
 centers = logspace(1,log10(fEnd),nFreq);
 
+%frequency band edges
 cBands = arrayfun(@(x) [x*.9 x*1.1],centers,'uni',false);
 
 cfg = CFGDefault;
@@ -50,7 +52,7 @@ cfg.bpinstabilityfix = 'reduce'; %deal with filter instability
 
 data = cell(numel(FT_DATA.epoch),1);
 
-hWait = waitbar(0,'0% done');
+hWait = waitbar(0,'00% done');
 set(hWait,'Name','Computing spectrogram...');
 drawnow;
 
@@ -59,6 +61,11 @@ cellfun(@DoOne,cBands,num2cell(1:nFreq));
 if ishandle(hWait)
     close(hWait);
 end
+
+%add to the data struct
+FT_DATA.power.data    = data;
+FT_DATA.power.centers = centers;
+FT_DATA.power.bands   = cBands;
 
 %-------------------------------------------------------------------------%
 function DoOne(freq,kFreq)
@@ -77,11 +84,12 @@ function DoOne(freq,kFreq)
     %time x channel x trial
     d = cellfun(@(x) permute(reshape(x,[1,size(x)]),[1,3,2,4]),d,'uni',false);
     
+    %assign our hilbert XFM-ed data matrix by its corresponding frequency
     for k = 1:numel(data)
         data{k}(kFreq,:,:,:) = d{k};
     end    
 
-    waitbar(kFreq/nFreq,hWait,[sprintf('%02f',(kFreq/nFreq)*100) '% done']);
+    waitbar(kFreq/nFreq,hWait,[sprintf('%02.0f',(kFreq/nFreq)*100) '% done']);
     drawnow;
 
     %---------------------------------------------------------------------%
