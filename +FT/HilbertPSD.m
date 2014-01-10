@@ -62,7 +62,7 @@ end
 
 %-------------------------------------------------------------------------%
 function DoOne(freq,kFreq)
-    %GOAL: freq x time x trial x channel matrix for each condition
+    %GOAL: freq x time x channel x trial matrix for each condition
     cfg.bpfreq = freq;
     
     tmp = ft_preprocessing(cfg,FT_DATA.data);
@@ -74,14 +74,14 @@ function DoOne(freq,kFreq)
     d = cellfun(@SegmentOne,FT_DATA.epoch,'uni',false);
 
     %reshape each matrix: add a singleton freq dimention (dim 1) and permute to be 
-    %time x trial x channel
-    d = cellfun(@(x) permute(reshape(x,[1,size(x)]),[1,3,4,2]),d,'uni',false);
+    %time x channel x trial
+    d = cellfun(@(x) permute(reshape(x,[1,size(x)]),[1,3,2,4]),d,'uni',false);
     
     for k = 1:numel(data)
         data{k}(kFreq,:,:,:) = d{k};
     end    
 
-    waitbar(kFreq/nFreq,hWait,[num2str(round((kFreq/nFreq)*100)) '% done']);
+    waitbar(kFreq/nFreq,hWait,[sprintf('%02f',(kFreq/nFreq)*100) '% done']);
     drawnow;
 
     %---------------------------------------------------------------------%
