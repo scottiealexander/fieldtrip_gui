@@ -1,4 +1,4 @@
-function HilbertPSD()
+function data = HilbertPSD()
 
 % FT.HilbertPSD
 %
@@ -22,17 +22,21 @@ function HilbertPSD()
 %   4) segment data
 %   5) view average spectrogram
 
-n = 42;
+nFreq = 42;
 
 global FT_DATA;
 FS = FT_DATA.data.fsample;
 
-if ~FT.DefineTrial
-    return;
+%make sure there is trial info
+if ~isfield(FT_DATA,'epoch') || isempty(FT_DATA.epoch)
+    if ~FT.DefineTrial
+        data = [];
+        return;
+    end
 end
 
 fEnd = (FS/2) - (FS/2)*.1;
-centers = logspace(1,log10(fEnd),n);
+centers = logspace(1,log10(fEnd),nFreq);
 
 cBands = arrayfun(@(x) [x*.9 x*1.1],centers,'uni',false);
 
@@ -46,15 +50,18 @@ cfg.bpinstabilityfix = 'reduce'; %deal with filter instability
 
 data = cell(numel(FT_DATA.epoch),1);
 
-cellfun(@DoOne,cBands,num2cell(1:n));
+hWait = waitbar(0,'0% done');
+set(hWait,'Name','Computing spectrogram...');
+drawnow;
 
-data = reshape(data,1,1,[]);
+cellfun(@DoOne,cBands,num2cell(1:nFreq));
 
-%data is nChan x nTimePt x freq
-data = cat(3,data{:});
+if ishandle(hWait)
+    close(hWait);
+end
 
 %-------------------------------------------------------------------------%
-function DoOne(freq,k)
+function DoOne(freq,kFreq)
     %GOAL: freq x time x trial x channel matrix for each condition
     cfg.bpfreq = freq;
     
@@ -64,10 +71,19 @@ function DoOne(freq,k)
     tmp = transpose(abs(hilbert(transpose(tmp.trial{1}))).^2);
 
     %channel x time x trial matrix for each condition
-    data = cellfun(@SegmentOne,FT_DATA.epoch,'uni',false);
+    d = cellfun(@SegmentOne,FT_DATA.epoch,'uni',false);
 
-    %reshape each matrix
+    %reshape each matrix: add a singleton freq dimention (dim 1) and permute to be 
+    %time x trial x channel
+    d = cellfun(@(x) permute(reshape(x,[1,size(x)]),[1,3,4,2]),d,'uni',false);
     
+    for k = 1:numel(data)
+        data{k}(kFreq,:,:,:) = d{k};
+    end    
+
+    waitbar(kFreq/nFreq,hWait,[num2str(round((kFreq/nFreq)*100)) '% done']);
+    drawnow;
+
     %---------------------------------------------------------------------%
     function out = SegmentOne(s)
         %GOAL: channel x time x trial matrix for a given condition
@@ -85,7 +101,3 @@ function DoOne(freq,k)
 end
 %-------------------------------------------------------------------------%
 end
-
-
-
-
