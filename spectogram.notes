@@ -1,0 +1,8 @@
+#NOTE: bandpass + hilbert-XFM time-frequency decomposition
+
+#ITEM:
+	- notch filter [60Hz]
+	- re-reference to common average
+	- downsample to 436Hz
+	- bandpass filter (1-232Hz)
+	- abs(hilbert XFM)^2

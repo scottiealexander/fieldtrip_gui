@@ -14,7 +14,7 @@ function HilbertPSD()
 %
 % Please report bugs to: scottiealexander11@gmail.com
 
-%STEPS:
+%GOAL:
 %   1) bandpass filter
 %       - 42 logspace centers (+- 10%) between 10 and 110
 %   2) hilbert xfm
@@ -34,7 +34,7 @@ end
 fEnd = (FS/2) - (FS/2)*.1;
 centers = logspace(1,log10(fEnd),n);
 
-cF = arrayfun(@(x) [x*.9 x*1.1],centers,'uni',false);
+cBands = arrayfun(@(x) [x*.9 x*1.1],centers,'uni',false);
 
 cfg = CFGDefault;
 cfg.continuous  = 'yes';
@@ -44,9 +44,9 @@ cfg.bpfilttype  = 'but';         %butterworth type filter
 cfg.bpfiltdir   = 'twopass';     %forward+reverse filtering
 cfg.bpinstabilityfix = 'reduce'; %deal with filter instability
 
-data = cell(n,1);
+data = cell(numel(FT_DATA.epoch),1);
 
-cellfun(@DoOne,cF,num2cell(1:n));
+cellfun(@DoOne,cBands,num2cell(1:n));
 
 data = reshape(data,1,1,[]);
 
@@ -55,15 +55,31 @@ data = cat(3,data{:});
 
 %-------------------------------------------------------------------------%
 function DoOne(freq,k)
+    %GOAL: freq x time x trial x channel matrix for each condition
     cfg.bpfreq = freq;
     
     tmp = ft_preprocessing(cfg,FT_DATA.data);
+
+    %channel x time matrix of power values
     tmp = transpose(abs(hilbert(transpose(tmp.trial{1}))).^2);
-    data{k} = SegmentOne;
+
+    %channel x time x trial matrix for each condition
+    data = cellfun(@SegmentOne,FT_DATA.epoch,'uni',false);
+
+    %reshape each matrix
     
     %---------------------------------------------------------------------%
-    function out = SegmentOne(kStart,kEnd)
-        out = tmp(:,kStart:kEnd);
+    function out = SegmentOne(s)
+        %GOAL: channel x time x trial matrix for a given condition
+        kStart = s.trl(:,1);
+        kEnd   = s.trl(:,2);
+
+        %n-trial length cell of channel x time matricies
+        out = arrayfun(@(x,y) tmp(:,x:y),kStart,kEnd,'uni',false);
+
+        %reshape to channel x time x trial
+        out = reshape(out,1,1,[]);
+        out = cat(3,out{:});
     end
     %---------------------------------------------------------------------%
 end
