@@ -20,6 +20,7 @@ the Free Software Foundation (either version 2, or at your option
 any later version). See the file COPYING for more details.
 
 The functions in this toolbox are copyrighted by their respective authors:
+
     Robert Oostenveld, DCCN, FCDC, SMI, MBFYS
     Jan-Mathijs Schoffelen, CCNi, FCDC
     Roemer van der Meij, DCC
