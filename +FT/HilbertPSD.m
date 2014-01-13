@@ -56,7 +56,7 @@ hWait = waitbar(0,'00% done');
 set(hWait,'Name','Computing spectrogram...');
 drawnow;
 
-cellfun(@DoOne,cBands,num2cell(1:nFreq));
+cellfun(@ProcessOne,cBands,num2cell(1:nFreq));
 
 if ishandle(hWait)
     close(hWait);
@@ -66,9 +66,10 @@ end
 FT_DATA.power.data    = data;
 FT_DATA.power.centers = centers;
 FT_DATA.power.bands   = cBands;
+FT_DATA.power.time    = GetTime;
 
 %-------------------------------------------------------------------------%
-function DoOne(freq,kFreq)
+function ProcessOne(freq,kFreq)
     %GOAL: freq x time x channel x trial matrix for each condition
     cfg.bpfreq = freq;
     
@@ -106,6 +107,20 @@ function DoOne(freq,kFreq)
         out = cat(3,out{:});
     end
     %---------------------------------------------------------------------%
+end
+%-------------------------------------------------------------------------%
+function t = GetTime
+    %GOAL: calculate the time vector (in seconds) given the segmentation scheme
+    nPts = size(FT_DATA.power.data{1},2);
+    s = FT_DATA.epoch{1}.ifo;
+    switch lower(s.format)        
+        case 'timelock'
+            t = linspace(-s.pre,s.post,nPts);
+        case 'endpoints'
+            t = linspace(0,nPts/FS,nPts);
+        otherwise
+            error('invalid epoch format: %s',s.format);
+    end
 end
 %-------------------------------------------------------------------------%
 end
