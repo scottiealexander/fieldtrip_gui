@@ -1,4 +1,4 @@
-function data = HilbertPSD()
+function HilbertPSD()
 
 % FT.HilbertPSD
 %
@@ -36,12 +36,13 @@ if ~isfield(FT_DATA,'epoch') || isempty(FT_DATA.epoch)
 end
 
 %caclulate frequency bin centers
-fEnd = (FS/2) - (FS/2)*.1;
+fEnd = (FS/2)/1.1; %last bin center should be 10% less than the FS/2
 centers = logspace(1,log10(fEnd),nFreq);
 
 %frequency band edges
 cBands = arrayfun(@(x) [x*.9 x*1.1],centers,'uni',false);
 
+%bandpass filtering parameters
 cfg = CFGDefault;
 cfg.continuous  = 'yes';
 cfg.channel     = 'all';
@@ -52,7 +53,9 @@ cfg.bpinstabilityfix = 'reduce'; %deal with filter instability
 
 data = cell(numel(FT_DATA.epoch),1);
 
-hWait = waitbar(0,'00% done');
+tElap = nan(nFreq,1);
+
+hWait = waitbar(0,'00% done | xx:xx:xx remaining');
 set(hWait,'Name','Computing spectrogram...');
 drawnow;
 
@@ -70,7 +73,8 @@ FT_DATA.power.time    = GetTime;
 
 %-------------------------------------------------------------------------%
 function ProcessOne(freq,kFreq)
-    %GOAL: freq x time x channel x trial matrix for each condition
+%GOAL: freq x time x channel x trial matrix for each condition
+    id = tic;
     cfg.bpfreq = freq;
     
     tmp = ft_preprocessing(cfg,FT_DATA.data);
@@ -90,12 +94,18 @@ function ProcessOne(freq,kFreq)
         data{k}(kFreq,:,:,:) = d{k};
     end    
 
-    waitbar(kFreq/nFreq,hWait,[sprintf('%02.0f',(kFreq/nFreq)*100) '% done']);
-    drawnow;
+    %estimate time remaining
+    tElap(kFreq) = toc(id);
+    tRem = nanmean(tElap,1) * (nFreq-kFreq);
 
+    %update the waitbar
+    strMsg = sprintf('%02.0f%% done | %s remaining',(kFreq/nFreq)*100,FmtTime(tRem));
+    waitbar(kFreq/nFreq,hWait,strMsg);
+    drawnow;
+    
     %---------------------------------------------------------------------%
     function out = SegmentOne(s)
-        %GOAL: channel x time x trial matrix for a given condition
+    %GOAL: channel x time x trial matrix for a given condition
         kStart = s.trl(:,1);
         kEnd   = s.trl(:,2);
 
@@ -110,7 +120,7 @@ function ProcessOne(freq,kFreq)
 end
 %-------------------------------------------------------------------------%
 function t = GetTime
-    %GOAL: calculate the time vector (in seconds) given the segmentation scheme
+%GOAL: calculate the time vector (in seconds) given the segmentation scheme
     nPts = size(FT_DATA.power.data{1},2);
     s = FT_DATA.epoch{1}.ifo;
     switch lower(s.format)        
@@ -121,6 +131,11 @@ function t = GetTime
         otherwise
             error('invalid epoch format: %s',s.format);
     end
+end
+%-------------------------------------------------------------------------%
+function x = FmtTime(x)
+%GOAL: format a duration in seconds as a hh:mm:ss string
+    x = sprintf('%02d:%02d:%02.0f',floor(x/60^2),floor(rem(x,60^2)/60),rem(x,60));
 end
 %-------------------------------------------------------------------------%
 end

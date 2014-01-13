@@ -18,17 +18,17 @@ function PlotPSD()
 global FT_DATA;
 persistent BASELINE;
 
+if ~isfield(FT_DATA,'power') || isempty(FT_DATA.power)
+	FT.UserInput('\bfPSD does not yet exist for this data set',0,'button','OK');
+	return;
+end
+
 time = FT_DATA.power.time;
 
 if isempty(BASELINE)
 	cfg = FT.BaselineCorrect;
 	BASELINE = cfg.baselinewindow;
 	BASELINE = [find(time>=BASELINE(1),1,'first') find(time>=BASELINE(2),1,'first')];
-end
-
-if ~isfield(FT_DATA,'power') || isempty(FT_DATA.power)
-	FT.UserInput('\bfPSD does not yet exist for this data set',0,'button','OK');
-	return;
 end
 
 cLabel = Ternary(iscell(FT_DATA.data),FT_DATA.data.label{1},FT_DATA.data.label);
@@ -57,7 +57,7 @@ function PlotOne(strChan)
 
 	for k = 1:numel(d)
 		%get the labels for the x and y axes
-		[xT,xTL] = GetAxLabels(time,6);
+		[xT,xTL] = GetAxLabels(time,7,'round',-1);
 		[yT,yTL] = GetAxLabels(FT_DATA.power.centers,10,'space','log','round',0);
 
 		%convert ticks to indicies
