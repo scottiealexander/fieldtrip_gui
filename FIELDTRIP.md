@@ -20,27 +20,27 @@ the Free Software Foundation (either version 2, or at your option
 any later version). See the file COPYING for more details.
 
 The functions in this toolbox are copyrighted by their respective authors:
-  Robert Oostenveld, DCCN, FCDC, SMI, MBFYS
-  Jan-Mathijs Schoffelen, CCNi, FCDC
-  Roemer van der Meij, DCC
-  Pascal Fries, FCDC
-  Markus Bauer, FCDC
-  Ole Jensen, FCDC
-  Markus Siegel, FCDC, UKE
-  Jens Schwarzbach, FCDC
-  Eric Maris, DCC, FCDC
-  Ingrid Nieuwenhuis, DCCN, FCDC
-  Saskia Haegens, DCCN, FCDC
-  Martin Vinck, DCCN, SILS
-  and others ...
+    Robert Oostenveld, DCCN, FCDC, SMI, MBFYS
+    Jan-Mathijs Schoffelen, CCNi, FCDC
+    Roemer van der Meij, DCC
+    Pascal Fries, FCDC
+    Markus Bauer, FCDC
+    Ole Jensen, FCDC
+    Markus Siegel, FCDC, UKE
+    Jens Schwarzbach, FCDC
+    Eric Maris, DCC, FCDC
+    Ingrid Nieuwenhuis, DCCN, FCDC
+    Saskia Haegens, DCCN, FCDC
+    Martin Vinck, DCCN, SILS
+    and others ...
 
-Copyright (C) 2008-2013, Donders Institute for Brain, Cognition and Behaviour, Radboud University Nijmegen, The Netherlands (DCCN, DCC, DCN)
-Copyright (C) 2010-2013, Swammerdam Institute for Life Sciences, University of Amsterdam (SILS)
-Copyright (C) 2008-2009, Centre for Cognitive Neuroimaging in Glasgow, United Kingdom (CCNi)
-Copyright (C) 2009-2009, Netherlands Institute for Neuroscience (NIN)
-Copyright (C) 2003-2008, F.C. Donders Centre, Radboud University Nijmegen, The Netherlands (FCDC)
-Copyright (C) 2004-2007, Nijmegen Institute for Cognition and Information, The Netherlands (NICI)
-Copyright (C) 2004-2005, Universitatsklinikum Hamburg-Eppendorf, Germany (UKE)
-Copyright (C) 2003-2004, Center for Sensory Motor Interaction, University Aalborg, Denmark (SMI)
-Copyright (C) 1999-2003, Department of Medical Physics, Radboud University Nijmegen, The Netherlands (MBFYS)
+    Copyright (C) 2008-2013, Donders Institute for Brain, Cognition and Behaviour, Radboud University Nijmegen, The Netherlands (DCCN, DCC, DCN)
+    Copyright (C) 2010-2013, Swammerdam Institute for Life Sciences, University of Amsterdam (SILS)
+    Copyright (C) 2008-2009, Centre for Cognitive Neuroimaging in Glasgow, United Kingdom (CCNi)
+    Copyright (C) 2009-2009, Netherlands Institute for Neuroscience (NIN)
+    Copyright (C) 2003-2008, F.C. Donders Centre, Radboud University Nijmegen, The Netherlands (FCDC)
+    Copyright (C) 2004-2007, Nijmegen Institute for Cognition and Information, The Netherlands (NICI)
+    Copyright (C) 2004-2005, Universitatsklinikum Hamburg-Eppendorf, Germany (UKE)
+    Copyright (C) 2003-2004, Center for Sensory Motor Interaction, University Aalborg, Denmark (SMI)
+    Copyright (C) 1999-2003, Department of Medical Physics, Radboud University Nijmegen, The Netherlands (MBFYS)
 
