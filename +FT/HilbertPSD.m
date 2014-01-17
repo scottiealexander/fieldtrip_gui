@@ -1,4 +1,4 @@
-function HilbertPSD()
+function data_tmp = HilbertPSD()
 
 % FT.HilbertPSD
 %
@@ -53,16 +53,15 @@ cfg.bpfilttype  = 'but';         %butterworth type filter
 cfg.bpfiltdir   = 'twopass';     %forward+reverse filtering
 cfg.bpinstabilityfix = 'reduce'; %deal with filter instability
 
+%n-condition length cell to hold all the data
 data = cell(numel(FT_DATA.epoch),1);
 
+%array of elapsed time for progress bar
 tElap = nan(nFreq,1);
 
 hWait = waitbar(0,'00% done | xx:xx:xx remaining');
 set(hWait,'Name','Computing spectrogram...');
 drawnow;
-
-%data becomes a cell (ncondition x 1) of freq x time x channel x trial data matricies
-% cellfun(@ProcessOne,cBands,num2cell(1:nFreq));
 
 nTotal = (nFreq*2) + 1;
 nDone  = 0;
