@@ -42,7 +42,7 @@ if min(size(x)) > 1 || numel(size(x)) > 2
 end
 
 %format as column vector
-if size(x,1) > size(x,2)
+if size(x,1) < size(x,2)
     re_shape = true;
     x = reshape(x,[],1);
 else

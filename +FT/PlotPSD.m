@@ -53,7 +53,7 @@ function PlotOne(strChan)
 	cMin = min(cellfun(@(x) min(reshape(x,[],1)),d));
 	
 	%position for each axes
-	axPos = GetAxPosition(h,numel(d),'pad',60,'v_pad',30);
+	axPos = GetAxPosition(h,numel(d),'pad',75,'v_pad',30);
 
 	for k = 1:numel(d)
 		%get the labels for the x and y axes
