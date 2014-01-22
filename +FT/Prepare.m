@@ -137,7 +137,7 @@ if any(strcmpi(opt.type,{'all','path'}))
     end
     
     if ishandle(hMsg)
-        close(hMsg);
+        delete(hMsg);
     end
     varargout{1} = true;
 %------------------------------------------------------------------------------%

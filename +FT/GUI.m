@@ -31,7 +31,8 @@ lFig = 200;
 bFig = 200;
 
 h = figure('Units','pixels','OuterPosition',[lFig bFig wFig hFig],...
-           'Name','FieldTrip GUI','NumberTitle','off','MenuBar','none');
+           'Name','FieldTrip GUI','NumberTitle','off','MenuBar','none',...
+           'CloseRequestFcn',@GUICloseFcn);
 
 %axes for text display
 FT_DATA.gui.hAx = axes('Visible','off','Units','normalized','Position',[0,0,1,1],...
@@ -79,7 +80,7 @@ FT.UpdateGUI;
     hViewCorr = uimenu(hViewMenu,'Label','Channel Correlations','Callback',@(x,y) FT.RunFunction(x,y,@FT.ChannelCorr));
     hViewCoh  = uimenu(hViewMenu,'Label','Channel Coherence','Callback',@(x,y) FT.RunFunction(x,y,@FT.Coherence));
     hViewERP  = uimenu(hViewMenu,'Label','Average ERP','Callback',@(x,y) FT.RunFunction(x,y,@FT.PlotERP));    
-%     hViewPow  = uimenu(hViewMenu,'Label','Average Power Spectra','Callback',@(x,y) FT.RunFunction(x,y,@() FT.PlotPower('spectra')));
+    %hViewPow  = uimenu(hViewMenu,'Label','Average Power Spectra','Callback',@(x,y) FT.RunFunction(x,y,@() FT.PlotPower('spectra')));
     hViewSpec = uimenu(hViewMenu,'Label','Average Spectrogram','Callback',@(x,y) FT.RunFunction(x,y,@() FT.PlotPower('spectrogram')));
     hReDraw   = uimenu(hViewMenu,'Label','Redraw GUI Display','Callback',@(x,y) FT.RunFunction(x,y,@FT.RedrawGUI));
     
@@ -113,8 +114,6 @@ FT.UpdateGUI;
 %     hSaveTemplate = uimenu(hTempMenu,'Label','Save Current Template','Callback','disp(''save current template'')');
 %     hEditTemplate = uimenu(hTempMenu,'Label','Edit Current Template','Callback','disp(''edit current template'')');
 %     hLoadTemplate = uimenu(hTempMenu,'Label','Load Existing Template','Callback','disp(''load existing template'')');
-    
-set(0,'Units','pixels');%rootUnits);
 
 %-------------------------------------------------------------------------%
 function FileOps(obj,evt)
@@ -375,10 +374,22 @@ function QuitGUI(obj,evt)
     fprintf(['*****\nThank you for using the FieldTrip GUI.\n'...
                  'Cleaning up and ending analysis session...\n*****\n']);
     if ishandle(h)
-        close(h);
+        GUICloseFcn('force');
     end
     clear('global','FT_DATA');
     evalin('base','clear FT_DATA');
+end
+%-------------------------------------------------------------------------%
+function GUICloseFcn(varargin)
+%helps to prevent accidental closure of the main GUI figure
+    if ~isempty(varargin) && ischar(varargin{1}) && strcmpi(varargin{1},'force')
+        delete(h);
+    else
+        resp = FT.UserInput('Are you sure you want to close the GUI?',1,'button',{'Yes','No'});
+        if strcmpi(resp,'yes')
+            QuitGUI([],[]);
+        end
+    end
 end
 %-------------------------------------------------------------------------%
 function s = AssignField(s,c,val)

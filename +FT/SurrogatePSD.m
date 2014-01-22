@@ -1,4 +1,4 @@
-function data = SurrogatePSD(cData)
+function data = SurrogatePSD()
 
 % FT.SurrogatePSD
 %
@@ -29,14 +29,20 @@ function data = SurrogatePSD(cData)
 
 global FT_DATA;
 
+nITER = 5;
+nWorker = 5;
+
+s = ver;
+bParallel = any(strcmpi({s(:).Name},'Parallel Computing Toolbox'));
+
 %total number of trials
 nTrial = cellfun(@(x) size(x,4),FT_DATA.power.data);
 
 %trial length in number of data points
 trl = numel(FT_DATA.power.time);
 
-% data_length  = size(cData{1},2);
-data_length  = size(FT_DATA.data.trial{1},2);
+data_length  = size(FT_DATA.power.raw{1},2);
+% data_length  = size(FT_DATA.data.trial{1},2);
 
 %indicies of points that mark the start of a trial
 kStart = nan(sum(nTrial),1);
@@ -54,49 +60,57 @@ for k = 1:sum(nTrial)
 end
 
 %group trials for each condition
-kTrial = [kStart kStart+trl];
+kTrial = [kStart kStart+trl-1];
 cKStart = mat2cell(kTrial,nTrial,2);
 
-data = cell(size(FT_DATA.power.data));
+nBand = numel(FT_DATA.power.bands);%*nITER;
 
-nTotal = numel(FT_DATA.power.bands);
-tElap = nan(nTotal,1);
-hWait = waitbar(0,'00% done | xx:xx:xx remaining');
-set(hWait,'Name','Computing spectrogram...');
-drawnow;
+%init our cell of data
+% data = repmat({nan(nBand,trl,numel(FT_DATA.data.label))},numel(cKStart),1);
+nChan = numel(FT_DATA.data.label);
+data = repmat({nan(nBand,trl,nChan,nITER)},numel(cKStart),1);
 
-cellfun(@ProcessOne,cData,num2cell(1:nTotal));
+FT.Progress(nBand*numel(cKStart));
 
-if ishandle(hWait)
-    close(hWait);
-end
-
-%-----------------------------------------------------------------------------%
-function ProcessOne(d,kFreq)
-	id = tic;
-
-	%scramble the phases: d remains channels x time
-	d = phaseran2(d);
-
-	%extract trials for each condition
-	cD = cellfun(@(x) reshape(arrayfun(@(y,z) d(:,y:z),x(:,1),x(:,2),'uni',false),1,1,[]),cKStart,'uni',false);	
-	
-	%reformat to be 1 x time x channel x trial
-	cD = cellfun(@(x) cat(3,x{:}),cD,'uni',false);
-	cD = cellfun(@(x) permute(reshape(x,[1 size(x)]),[1,3,2,4]),cD,'uni',false);
-
-	for k = 1:numel(cD)
-		data{k}(kFreq,:,:,:) = cD{k};
+%ERROR FIXME TODO: use CellJoin!!!
+if bParallel
+    
+	fprintf('Using %d threads for processing\n',nWorker);
+    if matlabpool('size') > 0
+        matlabpool('close');
+    end
+    
+    pc = parcluster;
+	pc.NumWorkers = nWorker;
+	matlabpool(pc,nWorker);
+	parfor kIter = 1:nITER
+		for kA = 1:nBand
+			d = phaseran2(FT_DATA.power.raw{kA});
+			for kB = 1:numel(cKStart)
+				data{kB}(kA,:,:,kIter) = SegmentData(d,cKStart{kB});
+			end
+		end
 	end
-
-    %estimate time remaining
-    tElap(kFreq) = toc(id);
-    tRem = nanmean(tElap,1) * (nTotal-kFreq);
-
-    %update the waitbar
-    strMsg = sprintf('%02.0f%% done | %s remaining',(kFreq/nTotal)*100,FmtTime(tRem));
-    waitbar(kFreq/nTotal,hWait,strMsg);
-    drawnow;
+	matlabpool('close');
+else	
+	for kIter = 1:nITER
+		for kA = 1:nBand
+			d = phaseran2(FT_DATA.power.raw{kA});
+			for kB = 1:numel(cKStart)
+				data{kB}(kA,:,:,kIter) = SegmentData(d,cKStart{kB});
+			end
+		end
+	end
 end
+
 %-----------------------------------------------------------------------------%
-end
+function cD = SegmentData(d,kStart)
+	%extract trials for each condition
+	cD = reshape(arrayfun(@(y,z) d(:,y:z),kStart(:,1),kStart(:,2),'uni',false),1,1,[]);
+
+	%reformat to be 1 x time x channel x trial	
+	cD = cat(3,cD{:});
+	cD = mean(permute(reshape(cD,[1 size(cD)]),[1,3,2,4]),4);
+
+	FT.Progress;
+%-----------------------------------------------------------------------------%
