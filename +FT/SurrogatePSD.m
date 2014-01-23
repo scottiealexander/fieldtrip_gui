@@ -5,12 +5,9 @@ function data = SurrogatePSD()
 % Description: construct surrogate PSD by phase scrambling the instantaneous power values
 %			   from a hilbert decomposition
 %
-% Syntax: FT.SurrogatePSD(x)
+% Syntax: FT.SurrogatePSD
 %
 % In:
-%		cData - a nFrequency length cell of channel x time data matricies
-%				to phase scramble
-%		nIter - the number of times to scramble and average the data
 %
 % Out: 
 %
@@ -29,88 +26,156 @@ function data = SurrogatePSD()
 
 global FT_DATA;
 
-nITER = 5;
-nWorker = 5;
+nITER   = 5;
 
-s = ver;
-bParallel = any(strcmpi({s(:).Name},'Parallel Computing Toolbox'));
+if nITER > 10
+	s = ver;
+	bParallel = any(strcmpi({s(:).Name},'Parallel Computing Toolbox'));
+	if bParallel
+		nWorker = java.lang.Runtime.getRuntime().availableProcessors-1;
+	end
+	if isnan(nWorker) || nWorker < 2
+		bParallel = false;
+	end
+else
+	bParallel = false;
+end
 
 %total number of trials
 nTrial = cellfun(@(x) size(x,4),FT_DATA.power.data);
 
-%trial length in number of data points
-trl = numel(FT_DATA.power.time);
-
+%trial and data length in number of data points
+trial_len = numel(FT_DATA.power.time);
 data_length  = size(FT_DATA.power.raw{1},2);
-% data_length  = size(FT_DATA.data.trial{1},2);
 
 %indicies of points that mark the start of a trial
 kStart = nan(sum(nTrial),1);
 
 %all possible starting points for trials
-pnts = 1:(data_length-trl);
+pnts = 1:(data_length-trial_len);
 
 %choose a random starting point for each trial
 %such that no trials will overlap
 for k = 1:sum(nTrial)	
-	srt = pnts(randi(numel(pnts),1));	
-	bRM = pnts > srt-trl & pnts < srt+trl;
+	trial_start = pnts(randi(numel(pnts),1));	
+	bRM = (pnts > trial_start-trial_len) & (pnts < trial_start+trial_len);
 	pnts(bRM) = [];
-	kStart(k) = srt;
+	kStart(k) = trial_start;
 end
 
 %group trials for each condition
-kTrial = [kStart kStart+trl-1];
+%NOTE: we need to subtract 1 from the trial length as the point
+%at which the trial starts is part of the trial
+kTrial  = [kStart kStart+(trial_len-1)];
 cKStart = mat2cell(kTrial,nTrial,2);
 
-nBand = numel(FT_DATA.power.bands);%*nITER;
-
 %init our cell of data
-% data = repmat({nan(nBand,trl,numel(FT_DATA.data.label))},numel(cKStart),1);
-nChan = numel(FT_DATA.data.label);
-data = repmat({nan(nBand,trl,nChan,nITER)},numel(cKStart),1);
+nBand = numel(FT_DATA.power.bands);
+data = cell(nITER,1);
 
-FT.Progress(nBand*numel(cKStart));
-
-%ERROR FIXME TODO: use CellJoin!!!
+%generate the surrogate ERSP matricies
+id = tic;
 if bParallel
-    
+	%use multiple workers in parallel
+	hMsg = FT.UserInput('Creating surrogate data',1);
 	fprintf('Using %d threads for processing\n',nWorker);
     if matlabpool('size') > 0
         matlabpool('close');
-    end
-    
+    end    
     pc = parcluster;
 	pc.NumWorkers = nWorker;
 	matlabpool(pc,nWorker);
 	parfor kIter = 1:nITER
-		for kA = 1:nBand
-			d = phaseran2(FT_DATA.power.raw{kA});
-			for kB = 1:numel(cKStart)
-				data{kB}(kA,:,:,kIter) = SegmentData(d,cKStart{kB});
-			end
-		end
+		data{kIter,1} = SurrogateERSP(FT_DATA.power,cKStart,true);
 	end
 	matlabpool('close');
-else	
+	if ishandle(hMsg)
+		delete(hMsg);
+	end
+else
+	%single worker
+	FT.Progress(nBand*numel(cKStart)*nITER);
 	for kIter = 1:nITER
-		for kA = 1:nBand
-			d = phaseran2(FT_DATA.power.raw{kA});
-			for kB = 1:numel(cKStart)
-				data{kB}(kA,:,:,kIter) = SegmentData(d,cKStart{kB});
-			end
-		end
+		data{kIter,1} = SurrogateERSP(FT_DATA.power,cKStart,false);
 	end
 end
+fprintf('TOTAL ELASPED TIME: %.2f\n',toc(id));
+
+%group surrogates by condition
+data = reshape(data,1,1,1,[]);
+data = CellJoin(cat(4,data{:}),1);
+
+%compute mean and std
+%here mean and std are nCondition x 1 cells of freq x time x channel matricies
+%representing the mean and std (respectivly) of all surrogate ERSP matricies
+FT_DATA.power.surrogate.mean = cellfun(@(x) mean(x,4),data,'uni',false);
+FT_DATA.power.surrogate.std  = cellfun(@(x) std(x,[],4),data,'uni',false);
+
+%remove the raw data
+FT_DATA.power = rmfield(FT_DATA.power,'raw');
+
+FT_DATA.saved = false;
 
 %-----------------------------------------------------------------------------%
-function cD = SegmentData(d,kStart)
-	%extract trials for each condition
-	cD = reshape(arrayfun(@(y,z) d(:,y:z),kStart(:,1),kStart(:,2),'uni',false),1,1,[]);
+function cD = SurrogateERSP(power,cKStart,bpar)
+% SurrogateERSP
+%
+% Description: compute a surrogate ERSP from hilbert decomposition data
+%
+% Syntax: cD = SurrogateERSP(power,cKStart,bparallel)
+%
+% In:
+%		power   - the power struct computed by FT.HilbertPSD
+%		cKStart - a nCondition length cell of start and end indicies for each 
+%				  trial
+%		bpar    - true if this function is being called with a parfor loop
+%				  (i.e. don't try and update a progress bar)
+%
+% Out:
+%		cD - a nCondition length cell of ERSP matricies (freq x time x channel) 
+%
+% Updated: 2014-01-23
+% Scottie Alexnader
 
-	%reformat to be 1 x time x channel x trial	
-	cD = cat(3,cD{:});
-	cD = mean(permute(reshape(cD,[1 size(cD)]),[1,3,2,4]),4);
+%INFO the function that actually computes a surrogate ERSP by:
+%		1) scrambling the phase of the hilbert decomposition matrix of each 
+%		   frequency band => channel x time 
+%		2) extracting the randomly positioned trials => channel x time x trial
+%		3) reformatting our trials matrix to be freq x time x channel x trial
+%		4) averaging accross trials to get a surrogate ERSP matrix that is
+%		   freq x time x channel
+	id = tic;
 
-	FT.Progress;
+	%initialize a cell of nans for each condition
+	nband 	  = numel(power.bands);
+	trial_len = numel(power.time);
+	nchan 	  = size(power.raw{1},1);
+
+	cD = repmat({nan(nband,trial_len,nchan)},numel(cKStart),1);
+	
+	%iterate through the hilbert decomposition matrix for each power band
+	for kA = 1:nband
+		%scramble the phases
+		d = phaseran2(power.raw{kA});	
+
+		%iterate through the cell of trial start and end indicies
+		for kB = 1:numel(cKStart)
+			kStart = cKStart{kB};
+			
+			%extract trials for the current condition
+			tmp = reshape(arrayfun(@(y,z) d(:,y:z),kStart(:,1),kStart(:,2),'uni',false),1,1,[]);
+
+			%reformat to be 1 x time x channel x trial and insert into
+			%the cell element that corresponds with the condition, and the row
+			%of the contents of that cell element that corresponds to the
+			%current frequency band	
+			tmp = cat(3,tmp{:});
+			cD{kB}(kA,:,:) = mean(permute(reshape(tmp,[1 size(tmp)]),[1,3,2,4]),4);
+
+			if ~bparallel
+				FT.Progress;
+            end
+		end
+	end	
+	fprintf('%s: iter done [%.2f]\n',datestr(now,13),toc(id));
 %-----------------------------------------------------------------------------%

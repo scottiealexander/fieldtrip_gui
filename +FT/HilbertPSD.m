@@ -31,8 +31,7 @@ FS = FT_DATA.data.fsample;
 
 %make sure there is trial info
 if ~isfield(FT_DATA,'epoch') || isempty(FT_DATA.epoch)
-    if ~FT.DefineTrial
-        data = [];
+    if ~FT.DefineTrial        
         return;
     end
 end
@@ -60,24 +59,26 @@ FT.Progress((nFreq*2)+1,'title','Computing spectrogram');
 
 %bandpass filter and hilbert transform for each frequency band
 % yields a nFreq x 1 cell of channel x time power values
-data_tmp   = cellfun(@HilbertXFM,cBands,'uni',false);
+data_raw   = cellfun(@HilbertXFM,cBands,'uni',false);
 
 %scale each frequency band by total mean power
 %NOTE: should we calculate total mean power within or across channels?
-mean_power = mean(cellfun(@(x) mean(reshape(x,[],1),1),data_tmp));
-data_tmp   = cellfun(@(x) x/mean_power,data_tmp,'uni',false);
+mean_power = mean(cellfun(@(x) mean(reshape(x,[],1),1),data_raw));
+data_raw   = cellfun(@(x) x/mean_power,data_raw,'uni',false);
 FT.Progress;
 
 %segment and reshape data
-%yields a ncondition x 1 cell of freq x time x channel x trial
-cellfun(@SegmentData,data_tmp,num2cell(1:nFreq),'uni',false);
+%yields a ncondition x 1 cell of freq x time x channel x trial matricies
+cellfun(@SegmentData,data_raw,num2cell(1:nFreq),'uni',false);
 
 %add to the data struct
-FT_DATA.power.raw     = data_tmp;
+FT_DATA.power.raw     = data_raw;
 FT_DATA.power.data    = data;
 FT_DATA.power.centers = centers;
 FT_DATA.power.bands   = cBands;
 FT_DATA.power.time    = GetTime;
+
+FT_DATA.saved = false;
 
 %-------------------------------------------------------------------------%
 function tmp = HilbertXFM(freq)
