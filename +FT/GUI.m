@@ -385,7 +385,7 @@ function GUICloseFcn(varargin)
     if ~isempty(varargin) && ischar(varargin{1}) && strcmpi(varargin{1},'force')
         delete(h);
     else
-        resp = FT.UserInput('Are you sure you want to close the GUI?',1,'button',{'Yes','No'});
+        resp = FT.UserInput('Are you sure you want to close the GUI?',1,'button',{'No','Yes'});
         if strcmpi(resp,'yes')
             QuitGUI([],[]);
         end

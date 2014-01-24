@@ -55,7 +55,7 @@ cfg.bpinstabilityfix = 'reduce'; %deal with filter instability
 %n-condition length cell to hold all the data
 data = cell(numel(FT_DATA.epoch),1);
 
-FT.Progress((nFreq*2)+1,'title','Computing spectrogram');
+FT.Progress2((nFreq*2)+1,'Computing spectrogram');
 
 %bandpass filter and hilbert transform for each frequency band
 % yields a nFreq x 1 cell of channel x time power values
@@ -65,7 +65,7 @@ data_raw   = cellfun(@HilbertXFM,cBands,'uni',false);
 %NOTE: should we calculate total mean power within or across channels?
 mean_power = mean(cellfun(@(x) mean(reshape(x,[],1),1),data_raw));
 data_raw   = cellfun(@(x) x/mean_power,data_raw,'uni',false);
-FT.Progress;
+FT.Progress2;
 
 %segment and reshape data
 %yields a ncondition x 1 cell of freq x time x channel x trial matricies
@@ -90,7 +90,7 @@ function tmp = HilbertXFM(freq)
     %channel x time matrix of power values
     tmp = transpose(abs(hilbert(transpose(tmp.trial{1}))).^2);
     
-    FT.Progress;
+    FT.Progress2;
 
 end
 %-------------------------------------------------------------------------%
@@ -110,7 +110,7 @@ function SegmentData(freq_data,kFreq)
         data{k}(kFreq,:,:,:) = epochs{k};
     end
     
-    FT.Progress;
+    FT.Progress2;
 
     %---------------------------------------------------------------------%
     function out = SegmentOne(s)

@@ -1,4 +1,4 @@
-function data = SurrogatePSD()
+function SurrogatePSD()
 
 % FT.SurrogatePSD
 %
@@ -28,7 +28,14 @@ global FT_DATA;
 
 nITER   = 5;
 
-if nITER > 10
+if ~isfield(FT_DATA,'power') || ~isfield(FT_DATA.power,'raw') || isempty(FT_DATA.power.raw)
+	msg = ['\bf[\color{red}ERROR\color{black}]: Hilbert decomposition has not been ',...
+		   'performed on this data set!'];
+	FT.UserInput(msg,0,'button','OK');
+	return;
+end
+
+if nITER > 3
 	s = ver;
 	bParallel = any(strcmpi({s(:).Name},'Parallel Computing Toolbox'));
 	if bParallel
@@ -36,6 +43,8 @@ if nITER > 10
 	end
 	if isnan(nWorker) || nWorker < 2
 		bParallel = false;
+	elseif nWorker > nITER
+		nWorker = nITER;
 	end
 else
 	bParallel = false;
@@ -74,6 +83,7 @@ nBand = numel(FT_DATA.power.bands);
 data = cell(nITER,1);
 
 %generate the surrogate ERSP matricies
+FT.Progress2(nBand*numel(cKStart)*nITER);
 id = tic;
 if bParallel
 	%use multiple workers in parallel
@@ -171,10 +181,8 @@ function cD = SurrogateERSP(power,cKStart,bpar)
 			%current frequency band	
 			tmp = cat(3,tmp{:});
 			cD{kB}(kA,:,:) = mean(permute(reshape(tmp,[1 size(tmp)]),[1,3,2,4]),4);
-
-			if ~bparallel
-				FT.Progress;
-            end
+			
+			FT.Progress2;            
 		end
 	end	
 	fprintf('%s: iter done [%.2f]\n',datestr(now,13),toc(id));
