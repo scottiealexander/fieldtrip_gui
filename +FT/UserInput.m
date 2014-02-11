@@ -256,6 +256,7 @@ if opt.button
 else
     %force drawing of figure before we exit
     drawnow;
+    pause(.1);
     
     %output the handle to the UserInput figure
     output = h;

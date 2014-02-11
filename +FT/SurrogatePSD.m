@@ -83,7 +83,7 @@ nBand = numel(FT_DATA.power.bands);
 data = cell(nITER,1);
 
 %generate the surrogate ERSP matricies
-FT.Progress2(nBand*numel(cKStart)*nITER);
+FT.Progress2(nBand*numel(cKStart)*nITER,'Generating surrogate data');
 id = tic;
 if bParallel
 	%use multiple workers in parallel
@@ -104,7 +104,6 @@ if bParallel
 	end
 else
 	%single worker
-	FT.Progress(nBand*numel(cKStart)*nITER);
 	for kIter = 1:nITER
 		data{kIter,1} = SurrogateERSP(FT_DATA.power,cKStart,false);
 	end

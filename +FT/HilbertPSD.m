@@ -22,8 +22,6 @@ function HilbertPSD()
 %   3) construct trial definition
 %   4) segment data
 
-%TODO:
-%   scale the power at each frequency by the total mean power
 nFreq = 42;
 
 global FT_DATA;

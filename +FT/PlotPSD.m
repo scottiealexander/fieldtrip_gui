@@ -46,7 +46,18 @@ FT.PlotCtrl(h,cLabel,@PlotOne);
 %-----------------------------------------------------------------------------%
 function PlotOne(strChan)	
 	bChan = strcmpi(strChan,cLabel);
-	d = cellfun(@(x) BaselineCorr(x(:,:,bChan)),data,'uni',false);
+
+	%FIXME FINISH TODO
+	% this is terrible, please do something at least halfway intelligent here....
+	if isfield(FT_DATA.power,'surrogate')
+		kChan = find(bChan);
+        d = cell(size(data));
+        for k = 1:numel(data)
+            d{k} = surrogate_norm(data{k}(:,:,kChan),k,kChan);
+        end
+	else		
+		d = cellfun(@(x) BaselineCorr(x(:,:,bChan)),data,'uni',false);
+	end
 	
 	%get min and max across all conditions
 	cMax = max(cellfun(@(x) max(reshape(x,[],1)),d));
@@ -89,6 +100,13 @@ function d = BaselineCorr(d)
 	m = repmat(mean(d(:,BASELINE(1):BASELINE(2)),2),1,size(d,2));
 	d = (d - m) ./ m;
 	d = imfilter(d,f,'replicate');
+end
+%-----------------------------------------------------------------------------%
+function d = surrogate_norm(d,kCond,kChan)	
+	m  = FT_DATA.power.surrogate.mean{kCond}(:,:,kChan);
+	sd = FT_DATA.power.surrogate.std{kCond}(:,:,kChan);
+	d = (d - m) ./ sd;
+    d = imfilter(d,f,'replicate');
 end
 %-----------------------------------------------------------------------------%
 end
