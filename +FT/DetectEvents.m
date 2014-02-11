@@ -17,6 +17,7 @@ function DetectEvents(varargin)
 
 global FT_DATA;
 
+cfg = CFGDefault;
 cfg.channel = [];
 bRun = false;
 
