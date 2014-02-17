@@ -33,7 +33,7 @@ opt = FT.ParseOpts(varargin,...
 
 %find the starting and ending indicies of the first cycle of the pulse sequence
 kF = find(data<-abs(opt.neg_thresh),1,'first'); %the initial negative deflection from 0
-kS = find(data(1:kF)>=-10,1,'last'); %find closest preceeding 0 crossing
+kS = find(data(1:kF)>=0,1,'last'); %find closest preceeding 0 crossing
 
 if isempty(kS)
     r = 0;
@@ -47,9 +47,8 @@ kE = kE+(kP-1);
 
 width = kE-kS;
 if width <= opt.max_width
-    %extract the first complete cycle
-    k = kS:kE;
-    d = data(k);    
+    %extract the first complete cycle    
+    d = data(kS:kE);    
 
     %create the cosine model with same ~width and amplitude as the data
     w  = @(t,x)2*pi*x*t; %x = freq. t = time
@@ -62,7 +61,7 @@ if width <= opt.max_width
 
     %optional plotting (make it look nice...)
     if opt.plot
-        tD = linspace(0,numel(k)/1000,numel(d));
+        tD = linspace(0,numel(d)/1000,numel(d));
         figure;
         plot(tM,model,'r',tD,d,'b');
         title(['width = ' sprintf('%d',width) '; r = ' sprintf('%.05f',r)],'FontSize',12);

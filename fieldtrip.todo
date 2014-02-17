@@ -15,3 +15,6 @@
 
 #ITEM 5
 	- grand average ERPS for new emotion
+
+#ITEM 6
+	- fix DetectEvents UI to ask for pulse width and interval (and use this info is Pulse2Event)
