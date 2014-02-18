@@ -20,14 +20,21 @@ global FT_DATA;
 cfg = CFGDefault;
 cfg.channel = [];
 bRun = false;
+width = 50;
+interval = 50;
+max_pulse = 8;
 
-pFig = GetFigPosition(480,160);
+pFig = GetFigPosition(480,300);
 
 %open the figure for the GUI
 h = figure('Units','pixels','OuterPosition',pFig,...
         'Name','Automatic Event Detection','NumberTitle','off','MenuBar','none','KeyPressFcn',@KeyPress);
 
 bgColor = get(h,'Color');
+
+%function to calculate bottom of each ui element
+fB = @(x) 1-(.18*x);
+hUI = .12;
 
 %select channel
     defChan = FT_DATA.data.label(strncmpi('stim',FT_DATA.data.label,4));
@@ -38,20 +45,45 @@ bgColor = get(h,'Color');
     end
     uicontrol('Style','text','String','Select Stimulus Channel:',...
             'Units','normalized','FontSize',12,'FontWeight','bold',...
-            'Position',[.01 .54 .42 .25],'BackgroundColor',bgColor,'Parent',h);
+            'Position',[.01 fB(1)-.03 .42 hUI],'BackgroundColor',bgColor,'Parent',h);
     
     eSel = uicontrol('Style','edit','Units','normalized','String',defChan,...
-            'BackgroundColor',[1 1 1],'Position',[.43 .6 .19 .25],'Parent',h);
+            'BackgroundColor',[1 1 1],'Position',[.43 fB(1) .19 hUI],'Parent',h);
         
     uicontrol('Style','pushbutton','Units','normalized','String','Select Channel From List',...
-            'Position',[.64 .6 .35 .25],'Callback',@SelectChannel,'Parent',h);
+            'Position',[.64 fB(1) .35 hUI],'Callback',@SelectChannel,'Parent',h);
+
+%get pulse parameters
+    uicontrol('Style','text','String','Pulse Width [ms]:',...
+            'Units','normalized','FontSize',12,'FontWeight','bold',...
+            'Position',[.07 fB(2)-.03 .42 hUI],'BackgroundColor',bgColor,'Parent',h);
+    
+    eWidth = uicontrol('Style','edit','Units','normalized','String',num2str(width),...
+            'BackgroundColor',[1 1 1],'Position',[.43 fB(2) .12 hUI],'Parent',h);
+
+    uicontrol('Style','text','String','Pulse Interval [ms]:',...
+            'Units','normalized','FontSize',12,'FontWeight','bold',...
+            'Position',[.055 fB(3)-.03 .42 hUI],'BackgroundColor',bgColor,'Parent',h);
+    
+    eInt = uicontrol('Style','edit','Units','normalized','String',num2str(interval),...
+            'BackgroundColor',[1 1 1],'Position',[.43 fB(3) .12 hUI],'Parent',h);
+
+    uicontrol('Style','text','String','Max Pulses per Event:',...
+            'Units','normalized','FontSize',12,'FontWeight','bold',...
+            'Position',[.065 fB(4)-.03 .5 hUI],'BackgroundColor',bgColor,...
+            'HorizontalAlignment','left','Parent',h);
+    
+    eMax = uicontrol('Style','edit','Units','normalized','String',num2str(max_pulse),...
+            'BackgroundColor',[1 1 1],'Position',[.43 fB(4) .12 hUI],'Parent',h);
+
+
 %buttons
     wBtn = .2;
     uicontrol('Style','pushbutton','Units','normalized','String','Run',...
-            'Position',[.5-(wBtn+.05) .2 wBtn .25],'Callback',@BtnPress,'Parent',h);
+            'Position',[.5-(wBtn+.05) fB(5) wBtn hUI],'Callback',@BtnPress,'Parent',h);
         
     uicontrol('Style','pushbutton','Units','normalized','String','Cancle',...
-            'Position',[.55 .2 wBtn .25],'Callback',@BtnPress,'Parent',h);
+            'Position',[.55 fB(5) wBtn hUI],'Callback',@BtnPress,'Parent',h);
 
 uicontrol(eSel);
 uiwait(h);
@@ -86,7 +118,11 @@ if bRun
         
     if ~bErr
         hMsg = FT.UserInput('Detecting and translating events...',1);
-        FT_DATA.event = Pulse2Event(datChan.trial{1}(1,:),FT_DATA.data.fsample);
+        FT_DATA.event = Pulse2Event(datChan.trial{1}(1,:),FT_DATA.data.fsample,...
+                        'width'     , width     ,...
+                        'interval'  , interval  ,...
+                        'max_pulse' , max_pulse  ...
+                        );
         if ishandle(hMsg)
             close(hMsg);
         end
@@ -123,6 +159,8 @@ end
 function BtnPress(obj,evt)
     switch lower(get(obj,'String'))
         case 'run'
+            
+            %get the channel
             strChan = get(eSel,'String');
             if isempty(cfg.channel) && ~isempty(strChan)
                 bMatch = strncmpi(strChan,FT_DATA.data.label,length(strChan));
@@ -141,6 +179,33 @@ function BtnPress(obj,evt)
                 bRun = true;
             end
             
+            %get the pulse width
+            w = GetNumericValue(eWidth,width,'width');
+            if isnan(w)
+                bRun = false;
+               return;
+            else
+               width = w; 
+            end
+            
+            %get the pulse interval
+            int = GetNumericValue(eInt,interval,'interval');
+            if isnan(int)
+                bRun = false;
+               return;
+            else
+               interval = int;
+            end
+            
+            %get the pulse interval
+            mx = GetNumericValue(eMax,max_pulse,'#');
+            if isnan(mx)
+                bRun = false;
+               return;
+            else
+               max_pulse = mx;
+            end
+            
             if ishandle(h) && bRun
                 uiresume(h);
                 close(h);
@@ -156,17 +221,19 @@ function BtnPress(obj,evt)
     end
 end
 %------------------------------------------------------------------------------%
-function KeyPress(obj,evt)
-%allow the figure to be closed via Crtl+W shortcut
-   switch lower(evt.Key)
-       case 'w'
-           if ismember(evt.Modifier,'control')
-               if ishandle(h)
-                   close(h);
-               end
-           end
-       otherwise
-   end
+function num = GetNumericValue(hE,default,type)
+    str = get(hE,'String');
+    if ~isempty(str)
+       num = str2double(str);
+       if isnan(num)
+           strMsg = ['\bf[\color{red}ERROR\color{black}]: Invalid pulse ',...
+                     type '. Entry must be a number.'];
+           FT.UserInput(strMsg,0,'button','OK');
+           uicontrol(hE);
+       end
+    else
+        num = default;
+    end
 end
 %------------------------------------------------------------------------------%
 end

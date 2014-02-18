@@ -32,47 +32,52 @@ opt = FT.ParseOpts(varargin,...
     'max_pulse', 8   ...
     );
 
-opt = structfieldfun(@(x) x/1000, opt);
+opt.width = opt.width/1000;
+opt.interval = opt.interval/1000;
 
 evt = struct('type',[],'value',[],'sample',[],'duration',[],'offset',[]);
 
 %event pluse thresholds
 thresh = -150;
 thresh2 = 50;
-max_width = fs*(1/5); %# of sample in a 200ms window
-%chunk_size = (opt.width+opt.interval)*opt.max_pulse*fs;
-chunk_size = (.15*8)*fs; %FIXME TODO FINISH: this is temporary
+max_width = (opt.width+.1)*fs; %maximum pulse width (add 100ms cushion for jitter)
+chunk_size = ceil((opt.width+opt.interval)*opt.max_pulse*fs);
 
 %we flip the sign of the data here only to make use of the 'minpeakheight' option
 %as the initial deviation of each pulse is negative and that is what we want to detect
-[~,kP] = findpeaks(data*-1,'minpeakheight',-thresh,'minpeakdistance',.05*fs); %opt.width*fs
+[~,kP] = findpeaks(data*-1,'minpeakheight',-thresh,'minpeakdistance',opt.width*fs);
 
-%step though all 'POI' and label them based on the number of other 'POI' that 
-%occur within 100 samples of each other
+%step though all 'POI' and label them based on the number of peaks that occur within the
+%window defined by chunk_size
 kLast = 0;
-% while ~bDone
-for k = 1:numel(kP)    
-    %FIXME TODO FINISH
-    % the hard coded 400 here needs to be detirmined from the pulse duration
-    % specified by the user
-    if kP(k)+400 > numel(data)
+for k = 1:numel(kP)
+
+    kStart = .1*fs;
+    if kP(k)-kStart < 1
+        kStart = 1;
+    else
+        kStart = kP(k)-kStart;
+    end
+    
+    kEnd = .2*fs;
+    if kP(k)+kEnd > numel(data)
         kEnd = numel(data);
     else
-        kEnd = kP(k)+400;
-    end    
+        kEnd = kP(k)+kEnd;
+    end
     
-    r = FitPulse(data(kP(k)-100:kEnd),'max_width',max_width,'neg_thresh',thresh,'pos_thresh',thresh2,'plot',false);
+    r = FitPulse(data(kStart:kEnd),'max_width',max_width,'neg_thresh',thresh,'pos_thresh',thresh2,'plot',false);
     
     if r > .8 && kP(k) > kLast
         kChunk = kP(k):kP(k)+chunk_size;
         dTmp = data(kChunk);
-        [~,kPeak] = findpeaks(dTmp,'minpeakheight',100,'minpeakdistance',.05*fs);%opt.width*fs        
+        [~,kPeak] = findpeaks(dTmp,'minpeakheight',100,'minpeakdistance',opt.width*fs);      
         
         %find the next point where the stim channel < 0, put the marker there
         kEvt = kP(k)+kPeak(end)+find(dTmp(kPeak(end):end) < 80,1,'first');
         if ~isempty(kEvt)
             evt.sample(end+1,1) = kEvt;
-            evt.value(end+1,1) = numel(kPeak);%label;
+            evt.value(end+1,1) = numel(kPeak);
             kLast = kEvt;
         end
     end    

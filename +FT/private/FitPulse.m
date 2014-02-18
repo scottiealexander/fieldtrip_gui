@@ -40,10 +40,8 @@ if isempty(kS)
     return;
 end
 
-kP = find(data(kS:end)>opt.pos_thresh,1,'first')+(kS-1); %find the first positive > 100mV pt
-kE = find(data(kP:end)<=0,1,'first')+(kP-1); %find 0 pt following first peak
-[~,kE] = max(data(kP:kE)); %find actual peak b/t first supra-threshold point and following zero-crossing
-kE = kE+(kP-1);
+[~,kE] = findpeaks(data(kS:end),'minpeakheight',opt.pos_thresh);
+kE = kE+(kS-1);
 
 width = kE-kS;
 if width <= opt.max_width
