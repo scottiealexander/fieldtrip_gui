@@ -320,6 +320,19 @@ function SaveDataset(obj,evt,varargin)
         
         %save
         WriteDataset(strPathOut);
+
+        %averaged erp?
+        if FT_DATA.done.average
+            strPathERP = fullfile(fileparts(strPathOut),'erp.cfg');
+            fid = fopen(strPathERP,'a');
+            if fid > 0
+                fseek(fid,0,1);
+                fprintf(fid,'%s\n',strPathOut);
+                fclose(fid);
+            else
+                fprintf('[WARNING]: failed to write file: %s\n',strPathERP);     
+            end
+        end
         if ishandle(hMsg)
             close(hMsg);
         end

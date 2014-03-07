@@ -3,11 +3,11 @@ function [cfg] = ft_rm_channels(cfg, data)
 %
 % ft_rm_channels: a slightly modified version of the fieldtrip function 
 %	              'ft_databrowser' with the added ability to select channels to  
-%   	          remove via checkboxes. Channels marked from removal will 
+%   	          remove via checkboxes. Channels marked for removal will 
 %   	          appear in the 'rm_channel' field of the output struct as a 
 %   	          cell of channel labels
 %
-% Updated: 2013-09-18
+% Updated: 2014-03-07
 % Scottie Alexander
 %
 % Please send information about bugs to 'scottiealexander11@gmail.com'
@@ -253,7 +253,7 @@ if hasdata
   istimelock = strcmp(ft_datatype(data),'timelock');
   
   % check if the input data is valid for this function
-  data = ft_checkdata(data, 'datatype', {'raw', 'comp'}, 'feedback', 'yes', 'hassampleinfo', 'yes');
+  data = ft_checkdata(data, 'datatype', {'raw', 'comp'}, 'feedback', 'no', 'hassampleinfo', 'yes');
   % fetch the header from the data structure in memory
   hdr = ft_fetch_header(data);
   
@@ -468,7 +468,7 @@ for i=1:length(artlabel)
   sel(i) = isfield(cfg.artfctdef.(artlabel{i}), 'artifact');
   if sel(i)
     artifact{i} = cfg.artfctdef.(artlabel{i}).artifact;
-    fprintf('detected %3d %s artifacts\n', size(artifact{i}, 1), artlabel{i});
+    ft_logmsg(cfg,'detected %3d %s artifacts\n', size(artifact{i}, 1), artlabel{i});
   end
 end
 
@@ -684,7 +684,7 @@ ft_uilayout(h, 'tag', 'viewui', 'BackgroundColor', [0.8 0.8 0.8], 'hpos', 'auto'
 definetrial_cb(h);
 redraw_cb(h);
 %=================================================================================================%
-% REMOVE CHANNELS
+% EDIT: REMOVE CHANNELS
 %=================================================================================================%
 %wait until figure is closed
 while ishandle(h)
@@ -1789,7 +1789,9 @@ drawnow
 setappdata(h, 'opt', opt);
 setappdata(h, 'cfg', cfg);
 
-%%% Add checkboxes for marking bad channels
+%=============================================================================%
+% EDIT: Add checkboxes for marking bad channels
+%=============================================================================%
 ChanSelect();
 
 end
@@ -1825,7 +1827,7 @@ end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% SUBFUNCTION
+% SUBFUNCTION EDIT
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function ChanSelect(varargin)
 
@@ -1862,17 +1864,13 @@ else
     %remove all the old checkboxes
     hBx = findobj(h,'Tag','chan_sel_bx');
     if ~isempty(hBx)
-        for k = 1:numel(hBx)
-            if ishandle(hBx(k))
-                delete(hBx(k));
-            end
-        end
+        delete(hBx);
     end
     
     %set figure to cover the entire screen (we'll probably change this)    
     sizScreen = get(0,'ScreenSize');
-    rootUnits = get(0,'Units');    
-    set(h,'Units',rootUnits,'Position',sizScreen);
+    rootUnits = get(0,'Units');
+    set(h,'Units',rootUnits,'Position',sizScreen);    
 
     %get the position of the axis within the figure    
     pAxes = get(gca,'Position');
@@ -1882,21 +1880,22 @@ else
     %get handels to all channel labels
     hChild = findobj(gcf,'Tag','chanlabel');
 
-    %get the position of each label (in data units)
-    set(hChild,'Units','pixels');
-    cExt = get(hChild,'Extent');
-    tmp = [pAxes(1:2) 0 0];
-    cExt = cellfun(@(x) x+tmp,cExt,'uni',false);    
+    %get the position of each label (in normalized figure units)
+    cExt = arrayfun(@(x) Axes2Fig(gca,get(x,'Extent')),hChild,'uni',false);
     
     %get the string of each label (to keep track of the corresponding channel)
     cLabel = get(hChild,'String');
     
     %position each check box just slightly to the left of its label
-    cPosBx = cellfun(@(x) [x(1)-25 x(2)-13 20 20],cExt,'uni',false);
+    lf = 24/sizScreen(3);
+    bt = 3/sizScreen(4);
+    wd = 20/sizScreen(3);
+    hi = 20/sizScreen(4);
+    cPosBx = cellfun(@(x) [x(1)-lf x(2)+bt wd hi],cExt,'uni',false);
 
     %generate the check boxes
     cellfun(@(x,y) uicontrol('Style'          , 'checkbox'    ,...
-                             'Units'          , 'pixels'  ,...
+                             'Units'          , 'normalized'  ,...
                              'Value'          , any(strcmpi(y{1},BAD_CHANNELS)),...
                              'Parent'         , h             ,...
                              'Position'       , x             ,...
@@ -1934,6 +1933,20 @@ end
         if ishandle(h)
             close(h);
         end
+    end    
+    %-------------------------------------------------------------------------%
+    function pos = Axes2Fig(hAx,pos)
+    %function to convert data units within an axes to normalized figure units
+        pAxes = get(hAx,'Position');
+        yLim = get(hAx,'YLim');
+        yExt = yLim(2)-yLim(1);
+        xLim = get(hAx,'XLim');
+        xExt = xLim(2) - xLim(1);
+
+        pos(1) = pAxes(1)+((pos(1)-xLim(1))/xExt)*pAxes(3);
+        pos(2) = pAxes(2)+((pos(2)-yLim(1))/yExt)*pAxes(4);
+        pos(3) = pos(3)*pAxes(3);
+        pos(4) = pos(4)*pAxes(4);
     end
-    %--------------------------------------------------------------------------%
+    %-------------------------------------------------------------------------%
 end

@@ -23,7 +23,7 @@ if ~FT.CheckStage('rm_channel')
 end
 
 %set up configuration for 'ft_rm_channels'
-cfg 			= [];
+cfg             = CFGDefault;
 cfg.continuous  = 'yes';
 cfg.channel		= FT_DATA.data.label(1:9);	%channels (and number of channels) to display initially
 cfg.ylim		= [-100 100];
