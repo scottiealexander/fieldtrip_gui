@@ -66,6 +66,10 @@ FT.UpdateGUI;
     uimenu(hFileMenu,'Label','Save Dataset As...',...
         'Callback',@(x,y) SaveDataset(x,y,'as'),'Accelerator','S');
     
+    %save as
+    uimenu(hFileMenu,'Label','Save Average ERP',...
+        'Callback',@(x,y) SaveDataset(x,y,'erp'),'Accelerator','S');
+
     %clear 
     uimenu(hFileMenu,'Label','Clear Dataset','Callback',@ClearDataset);
     
@@ -105,6 +109,7 @@ FT.UpdateGUI;
 %analysis
     hAnaMenu  = uimenu(h,'Label','Analysis');
     hAvgERP   = uimenu(hAnaMenu,'Label','Average ERPs','Callback',@(x,y) FT.RunFunction(x,y,@FT.AverageERP));
+    hGrandERP = uimenu(hAnaMenu,'Label','ERP Grand Average','Callback',@(x,y) FT.RunFunction(x,y,@FT.GrandAverage));
     hPeak     = uimenu(hAnaMenu,'Label','Find Peaks & Valleys','Callback',@(x,y) FT.RunFunction(x,y,@FT.PeakFinder));
     hPower    = uimenu(hAnaMenu,'Label','Power Spectrum','Callback',@(x,y) FT.RunFunction(x,y,@FT.PowerSpec));
     hSpec     = uimenu(hAnaMenu,'Label','Spectrogram','Callback','disp(''@(x,y) FT.RunFunction(x,y,@FT.Spectrogram)'')');
@@ -254,25 +259,31 @@ end
 %-------------------------------------------------------------------------%
 function SaveDataset(obj,evt,varargin)
 %save the current state of the analysis
-
-    %save or save as?
-    if ~isempty(varargin) && ischar(varargin{1}) && strcmp(varargin{1},'as')
-        %move into the subjects dir or base dir for this analysis
-        if isfield(FT_DATA.path,'raw_file') && ~isempty(FT_DATA.path.raw_file)
-            strDir = fileparts(FT_DATA.path.raw_file);
-        else
-            strDir = FT_DATA.path.base_directory;
-        end
-        
-        %get the filepath the user wants to sue
-        strPathDef = fullfile(strDir,[FT_DATA.current_dataset '.set']);
-        [strName,strPath] = uiputfile('*.set','Save Analysis As...',strPathDef);
-        
-        %construct the file path
-        if ~isequal(strName,0) && ~isequal(strPath,0)
-            strPathOut = fullfile(strPath,strName);            
-        else
-            return; %user selected cancel
+    action = '';
+    if ~isempty(varargin) && ~isempty(varargin{1}) && ischar(varargin{1})
+        action = varargin{1};
+        switch lower(action)
+            %save as?
+            case {'as','erp'}
+                %move into the subjects dir or base dir for this analysis
+                if isfield(FT_DATA.path,'raw_file') && ~isempty(FT_DATA.path.raw_file)
+                    strDir = fileparts(FT_DATA.path.raw_file);
+                else
+                    strDir = FT_DATA.path.base_directory;
+                end
+                
+                %get the filepath the user wants to sue
+                strPathDef = fullfile(strDir,[FT_DATA.current_dataset '.set']);
+                [strName,strPath] = uiputfile('*.set','Save Analysis As...',strPathDef);
+                
+                %construct the file path
+                if ~isequal(strName,0) && ~isequal(strPath,0)
+                    strPathOut = fullfile(strPath,strName);            
+                else
+                    return; %user selected cancel
+                end
+            otherwise
+                error('Unrecognized action: %s',action);
         end
     elseif ~FT_DATA.saved
         %get the most likely path name
@@ -301,6 +312,7 @@ function SaveDataset(obj,evt,varargin)
     FT_DATA.saved = true;
     
     if ~FT_DATA.debug
+
         hMsg = FT.UserInput('Saving dataset, plese wait...',1); 
         
         bAdd = false;
@@ -322,17 +334,10 @@ function SaveDataset(obj,evt,varargin)
         WriteDataset(strPathOut);
 
         %averaged erp?
-        if FT_DATA.done.average
-            strPathERP = fullfile(fileparts(strPathOut),'erp.cfg');
-            fid = fopen(strPathERP,'a');
-            if fid > 0
-                fseek(fid,0,1);
-                fprintf(fid,'%s\n',strPathOut);
-                fclose(fid);
-            else
-                fprintf('[WARNING]: failed to write file: %s\n',strPathERP);     
-            end
+        if strcmpi(action,'erp') && FT_DATA.done.average
+            ERPFileOps('add');
         end
+
         if ishandle(hMsg)
             close(hMsg);
         end

@@ -40,7 +40,11 @@ end
 cfg = CFGDefault;
 
 if iscell(FT_DATA.data)
-    data = ft_appenddata(cfg,FT_DATA.data{:});
+    if numel(FT_DATA.data) > 1
+        data = ft_appenddata(cfg,FT_DATA.data{:});
+    else
+        data = FT_DATA.data{1};
+    end
     if iscell(data.cfg.previous)
         data.cfg.previous = data.cfg.previous{1};
     end
