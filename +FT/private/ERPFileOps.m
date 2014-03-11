@@ -59,7 +59,7 @@ function WriteERPFile(c,strPath)
 	if ~isempty(c)
 		fid = fopen(strPath,'w');
 		if fid > 0	    
-		    fprintf(fid,'%s\n',FT.Join(c,10));
+		    fprintf(fid,'%s',FT.Join(c,10));
 		    fclose(fid);
 		else
 		    error('Failed to write file: %s',strPath);     

@@ -90,6 +90,9 @@ set(hEdit,'Enable','on');
 %wait till user is done
 uiwait(h)
 
+%make the changes effective
+FT_DATA.data.cfg.event = FT_DATA.event;
+
 if ishandle(h)
     close(h);
 end
@@ -101,7 +104,7 @@ function NewPlot
     %get current event
     evt = FT_DATA.event(kData);
     kFinal = evt.sample;
-    
+
     %get and plot stim channel surrounding current event
     kStart = kInt*evt.value;
     kEnd = kInt;
@@ -187,8 +190,7 @@ function PlotCtrl(obj,evt,strAct)
         case 'previous'
             kData = kData-1;
         case 'remove'
-            kData = kData+1;
-            fprintf('Remove this event\n');
+            kData = kData+1;            
         case 'done'
             uiresume(h);
             return;

@@ -66,9 +66,9 @@ FT.UpdateGUI;
     uimenu(hFileMenu,'Label','Save Dataset As...',...
         'Callback',@(x,y) SaveDataset(x,y,'as'),'Accelerator','S');
     
-    %save as
+    %save ERP
     uimenu(hFileMenu,'Label','Save Average ERP',...
-        'Callback',@(x,y) SaveDataset(x,y,'erp'),'Accelerator','S');
+        'Callback',@(x,y) SaveDataset(x,y,'erp'));
 
     %clear 
     uimenu(hFileMenu,'Label','Clear Dataset','Callback',@ClearDataset);

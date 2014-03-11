@@ -46,7 +46,7 @@ if isfield(res,'rm_channel') && ~isempty(res.rm_channel)
 
     %remove 'em
     orig_label = FT_DATA.data.label;
-    cfg = [];
+    cfg = CFGDefault;
     cfg.channel  = setdiff(1:numel(orig_label),kRm);
 
     FT_DATA.data = ft_preprocessing(cfg, FT_DATA.data);
