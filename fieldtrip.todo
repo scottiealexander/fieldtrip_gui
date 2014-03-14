@@ -12,3 +12,33 @@
 
 #ITEM 3
 	- grand average ERPS for new emotion
+
+#ITEM 4
+	- fix SegmentTrials:
+		* if the Run button is clicked without any condition info having been entered ignore that condition
+
+#ITEM 5
+	- prompt user to process events immediatly after and EDF file has been read
+
+#ITEM 6
+	- need a tool to scroll through stim channel (maybe place markers???)
+	- FT.CheckEvents ZOOM!!!
+
+code # of occurances
+1	22
+2	28
+3	33
+4	17
+5	31
+6	19
+
+
+S1	22
+S4	28
+S5	33
+S8	17
+S9	31
+S13	19
+
+R HIP				L HIP
+ROTD (1-6, 41-46)	LOTD (1-6/17-22)

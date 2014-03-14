@@ -24,9 +24,12 @@ hMsg = FT.UserInput('Calculating Grand Average ERP',1);
 cPathERP = ERPFileOps('get');
 nFile    = numel(cPathERP);
 
-s.files 	 = cPathERP;
-s.data 	     = struct;
-s.label		 = cell(nFile,1)
+s.files  = cPathERP;
+s.data 	 = struct;
+s.label  = cell(nFile,1);
+s.time   = [];
+
+cellfun(@GetData,cPathERP,reshape(num2cell(1:nFile),size(cPathERP)));
 
 bCommon = cellfun(@IsCommonChannel,s.label{1});
 
@@ -41,22 +44,29 @@ ExtractChannelData;
 
 s.label = cCommonLabel;
 
+s.data = s.data;
+[data,epoch] = deal(cell(numel(cFields),1));
 for k = 1:numel(cFields)
 	tmp = s.data.(cFields{k});
 	tmp = reshape(tmp,1,1,nFile);
 	tmp = cat(3,tmp{:});
-	s.mean = nanmean(tmp,1);
-	s.stderr = nanstderr(tmp,1);
+	data{k}.avg = nanmean(tmp,3);
+	data{k}.err = nanstderr(tmp,3);
+	data{k}.label = s.label;
+	data{k}.time  = s.time;
+	epoch{k}.name = cFields{k};
 end
 
-FT_DATA.data = s;
+FT_DATA.data = data;
+FT_DATA.epoch = epoch;
+FT_DATA.done.average = true;
 
 if ishandle(hMsg)
 	close(hMsg);
 end
 
 %-----------------------------------------------------------------------------%
-function GetData(strPath)
+function GetData(strPath,kFile)
 	ifo = load(strPath,'-mat');
 
 	if isempty(fieldnames(s.data))
@@ -64,20 +74,27 @@ function GetData(strPath)
 		s.data  = cell2struct(repmat({cell(nFile,1)},numel(cFields),1),cFields,1);
 	end
 
-	for k = 1:numel(ifo.epoch)
-		strCond = ifo.epoch{k}.name;
+	for kA = 1:numel(ifo.epoch)
+		strCond = ifo.epoch{kA}.name;
 		if isfield(s.data,strCond)
-			data.(strCond){k} = ifo.data{k}.avg;
+			s.data.(strCond){kFile} = ifo.data{kA}.avg;
 		else
 			error('Condition names do not match between files!');
 		end
-		s.label{k} = ifo.data{k}.label;
+		if isempty(s.time)
+			s.time = ifo.data{kFile}.time;
+		else
+			if ~isequal(s.time,ifo.data{kFile}.time)
+				error('Sample times do not match between files!');
+			end
+		end
+		s.label{kA} = ifo.data{kFile}.label;		
 	end
 end
 %-----------------------------------------------------------------------------%
 function ExtractChannelData	
 	for kA = 1:nFile
-		bChan = ismember(s.label{kA},cLabel);
+		bChan = ismember(s.label{kA},cCommonLabel);
 		for kB = 1:numel(cFields)
 			s.data.(cFields{kB}){kA} = s.data.(cFields{kB}){kA}(bChan,:);
 		end

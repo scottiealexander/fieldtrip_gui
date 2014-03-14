@@ -27,9 +27,12 @@ opt = FT.ParseOpts(varargin,...
     'close' , true ...
     );
 
+nItem = numel(cList);
+jump_pcent = .1;
+
 if (isempty(hFIG) || ~ishandle(hFIG))
     pFig  = GetFigPosition(800,600);
-    hFIG  = figure('Name','Power wave','Units','pixels','Position',pFig,...
+    hFIG  = figure('Name','Plot','Units','pixels','Position',pFig,...
                'NumberTitle','off','MenuBar','none','Color',[1 1 1]);    
     bShow = false;
 else
@@ -43,10 +46,12 @@ end
 %get the size and position for the figure
 pCtrl = GetFigPosition(200,600,'xoffset',pFig(1)-250,'yoffset',pFig(2),'reference','absolute');
 
+set(hFIG,'KeyPressFcn',@KeyCtrl);
+
 %main figure
 h = figure('Units','pixels','OuterPosition',pCtrl,...
            'Name','Plot Control','NumberTitle','off','MenuBar','none',...
-           'KeyPressFcn',@KeyPress);
+           'KeyPressFcn',@KeyCtrl);
        
 hPanel = uipanel('Units','normalized','Position',[.05 .18 .9 .8],'HighlightColor',[0 0 0],...
     'Title','Selection Items','FontSize',12,'FontWeight','bold',...
@@ -61,15 +66,15 @@ uicontrol('Style','pushbutton','Units','normalized','Position',[.05 .1 .4 .05],.
 uicontrol('Style','pushbutton','Units','normalized','Position',[.55 .1 .4 .05],...
     'String','Close','Parent',h,'Callback',@CloseBtn);
 
-uicontrol('Style','pushbutton','Units','normalized','Position',[.05 .02 .4 .05],...
+hPrev = uicontrol('Style','pushbutton','Units','normalized','Position',[.05 .02 .4 .05],...
     'String','Previous','Parent',h,'Callback',@StepBtn);
 
-uicontrol('Style','pushbutton','Units','normalized','Position',[.55 .02 .4 .05],...
+hNxt = uicontrol('Style','pushbutton','Units','normalized','Position',[.55 .02 .4 .05],...
     'String','Next','Parent',h,'Callback',@StepBtn);
 
 %show the first item if the user gave us a valid figure
 if bShow
-    PlotBtn([],[]);
+    PlotBtn;
 end
 
 %------------------------------------------------------------------------------%
@@ -81,7 +86,7 @@ function RmAxes
     end
 end
 %------------------------------------------------------------------------------%
-function StepBtn(obj,evt)
+function StepBtn(obj,varargin)
     kItem = get(hList,'Value');
     switch lower(get(obj,'String'))
         case 'next'
@@ -95,17 +100,17 @@ function StepBtn(obj,evt)
         otherwise
             %this should never happen...
     end
-    set(hList,'value',kItem)
-    PlotBtn(obj,evt);
+    set(hList,'value',kItem)    
+    PlotBtn;
 end
 %------------------------------------------------------------------------------%
-function PlotBtn(obj,evt)
+function PlotBtn(varargin)
     kItem = get(hList,'Value');
     RmAxes;
-    fUpdate(cList{kItem});
+    fUpdate(cList{kItem});    
 end
 %------------------------------------------------------------------------------%
-function CloseBtn(obj,Evt)
+function CloseBtn(varargin)
     if ishandle(hFIG) && opt.close
         close(hFIG);
     end
@@ -113,6 +118,53 @@ function CloseBtn(obj,Evt)
         close(h);
     end
     hFIG = [];
+end
+%------------------------------------------------------------------------------%
+function KeyCtrl(obj,evt)
+    switch lower(evt.Key)
+        case {'return','space'}
+            PlotBtn;
+        case 'leftarrow'
+            StepBtn(hPrev);
+        case 'rightarrow'
+            StepBtn(hNxt);
+        case 'downarrow'
+            kItem = get(hList,'Value');
+            if kItem < numel(cList)
+                set(hList,'Value',kItem+1);
+            end
+        case 'uparrow'
+            kItem = get(hList,'Value');
+            if kItem > 1
+                set(hList,'Value',kItem-1);
+            end
+        case 'pageup'
+            kItem = get(hList,'Value');
+            kItem = floor(kItem-(nItem*jump_pcent));
+            if kItem < 1
+                kItem = 1;
+            end
+            set(hList,'Value',kItem);            
+        case 'pagedown'
+            kItem = get(hList,'Value');
+            kItem = floor(kItem+(nItem*jump_pcent));
+            if kItem > nItem
+                kItem = nItem;
+            end
+            set(hList,'Value',kItem);            
+        case 'home'
+            set(hList,'Value',1);            
+        case 'end'
+            set(hList,'Value',nItem);            
+        case 'escape'
+            CloseBtn;
+        case 'w'
+           if ismember(evt.Modifier,'control')
+               CloseBtn;
+           end
+        otherwise
+            %some other key...
+    end
 end
 %------------------------------------------------------------------------------%
 end

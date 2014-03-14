@@ -49,7 +49,7 @@ function c = ReadERPFile(strPath)
 		else
 		    error('Failed to read file: %s',strPath);     
 		end
-		c = reshape(regexp(str,'\n','split'),[],1);
+		c = reshape(regexp(strtrim(str),'\n','split'),[],1);
 	else
 		c = {};
 	end

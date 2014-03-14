@@ -10,7 +10,7 @@ function CheckEvents(varargin)
 %
 % Out:
 %
-% Updated: 2013-08-20
+% Updated: 2014-03-13
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
@@ -24,6 +24,9 @@ if ~FT_DATA.done.read_events
     return;
 end
 
+EVENT = FT.ReStruct(FT_DATA.event);
+bRM = false;
+kRemove = [];
 kFinal = [];
 kData = 1;
 kStim = strcmpi(FT_DATA.stim_chan,FT_DATA.data.label);
@@ -31,31 +34,86 @@ kStim = strcmpi(FT_DATA.stim_chan,FT_DATA.data.label);
 kInt = round(FT_DATA.data.fsample*(1/4)); % # samples in 250ms
 
 % --- FIGURE --- %;
-pFig = GetFigPosition(720,720);
+pFig = GetFigPosition(800,720,'xoffset',100);
 
 h = figure('Units','pixels','OuterPosition',pFig,...
            'Name','Event Check','NumberTitle','off','MenuBar','none');
 
+pFigCtrl = GetFigPosition(225,250);
+pFigCtrl(1) = pFig(1) - 225;
+hCtrl = figure('Units','pixels','OuterPosition',pFigCtrl,...
+           'Name','Plot Control','NumberTitle','off','MenuBar','none');
+
 % --- AXES --- %
-hA = axes('Units','normalized','OuterPosition',[0,.05,1,.95]);
+hA = axes('Units','normalized','OuterPosition',[0,.05,1,.95],'Parent',h);
 
 % --- LINE AND TITLE HANDLES --- %
 [hP,hTitle,hLine,hInit] = deal([]);
 
-% --- EDIT --- %
-uicontrol('Style','text','Units','normalized','Position',[.22 .06 .2 .05],...
-    'String','New Event Type:','BackgroundColor',get(h,'Color'),...
-    'FontSize',14,'Parent',h);
+height = .12;
 
-hEdit = uicontrol('Style','edit','Units','normalized','Position',[.425 .07 .15 .05],...
-    'String','','BackgroundColor',[1 1 1],'FontSize',12,'Parent',h);
+% --- EDIT --- %
+uicontrol('Style','text','Units','normalized','Position',[0 .85 .55 height],...
+    'String','New Event Type:','BackgroundColor',get(hCtrl,'Color'),...
+    'FontSize',14,'Parent',hCtrl);
+
+hEdit = uicontrol('Style','edit','Units','normalized','Position',[.55 .87 .4 height],...
+    'String','','BackgroundColor',[1 1 1],'FontSize',12,'Parent',hCtrl);
+
+% --- ZOOM --- %
+uicontrol('Style','pushbutton','Units','normalized','Position',[.05 .7 .4 height],...
+    'String','Zoom In','FontSize',11,'Parent',hCtrl); %,'Callback',@ZoomCtrl
+
+uicontrol('Style','pushbutton','Units','normalized','Position',[.55 .7 .4 height],...
+    'String','Zoom Out','FontSize',11,'Parent',hCtrl); %,'Callback',@ZoomCtrl
+
+% --- BUTTONS --- %
+wBtn  = .4;
+pad   = .05;
+lInit = .5-((wBtn*5 + pad*4)/2);
+lInit = lInit:wBtn+pad:lInit+(wBtn+pad)*5;
+
+uicontrol('Style','pushbutton','Units','normalized','Position',[.05 .55 .4 height],...
+    'String','Previous','Callback',@(x,y) PlotCtrl(x,y,'previous'),...
+    'FontSize',12,'Parent',hCtrl);
+
+uicontrol('Style','pushbutton','Units','normalized','Position',[.55 .55 .4 height],...
+    'String','Next','Callback',@(x,y) PlotCtrl(x,y,'next'),...
+    'FontSize',12,'Parent',hCtrl);
+
+uicontrol('Style','text','Units','normalized','Position',[.05 .38 .5 height],...
+    'String','Filter events:','BackgroundColor',get(hCtrl,'Color'),...
+    'FontSize',14,'HorizontalAlignment','left','Parent',hCtrl);
+
+hFilt = uicontrol('Style','edit','Units','normalized','Position',[.55 .4 .4 height],...
+    'String','','BackgroundColor',[1 1 1],'FontSize',12,'Parent',hCtrl);
+
+% uicontrol('Style','pushbutton','Units','normalized','Position',[.55 .3 .4 height],...
+%     'String','Apply Filter','Callback',@(x,y) PlotCtrl(x,y,'filter'),...
+%     'FontSize',12,'Parent',hCtrl);
+
+uicontrol('Style','text','Units','normalized','Position',[.05 .25 .5 height],...
+    'String','Remove Event:','BackgroundColor',get(hCtrl,'Color'),...
+    'FontSize',14,'HorizontalAlignment','left','Parent',hCtrl);
+
+hRM = uicontrol('Style','checkbox','Units','normalized','Position',[.55 .29 .09 .08],...
+    'BackgroundColor',[1 1 1],'Min',0,'Max',1,...%'Callback',@(x,y) PlotCtrl(x,y,'remove'),...
+    'Value',0,'Parent',hCtrl);
+
+uicontrol('Style','pushbutton','Units','normalized','Position',[.05 .1 .4 height],...
+    'String','Done','Callback',@(x,y) PlotCtrl(x,y,'done'),...
+    'FontSize',12,'Parent',hCtrl);
+
+uicontrol('Style','pushbutton','Units','normalized','Position',[.55 .1 .4 height],...
+    'String','Cancel','Callback',@(x,y) PlotCtrl(x,y,'cancel'),...
+    'FontSize',12,'Parent',hCtrl);
 
 % --- PLOT --- %
 NewPlot;
 
 %allow markers to be clicked
 set(hP,'hittest','off');
-hold on;
+hold(hA,'on');
 
 %fnct to deal with keypresses
 set(h,'KeyPressFcn',@KeyCtrl);
@@ -63,38 +121,27 @@ set(h,'KeyPressFcn',@KeyCtrl);
 %fnct to deal with clicks
 set(hA,'ButtonDownFcn',@MouseCtrl);
 
-% --- BUTTONS --- %
-wBtn = .15;
-lInit = .5-((wBtn*4 + .05*3)/2);
-uicontrol('Style','pushbutton','Units','normalized','Position',[lInit .01 .15 .05],...
-    'String','Remove','Callback',@(x,y) PlotCtrl(x,y,'remove'),...
-    'FontSize',12,'Parent',h);
-
-uicontrol('Style','pushbutton','Units','normalized','Position',[lInit+.2 .01 .15 .05],...
-    'String','Previous','Callback',@(x,y) PlotCtrl(x,y,'previous'),...
-    'FontSize',12,'Parent',h);
-
-uicontrol('Style','pushbutton','Units','normalized','Position',[lInit+.4 .01 .15 .05],...
-    'String','Accept / Next','Callback',@(x,y) PlotCtrl(x,y,'accept'),...
-    'FontSize',12,'Parent',h);
-
-uicontrol('Style','pushbutton','Units','normalized','Position',[lInit+.6 .01 .15 .05],...
-    'String','Done','Callback',@(x,y) PlotCtrl(x,y,'done'),...
-    'FontSize',12,'Parent',h);
-
 %give focus to the figure
 set(hEdit,'Enable','off');
 drawnow;
 set(hEdit,'Enable','on');
 
-%wait till user is done
+% wait till user is done
 uiwait(h)
 
-%make the changes effective
-FT_DATA.data.cfg.event = FT_DATA.event;
+%only actually remove events if the user clicks done
+if bRM && ~isempty(kRemove)
+    %make the changes effective
+    FT_DATA.event(kRemove) = [];
+    FT_DATA.data.cfg.event = FT_DATA.event;
+end
 
 if ishandle(h)
     close(h);
+end
+
+if ishandle(hCtrl)
+    close(hCtrl);
 end
 
 %------------------------------------------------------------------------------%
@@ -106,7 +153,11 @@ function NewPlot
     kFinal = evt.sample;
 
     %get and plot stim channel surrounding current event
-    kStart = kInt*evt.value;
+    if evt.value > 2
+        kStart = kInt*evt.value;
+    else
+        kStart = kInt*3;
+    end
     kEnd = kInt;
     dX = evt.sample-kStart:evt.sample+kEnd;
     dY = FT_DATA.data.trial{1}(kStim,dX);
@@ -142,9 +193,9 @@ function NewPlot
     %set axes title to inform user of event number, event code/value, and event
     %type
     strType = strrep(evt.type,'_','\_'); %escape underscores for tex interpretation
-    strTitle = ['Event #' num2str(kData) '  -  Code ' num2str(evt.value) ': ''' strType ''''];
+    strTitle = ['Event #' num2str(kData) '  -  Value ' num2str(evt.value) ': ''' strType ''''];
     if isempty(hTitle) || ~ishandle(hTitle)
-        hTitle = text(xText,yText,strTitle,'FontSize',20,'FontWeight','bold','Units','data');
+        hTitle = text(xText,yText,strTitle,'FontSize',20,'FontWeight','bold','Units','data','Parent',hA);
     else
         set(hTitle,'String',strTitle,'Position',[xText yText 0],'Units','data');
     end
@@ -153,11 +204,11 @@ function NewPlot
     tExt = get(hTitle,'Extent');
     xLim = get(hA,'XLim');
     xText = mean(xLim) - tExt(3)/2;
-    set(hTitle,'Position',[xText yText ]);
+    set(hTitle,'Position',[xText yText]);
     
     %remove old legend
-    hL = legend;
-    if ishandle(hL)
+    hL = findobj(h,'Tag','legend');
+    if ishandle(hL)        
         delete(hL);
     end
         
@@ -165,15 +216,22 @@ function NewPlot
     set(hEdit,'String',evt.type);
     
     %add new legend
-    set(hLine,'DisplayName',['Code ' num2str(evt.value) ': ' strType]);    
-    legend('show');
-    set(legend,'Location','NorthWest');
+    set(hLine,'DisplayName',['Value ' num2str(evt.value) ': ' strType]);    
+    hL = legend(hA,'show');
+    set(hL,'Location','NorthWest');
     
     %fix x-axis tick labels
     xT = reshape(get(hA,'XTick'),[],1);
     xTL = arrayfun(@(x) num2str(x),xT,'uni',false);
     set(hA,'XTickLabel',xTL);
     
+    %has this event already been removed?
+    if ~isempty(kRemove) && ismember(kData,kRemove)
+        set(hRM,'Value',1);
+    else
+        set(hRM,'Value',0);
+    end
+
     %force figure update
     drawnow;
 end
@@ -182,20 +240,22 @@ function PlotCtrl(obj,evt,strAct)
 %simple function to handle button clicks    
     %update event struct
     EvtCtrl(strAct);
-    
+
     %increment/decrement current event index
     switch strAct
-        case 'accept'
-            kData = kData+1;
-        case 'previous'
-            kData = kData-1;
-        case 'remove'
-            kData = kData+1;            
+        case {'next','previous'}
+            GetNextEvent(strAct)
         case 'done'
+            bRM = true;
+            uiresume(h);            
+            return;
+        case 'cancel'
+            bRM = false;
             uiresume(h);
             return;
         otherwise
             %this should never happen
+            error('invalid action %s',strAct);
     end        
     
     %make sure we stay within limites of the event struct
@@ -214,15 +274,17 @@ function PlotCtrl(obj,evt,strAct)
 end
 %------------------------------------------------------------------------------%
 function EvtCtrl(act)
-    switch act
-        case {'accept','previous'}
+    if get(hRM,'Value')
+        kRemove(end+1,1) = kData;
+    elseif ~isempty(kRemove)        
+        kRemove(kRemove == kData) = [];        
+    end
+    if any(strcmpi(act,{'next','previous'}))
+        if isempty(kRemove) || ~ismember(kData,kRemove)
             strType = get(hEdit,'String');
             FT_DATA.event(kData).type = strType;
             FT_DATA.event(kData).sample = kFinal;
-        case 'remove'
-            FT_DATA.event(kData) = [];
-        otherwise
-            %this should never happend
+        end
     end
         
 end
@@ -295,9 +357,89 @@ function MouseCtrl(obj,evt)
 end
 %------------------------------------------------------------------------------%
 function hL = AddLine(x,y,col)
-    hL = line(x,y,'Color',col,'LineWidth',2);
+    hL = line(x,y,'Color',col,'LineWidth',2,'Parent',hA);
     setappdata(hA,'CurrentPoint',hL);
 end
 %------------------------------------------------------------------------------%
-end
+function GetNextEvent(btn)
+    
+    str = strtrim(get(hFilt,'String'));
+    if isempty(str)
+        DefaultIncrement(btn);
+        return;
+    end
 
+    re = regexp(str,'(?<key>\w+)\s*(?<op>[=\<\>]+)\s*(?<val>[^=\<\>]*)','names');
+
+    if isempty(re) || ~strcmpi(re.key,fieldnames(EVENT))
+        BadFilterExpr(btn);
+        return;
+    end
+    
+    re.op = regexprep(re.op,'\s+','');
+    re.val = strtrim(re.val);
+
+    if ~all(ismember(re.op,'=><'))
+        BadFilterExpr(btn);
+        return;
+    end
+    val = str2double(re.val);
+    if ~isnan(val)
+        if re.op == '='
+            re.op = '==';
+        end
+        cmd = ['EVENT.' re.key ' ' re.op ' ' re.val];        
+    elseif any(strcmp(re.op,{'=','=='}))
+        if ~any(ismember(re.val,EVENT.(re.key)))
+            BadFilterExpr(btn);
+            return;
+        else
+            if re.val(1) ~= char(39)
+                re.val = [char(39) re.val];
+            end
+            if re.val(end) ~= char(39)
+                re.val = [re.val char(39)];
+            end
+
+            cmd = ['strcmpi(' re.val ',EVENT.' re.key ')'];
+        end
+
+    else
+        BadFilterExpr(btn);
+        return;
+    end
+    try
+        b = eval(cmd);
+    catch me
+        BadFilterExpr(btn);
+        return;
+    end    
+    if any(b)
+        kGood = find(b);        
+        if strcmpi(btn,'next')
+            kNext = find(kGood > kData,1,'first');            
+        elseif strcmpi(btn,'previous')
+            kNext = find(kGood < kData,1,'last');
+        end
+        if ~isempty(kNext)
+            kData = kGood(kNext);
+        end
+    end
+end
+%------------------------------------------------------------------------------%
+function BadFilterExpr(btn)
+    FT.UserInput('\bf[WARNING]: you entered an invalid filter expression',0,'button','OK');
+    DefaultIncrement(btn);
+    set(hFilt,'String','');
+end
+%------------------------------------------------------------------------------%
+function DefaultIncrement(btn)    
+    switch lower(btn)
+    case 'next'
+        kData = kData+1;
+    case 'previous'
+        kData = kData-1;
+    end
+end
+%------------------------------------------------------------------------------%
+end

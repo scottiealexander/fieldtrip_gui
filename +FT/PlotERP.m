@@ -27,7 +27,7 @@ end
 pFig = GetFigPosition(800,600);
 hF = figure('Units','pixels','OuterPosition',pFig,...
             'Name','Average ERP','NumberTitle','off','MenuBar','none',...
-            'Color',[1 1 1],'KeyPressFcn',@KeyPress);
+            'Color',[1 1 1]);
 
 FT.PlotCtrl(hF,FT_DATA.data{1}.label,@PlotOne);
 

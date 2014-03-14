@@ -41,6 +41,9 @@ if isempty(kS)
 end
 
 [~,kE] = findpeaks(data(kS:end),'minpeakheight',opt.pos_thresh);
+if numel(kE) > 1
+    kE = kE(1);
+end
 kE = kE+(kS-1);
 
 width = kE-kS;
