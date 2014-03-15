@@ -164,8 +164,7 @@ function FileOps(obj,evt)
     %move back to the original directory
     cd(strDirCur);        
     
-    %read the data
-    hMsg = FT.UserInput('Reading data from file, plese wait...',1);
+    %read the data    
     ReadDataset(strPath);
     
     if strcmpi(FT_DATA.gui.display_mode,'init')
@@ -174,10 +173,6 @@ function FileOps(obj,evt)
     
     %update the display
     FT.UpdateGUI;
-    
-    if ishandle(hMsg)
-        close(hMsg);
-    end
 end
 %-------------------------------------------------------------------------%
 function InitAnalysis(obj,evt)

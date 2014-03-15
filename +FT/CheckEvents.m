@@ -24,14 +24,17 @@ if ~FT_DATA.done.read_events
     return;
 end
 
-EVENT = FT.ReStruct(FT_DATA.event);
-bRM = false;
+EVENT   = FT.ReStruct(FT_DATA.event);
+bRM     = false;
 kRemove = [];
-kFinal = [];
-kData = 1;
-kStim = strcmpi(FT_DATA.stim_chan,FT_DATA.data.label);
+kFinal  = [];
+kData   = 1;
+kStim   = strcmpi(FT_DATA.pulse_evts.channel,FT_DATA.data.label);
 
-kInt = round(FT_DATA.data.fsample*(1/4)); % # samples in 250ms
+pulse_width = (FT_DATA.pulse_evts.width/1000)*FT_DATA.pulse_evts.fs;
+pulse_int   = (FT_DATA.pulse_evts.interval/1000)*FT_DATA.pulse_evts.fs;
+
+siz_win = round(FT_DATA.pulse_evts.fs*.3); % ~# samples in 250ms
 
 % --- FIGURE --- %;
 pFig = GetFigPosition(800,720,'xoffset',100);
@@ -62,10 +65,10 @@ hEdit = uicontrol('Style','edit','Units','normalized','Position',[.55 .87 .4 hei
 
 % --- ZOOM --- %
 uicontrol('Style','pushbutton','Units','normalized','Position',[.05 .7 .4 height],...
-    'String','Zoom In','FontSize',11,'Parent',hCtrl); %,'Callback',@ZoomCtrl
+    'String','Zoom In','FontSize',11,'Callback',@ZoomCtrl,'Parent',hCtrl);
 
 uicontrol('Style','pushbutton','Units','normalized','Position',[.55 .7 .4 height],...
-    'String','Zoom Out','FontSize',11,'Parent',hCtrl); %,'Callback',@ZoomCtrl
+    'String','Zoom Out','FontSize',11,'Callback',@ZoomCtrl,'Parent',hCtrl);
 
 % --- BUTTONS --- %
 wBtn  = .4;
@@ -149,17 +152,14 @@ function NewPlot
 %refresh the stim channel plot and related text to reflect the event that is
 %currently being reviewed / edited
     %get current event
-    evt = FT_DATA.event(kData);
+    evt    = FT_DATA.event(kData);
     kFinal = evt.sample;
 
     %get and plot stim channel surrounding current event
-    if evt.value > 2
-        kStart = kInt*evt.value;
-    else
-        kStart = kInt*3;
-    end
-    kEnd = kInt;
-    dX = evt.sample-kStart:evt.sample+kEnd;
+    nPnts  = (evt.value * pulse_width) + ((evt.value-1) * pulse_int);
+    kStart = nPnts+round(siz_win*1.25);
+    
+    dX = evt.sample-kStart:evt.sample+round(siz_win*.75);
     dY = FT_DATA.data.trial{1}(kStim,dX);
     if isempty(hP) || ~ishandle(hP)
         hP = plot(dX,dY,'Color',[1 0 0],'LineWidth',2,'Parent',hA);
@@ -341,7 +341,7 @@ function MouseCtrl(obj,evt)
         dx = daspect(hA);
         
         %find closest point on line
-        [~,idx] = min( ((pt(1,1)-xp).*dx(2)).^2 + ((pt(1,2)-yp).*dx(1)).^2 );
+        [~,idx] = min(((pt(1,1)-xp).*dx(2)).^2 + ((pt(1,2)-yp).*dx(1)).^2);
 
         %draw a line at the chosen point
         if ishandle(hLine)
@@ -353,12 +353,24 @@ function MouseCtrl(obj,evt)
         kFinal = get(hLine,'XData');
         kFinal = kFinal(1);
     end
-        
 end
 %------------------------------------------------------------------------------%
 function hL = AddLine(x,y,col)
-    hL = line(x,y,'Color',col,'LineWidth',2,'Parent',hA);
+    hL = line(x,y,'Color',col,'LineWidth',2.5,'Parent',hA);
     setappdata(hA,'CurrentPoint',hL);
+end
+%------------------------------------------------------------------------------%
+function ZoomCtrl(obj,evt)
+    action = regexprep(get(obj,'String'),'Zoom ','');
+    switch lower(action)
+        case 'in'
+            siz_win = floor(siz_win*.6);
+        case 'out'
+            siz_win = ceil(siz_win*1.4);
+        otherwise
+            error('Invalid zoom action %s',action);
+    end
+    NewPlot;
 end
 %------------------------------------------------------------------------------%
 function GetNextEvent(btn)
@@ -371,7 +383,7 @@ function GetNextEvent(btn)
 
     re = regexp(str,'(?<key>\w+)\s*(?<op>[=\<\>]+)\s*(?<val>[^=\<\>]*)','names');
 
-    if isempty(re) || ~strcmpi(re.key,fieldnames(EVENT))
+    if isempty(re) || ~any(strcmpi(re.key,fieldnames(EVENT)))
         BadFilterExpr(btn);
         return;
     end

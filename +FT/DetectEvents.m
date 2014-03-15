@@ -106,7 +106,11 @@ if bRun
         
         %overwirte the old stim channel with the filtered one
         FT_DATA.data.trial{1}(strcmpi(cfg.channel,FT_DATA.data.label),:) = datChan.trial{1}(1,:);
-        FT_DATA.stim_chan = cfg.channel;
+        FT_DATA.pulse_evts.channel = cfg.channel;
+        FT_DATA.pulse_evts.width = width;
+        FT_DATA.pulse_evts.interval = interval;
+        FT_DATA.pulse_evts.max_pulse = max_pulse;
+        FT_DATA.pulse_evts.fs = FT_DATA.data.fsample;
         bErr = false;
     catch me
         bErr = true;

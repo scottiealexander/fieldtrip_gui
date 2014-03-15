@@ -82,13 +82,13 @@ function GetData(strPath,kFile)
 			error('Condition names do not match between files!');
 		end
 		if isempty(s.time)
-			s.time = ifo.data{kFile}.time;
+			s.time = ifo.data{kA}.time;
 		else
-			if ~isequal(s.time,ifo.data{kFile}.time)
+			if ~isequal(s.time,ifo.data{kA}.time)
 				error('Sample times do not match between files!');
 			end
 		end
-		s.label{kA} = ifo.data{kFile}.label;		
+		s.label{kFile} = ifo.data{kA}.label;		
 	end
 end
 %-----------------------------------------------------------------------------%

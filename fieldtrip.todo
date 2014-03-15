@@ -1,8 +1,5 @@
 #FIELDTRIP_GUI master TODO list
 
-#ITEM *
-	- add zoom functionality to FT.CheckEvents
-
 #ITEM 1
 	- seperate GUI's from all processing functions
 	- GUI figure helper class
@@ -17,12 +14,8 @@
 	- fix SegmentTrials:
 		* if the Run button is clicked without any condition info having been entered ignore that condition
 
-#ITEM 5
-	- prompt user to process events immediatly after and EDF file has been read
-
 #ITEM 6
 	- need a tool to scroll through stim channel (maybe place markers???)
-	- FT.CheckEvents ZOOM!!!
 
 code # of occurances
 1	22
@@ -41,4 +34,4 @@ S9	31
 S13	19
 
 R HIP				L HIP
-ROTD (1-6, 41-46)	LOTD (1-6/17-22)
+ROTD (1-6, 41-46)	LOTD (1-6/17-22)	

@@ -64,8 +64,23 @@ else
         end
         FT_DATA.event = FT.ReStruct(evt);
         FT_DATA.done.read_events = true;
-    else
-        %nothing to do
     end
+
+    hMsg = FT.UserInput('Reading data from file, plese wait...',1);
+
     FT_DATA.data = ft_preprocessing(cfg);
+    
+    if ishandle(hMsg)
+        close(hMsg);
+    end
+
+    if strcmpi(ext,'edf')
+        resp = FT.UserInput('\bfIt is highly recomended that you process events before preprocessing edf files. Would you like to process event now?',1,'button',{'Yes','No'});
+        switch lower(resp)
+            case 'yes'
+                FT.ProcessEvents;
+            case 'no'
+                FT.UserInput('Make SURE you process event BEFORE resampling',1,'button','OK');
+        end
+    end
 end
