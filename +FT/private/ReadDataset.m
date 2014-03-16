@@ -75,12 +75,17 @@ else
     end
 
     if strcmpi(ext,'edf')
-        resp = FT.UserInput('\bfIt is highly recomended that you process events before preprocessing edf files. Would you like to process event now?',1,'button',{'Yes','No'});
+        resp = FT.UserInput(['\bf[\color{red}WARNING\color{black}]\n',...
+                    'It is highly recomended that you process events\n',...
+                    'BEFORE preprocessing EDF files.\n\nWould you like to process events now?'],...
+                    1,'button',{'Yes','No'},'title','WARNING!');
         switch lower(resp)
             case 'yes'
                 FT.ProcessEvents;
             case 'no'
-                FT.UserInput('Make SURE you process event BEFORE resampling',1,'button','OK');
+                FT.UserInput(['\bf[\color{red}WARNING\color{black}]\n',...
+                    'Make SURE you process event BEFORE resampling!'],...
+                    1,'button','OK','title','WARNING!');
         end
     end
 end

@@ -162,6 +162,8 @@ uiwait(h);
 function BtnCtrl(obj,evt)
 %process the users input (quit or make the trial definition)
     strBtn = regexp(get(obj,'String'),'[^\s]*','match','once');
+    bError = false;
+    [strMsg,strType] = deal('');
     switch lower(strBtn)
         case {'run','define'}
             if get(hChk,'Value')
@@ -174,71 +176,84 @@ function BtnCtrl(obj,evt)
                 field1 = CheckEvtLabel(sOpt.start);
                 field2 = CheckEvtLabel(sOpt.end);
                 if isempty(field1)
-                    FT.UserInput(['\bfEvent type ''\color{red}' sOpt.start ...
-                        '\color{black}'' does not match any event type or event code. Please check your input and try again.'],...
-                        0,'button','OK','title','Event Type Error');
-                    return;
+                    bError = true;
+                    strMsg = ['\bfEvent type ''\color{red}' sOpt.start ...
+                        '\color{black}'' does not match any event type or event code. Please check your input and try again.'];
+                    strType = 'Event Type Error';                    
                 elseif isempty(field2)
-                    FT.UserInput(['\bfEvent type ''\color{red}' sOpt.end ...
-                        '\color{black}'' does not match any event type or event code. Please check your input and try again.'],...
-                        0,'button','OK','title','Event Type Error');
-                    return;
+                    bError = true;
+                    strMsg = ['\bfEvent type ''\color{red}' sOpt.end ...
+                        '\color{black}'' does not match any event type or event code. Please check your input and try again.'];
+                    strType = 'Event Type Error';                    
                 elseif ~strcmpi(field1,field2)
-                     FT.UserInput(['\bfAn inconsistency was detected in given event codes/types.\n'...
-                        'Please use either event codes OR event types, not a mix of both.'],...
-                        0,'button','OK','title','Event Type Error');
-                    return;
+                     bError = true;
+                     strMsg = ['\bfAn inconsistency was detected in given event codes/types.\n'...
+                        'Please use either event codes OR event types, not a mix of both.'];
+                        strType = 'Event Type Error';                    
                 end
                 
+                all_empty = isempty(sOpt.start) && isempty(sOpt.end);
+
                 %trial def format
                 fmt = 'endpoints';
             else
                 %trials are defined relative to a single event (typical
                 %timelock)
+                strPre     = get(hPre,'String');
+                strPost    = get(hPost,'String');
                 sOpt.event = get(hTL,'String');
-                sOpt.pre = abs(str2double(get(hPre,'String')));
-                sOpt.post = abs(str2double(get(hPost,'String')));
+                sOpt.pre   = abs(str2double(strPre));
+                sOpt.post  = abs(str2double(strPost));
                 
                 if isnan(sOpt.pre) || isnan(sOpt.post)
-                    FT.UserInput(['\bf\color{red}One of the times you entered was not a number.\n' ...
-                        '\color{black}Please check your input and try again.'],...
-                        0,'button','OK','title','Time Entry Error');
-                    return;
+                    bError = true;
+                    strMsg = ['\bf\color{red}One of the times you entered was not a number.\n' ...
+                        '\color{black}Please check your input and try again.'];
+                    strType = 'Time Entry Error';                    
                 end
                 
                 %verify that user input is a valid event type/code
                 field1 = CheckEvtLabel(sOpt.event);
-                if isempty(field1)
-                    FT.UserInput(['\bfEvent type ''\color{red}' sOpt.event ...
-                        '\color{black}'' does not match any event type or event code. Please check your input and try again.'],...
-                        0,'button','OK','title','Event Type Error');
-                    return;
+                if isempty(field1) && ~bError
+                    bError = true;
+                    strMsg = ['\bfEvent type ''\color{red}' sOpt.event ...
+                        '\color{black}'' does not match any event type or event code. Please check your input and try again.'];
+                    strType = 'Event Type Error';                    
                 end
                 
+                all_empty = isempty(sOpt.event);
+
                 %trial def format
                 fmt = 'timelock';
             end
             
             strName = get(hName,'String');
-            if isempty(strName)
+            if isempty(strName) && ~bError
+                bError = true;
                 strMsg = ['\bf\color{red}No Condition Name Given\color{black}',...
                           ':\nPlease enter a name for this condition.'];
-                FT.UserInput(strMsg,0,'button','OK','title','Condition Name Required');
+                strType = 'Condition Name Required';                
                 uicontrol(hName);
+            elseif ~bError
+                all_empty = false;
+            end
+
+            if ~bError
+                % --- MAKE TRIAL DEFINITION --- %
+                trl = FT.MakeTRL(fmt,sOpt,field1);
+                
+                %save the info
+                sOpt.field = field1;
+                sOpt.format = fmt;
+                FT_DATA.history.segmentation = sOpt;
+                
+                EPOCH{end+1,1}.name = strName;
+                EPOCH{end,1}.trl = trl;
+                EPOCH{end,1}.ifo = sOpt;
+            elseif ~all_empty || ~strcmpi(strBtn,'run')
+                FT.UserInput(strMsg,0,'button','OK','title',strType);
                 return;
             end
-            
-            % --- MAKE TRIAL DEFINITION --- %
-            trl = FT.MakeTRL(fmt,sOpt,field1);
-            
-            %save the info
-            sOpt.field = field1;
-            sOpt.format = fmt;                        
-            FT_DATA.history.segmentation = sOpt;
-            
-            EPOCH{end+1,1}.name = strName;            
-            EPOCH{end,1}.trl = trl;
-            EPOCH{end,1}.ifo = sOpt;
 
             if strcmpi(strBtn,'run')
                 bRun = true;

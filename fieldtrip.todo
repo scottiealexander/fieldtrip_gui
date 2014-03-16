@@ -11,11 +11,16 @@
 	- grand average ERPS for new emotion
 
 #ITEM 4
-	- fix SegmentTrials:
-		* if the Run button is clicked without any condition info having been entered ignore that condition
-
-#ITEM 6
 	- need a tool to scroll through stim channel (maybe place markers???)
+
+#ITEM 5
+	- fix keyborad controls for FT.CheckEvents
+		* 2 modes, one for moving the new event marker, one for moving b/t event segments
+
+
+
+
+
 
 code # of occurances
 1	22
