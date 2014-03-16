@@ -69,16 +69,22 @@ for k = 1:numel(kP)
     r = FitPulse(data(kStart:kEnd),'max_width',max_width,'neg_thresh',thresh,'pos_thresh',thresh2,'plot',false);
     
     if r > .8 && kP(k) > kLast
-        kChunk = kP(k):kP(k)+chunk_size;
-        dTmp = data(kChunk);
-        [~,kPeak] = findpeaks(dTmp,'minpeakheight',100,'minpeakdistance',opt.width*fs);      
-        
-        %find the next point where the stim channel < 0, put the marker there
-        kEvt = kP(k)+kPeak(end)+find(dTmp(kPeak(end):end) < 80,1,'first');
-        if ~isempty(kEvt)
-            evt.sample(end+1,1) = kEvt;
-            evt.value(end+1,1) = numel(kPeak);
-            kLast = kEvt;
+        if numel(kP) < k+chunk_size
+            kChunk = kP(k):kP(end);
+        else
+            kChunk = kP(k):kP(k)+chunk_size;
+        end
+        if numel(kChunk) > 3
+            dTmp = data(kChunk);
+            [~,kPeak] = findpeaks(dTmp,'minpeakheight',100,'minpeakdistance',opt.width*fs);      
+
+            %find the next point where the stim channel < 0, put the marker there
+            kEvt = kP(k)+kPeak(end)+find(dTmp(kPeak(end):end) < 80,1,'first');
+            if ~isempty(kEvt)
+                evt.sample(end+1,1) = kEvt;
+                evt.value(end+1,1) = numel(kPeak);
+                kLast = kEvt;
+            end
         end
     end    
 end

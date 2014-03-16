@@ -191,6 +191,14 @@ while strfind(stack(i0).name, 'ft_preamble')
   i0=i0+1;
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% make sure that names are fieldname compatible 
+% Edited: 2013-08-19 Scottie Alexander
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+for k = 1:numel(stack)
+    stack(k).name = regexprep(stack(k).name,'\W','_');
+    stack(k).name = regexprep(stack(k).name,'^_+|_+$','');
+end
 fname = horzcat(stack(end).name);
 if ~issubfield(ft_previous_warnings, stack(end).name)
   ft_previous_warnings.(stack(end).name) = []; % iteratively build up structure fields

@@ -50,6 +50,8 @@ function c = ReadERPFile(strPath)
 		    error('Failed to read file: %s',strPath);     
 		end
 		c = reshape(regexp(strtrim(str),'\n','split'),[],1);
+		bRM = cellfun(@(x) isempty(x) || x(1) == '#',c);
+		c(bRM) = [];
 	else
 		c = {};
 	end

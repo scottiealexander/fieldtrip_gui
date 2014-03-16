@@ -162,8 +162,8 @@ methods
     %--------------------------------------------------------------------------%
     function AddLabels(ts)
         c = {'title','xlabel','ylabel'};
-        for k = 1:numel(c)
-           set(get(ts.hA,c{k}),'String',ts.opt.(c{k}),'FontSize',14);
+        for k = 1:numel(c)            
+            set(get(ts.hA,c{k}),'String',ts.opt.(c{k}),'FontSize',14);
         end
     end
     %--------------------------------------------------------------------------%

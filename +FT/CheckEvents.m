@@ -153,6 +153,10 @@ function NewPlot
     %get and plot stim channel surrounding current event
     nPnts  = (evt.value * pulse_width) + ((evt.value-1) * pulse_int);
     kStart = nPnts+round(siz_win*1.25);
+
+    if kStart > evt.sample
+        kStart = 1;
+    end
     
     dX = evt.sample-kStart:evt.sample+round(siz_win*.75);
     dY = FT_DATA.data.trial{1}(kStim,dX);
