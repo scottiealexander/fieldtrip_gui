@@ -179,6 +179,16 @@ methods
             yMax = nanmax(cellfun(@nanmax,ts.data.y));
         end
 
+        if xMin == xMax
+            xMin = xMin-.001;
+            xMax = xMax+.001;
+        end
+        if yMin == yMax
+            yMin = yMin-.001;
+            yMax = yMax+.001;
+        end
+        
+        
         set(ts.hA,'XLim',[xMin,xMax],'YLim',[yMin,yMax]);
         
         xLine = [xMin xMin; xMin xMax];

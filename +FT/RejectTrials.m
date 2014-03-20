@@ -30,8 +30,15 @@ strMsg = ['\bfHow would you like to view the data?\rm\n\n     ',...
 btn = FT.UserInput(strMsg,1,...
     'button',{'Vertical','Segment','Cancel'},'title','Select View Mode');
 
+cfg = CFGDefault;
 cfg.feedback = 'none';
-data = ft_appenddata(cfg,FT_DATA.data{:});
+if iscell(FT_DATA.data) && numel(FT_DATA.data) > 1
+    data = ft_appenddata(cfg,FT_DATA.data{:});
+elseif iscell(FT_DATA.data)
+    data = FT_DATA.data{1};
+else
+    data = FT_DATA.data;    
+end
 if iscell(data.cfg.previous)
     data.cfg.previous = data.cfg.previous{1};
 end

@@ -29,7 +29,15 @@ if numel(s) > 1
         s2.(cFields{k}) = UnCell(s2.(cFields{k}))';
     end
 else
-    n = cellfun(@(x) numel(s.(x)),cFields);
+    bChar = cellfun(@(x) ischar(s.(x)),cFields);
+    bEmpty = cellfun(@(x) isempty(s.(x)),cFields);
+    if any(bChar | bEmpty)
+        cFix = cFields(bChar | bEmpty);
+        for k = 1:numel(cFix)
+            s.(cFix{k}) = {s.(cFix{k})};
+        end
+    end
+    n = cellfun(@(x) numel(s.(x)),cFields);    
     if ~all(n==n(1))
        error('struct field sizes are not consistent');
     else

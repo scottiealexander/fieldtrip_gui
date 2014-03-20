@@ -170,7 +170,7 @@ function BuildFilter(obj,evt)
     
     %line noise removal
     cfg.dftfilter = Ternary(get(hNotch,'Value'),'yes','no');
-    cfg.dftfreq   = [60,120,180];
+    cfg.dftfreq   = 10;%[60,120,180];
     
     bRun = true;
     CloseFig(obj,evt);
