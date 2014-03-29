@@ -2,7 +2,7 @@ function hFIG = PlotCtrl(hFIG,cList,fUpdate,varargin)
 
 % FT.PlotCtrl
 %
-% Description: update / control a plot based on user selection from a list
+% Description: update / control / save a plot based on user selection from a list
 %
 % Syntax: hFIG = FT.PlotCtrl(hFIG,cList,fUpdate,<options>)
 %
@@ -18,10 +18,12 @@ function hFIG = PlotCtrl(hFIG,cList,fUpdate,varargin)
 % Out:
 %       hFIG - the handle to the figure being controlled
 %
-% Updated: 2013-12-13
+% Updated: 2014-03-29
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
+
+global FT_DATA;
 
 opt = FT.ParseOpts(varargin,...
     'close' , true ...
@@ -60,17 +62,20 @@ hPanel = uipanel('Units','normalized','Position',[.05 .18 .9 .8],'HighlightColor
 hList = uicontrol('Style','listbox','Units','normalized','Position',[0 0 1 1],...
     'String',cList,'BackgroundColor',[1 1 1],'Parent',hPanel);
 
-uicontrol('Style','pushbutton','Units','normalized','Position',[.05 .1 .4 .05],...
+uicontrol('Style','pushbutton','Units','normalized','Position',[.05 .12 .4 .05],...
     'String','Plot','Parent',h,'Callback',@PlotBtn);
 
-uicontrol('Style','pushbutton','Units','normalized','Position',[.55 .1 .4 .05],...
+uicontrol('Style','pushbutton','Units','normalized','Position',[.55 .12 .4 .05],...
     'String','Close','Parent',h,'Callback',@CloseBtn);
 
-hPrev = uicontrol('Style','pushbutton','Units','normalized','Position',[.05 .02 .4 .05],...
+hPrev = uicontrol('Style','pushbutton','Units','normalized','Position',[.05 .06 .4 .05],...
     'String','Previous','Parent',h,'Callback',@StepBtn);
 
-hNxt = uicontrol('Style','pushbutton','Units','normalized','Position',[.55 .02 .4 .05],...
+hNxt = uicontrol('Style','pushbutton','Units','normalized','Position',[.55 .06 .4 .05],...
     'String','Next','Parent',h,'Callback',@StepBtn);
+
+hSav = uicontrol('Style','pushbutton','Units','normalized','Position',[.3 0 .4 .05],...
+    'String','Save','Parent',h,'Callback',@SaveBtn);
 
 %show the first item if the user gave us a valid figure
 if bShow
@@ -84,6 +89,28 @@ function RmAxes
        bAx = strcmpi(get(hChild,'Type'),'axes');
        delete(hChild(bAx));
     end
+end
+%------------------------------------------------------------------------------%
+function SaveBtn(obj,varargin)
+    hChild  = get(hFIG,'Children');
+    bAx     = strcmpi(get(hChild,'Type'),'axes');
+    bAx     = bAx & ~strcmpi(get(hChild,'Tag'),'legend');
+    strName = regexprep(get(get(hChild(bAx),'Title'),'String'),'\W+','_');
+    strDir  = fileparts(FT_DATA.path.dataset);
+    x       = pwd;
+    try
+        cd(strDir)
+        [strName,strDir] = uiputfile('*.svg','Save Figure As',[strName '.svg']);
+        cd(x);
+    catch me
+        cd(x);
+        FT.ProcessError(me);
+        return;
+    end
+    if isequal(strName,0)
+        return;
+    end
+    plot2svg(fullfile(strDir,strName),hFIG);    
 end
 %------------------------------------------------------------------------------%
 function StepBtn(obj,varargin)

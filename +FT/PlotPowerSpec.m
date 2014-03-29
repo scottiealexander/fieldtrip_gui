@@ -21,7 +21,7 @@ cfg = CFGDefault;
 cfg.method = 'mtmfft';
 cfg.taper  = 'hanning';
 cfg.output = 'pow';
-cfg.foi = 1:1:100;
+cfg.foi = 1:.1:100;
 freq = ft_freqanalysis(cfg,FT_DATA.data);
 
 pFig = GetFigPosition(800,600);
