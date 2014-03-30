@@ -11,7 +11,7 @@ function SurrogatePSD()
 %
 % Out: 
 %
-% Updated: 2014-01-17
+% Updated: 2014-03-29
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
@@ -26,7 +26,7 @@ function SurrogatePSD()
 
 global FT_DATA;
 
-nITER   = 5;
+nITER   = 20;
 
 if ~isfield(FT_DATA,'power') || ~isfield(FT_DATA.power,'raw') || isempty(FT_DATA.power.raw)
 	msg = ['\bf[\color{red}ERROR\color{black}]: Hilbert decomposition has not been ',...
@@ -35,7 +35,7 @@ if ~isfield(FT_DATA,'power') || ~isfield(FT_DATA.power,'raw') || isempty(FT_DATA
 	return;
 end
 
-if nITER > 3
+if false %nITER > 3
 	s = ver;
 	bParallel = any(strcmpi({s(:).Name},'Parallel Computing Toolbox'));
 	if bParallel
@@ -54,7 +54,7 @@ end
 nTrial = cellfun(@(x) size(x,4),FT_DATA.power.data);
 
 %trial and data length in number of data points
-trial_len = numel(FT_DATA.power.time);
+trial_len 	 = numel(FT_DATA.power.time);
 data_length  = size(FT_DATA.power.raw{1},2);
 
 %indicies of points that mark the start of a trial
@@ -125,6 +125,8 @@ FT_DATA.power = rmfield(FT_DATA.power,'raw');
 
 FT_DATA.saved = false;
 
+FT.UpdateGUI;
+
 %-----------------------------------------------------------------------------%
 function cD = SurrogateERSP(power,cKStart,bpar)
 % SurrogateERSP
@@ -153,7 +155,7 @@ function cD = SurrogateERSP(power,cKStart,bpar)
 %		3) reformatting our trials matrix to be freq x time x channel x trial
 %		4) averaging accross trials to get a surrogate ERSP matrix that is
 %		   freq x time x channel
-	id = tic;
+	id2 = tic;
 
 	%initialize a cell of nans for each condition
 	nband 	  = numel(power.bands);
@@ -184,5 +186,5 @@ function cD = SurrogateERSP(power,cKStart,bpar)
 			FT.Progress2;            
 		end
 	end	
-	fprintf('%s: iter done [%.2f]\n',datestr(now,13),toc(id));
+	fprintf('%s: iter done [%.2f]\n',datestr(now,13),toc(id2));
 %-----------------------------------------------------------------------------%

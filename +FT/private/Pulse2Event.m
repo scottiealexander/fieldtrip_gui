@@ -69,7 +69,7 @@ for k = 1:numel(kP)
     r = FitPulse(data(kStart:kEnd),'max_width',max_width,'neg_thresh',thresh,'pos_thresh',thresh2,'plot',false);
     
     if r > .8 && kP(k) > kLast
-        if numel(kP) < k+chunk_size
+        if kP(end) < k+chunk_size
             kChunk = kP(k):kP(end);
         else
             kChunk = kP(k):kP(k)+chunk_size;

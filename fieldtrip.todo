@@ -2,6 +2,7 @@
 
 # ITEM *** TODO EDIT FIXME ERROR WARNING NOTE FINISH
 	- DetectEvents fails for TT's IAPS dataset!!!!!
+	- FIX DETECT EVENTS!!!!!!!!
 
 #ITEM 1
 	- seperate GUI's from all processing functions

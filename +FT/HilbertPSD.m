@@ -1,4 +1,4 @@
-function HilbertPSD()
+function HilbertPSD(param)
 
 % FT.HilbertPSD
 %
@@ -10,19 +10,11 @@ function HilbertPSD()
 %
 % Out:
 %
-% Updated: 2014-01-10
+% Updated: 2014-03-29
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
 
-%GOAL:
-%   1) bandpass filter
-%       - 42 logspace centers (+- 10%) between 10 and 110
-%   2) hilbert xfm
-%   3) construct trial definition
-%   4) segment data
-
-nFreq = 42;
 
 global FT_DATA;
 FS = FT_DATA.data.fsample;
@@ -34,12 +26,19 @@ if ~isfield(FT_DATA,'epoch') || isempty(FT_DATA.epoch)
     end
 end
 
+%convert to percent
+param.w = param.w/100;
+
 %caclulate frequency bin centers
-fEnd = ((FS/2)/1.1)-1; %last bin center should be 10% less than the FS/2
-centers = logspace(1,log10(fEnd),nFreq);
+fEnd = (param.hi/(1+param.w))-1; %last bin center should be param.w% less than param.hi
+if param.log
+    centers = logspace(log10(param.lo),log10(fEnd),param.n);
+else
+    centers = linspace(param.lo,param.hi,param.n);
+end
 
 %frequency band edges
-cBands = arrayfun(@(x) [x*.9 x*1.1],centers,'uni',false);
+cBands = arrayfun(@(x) [x*(1-param.w) x*(1+param.w)],centers,'uni',false);
 
 %bandpass filtering parameters
 cfg = CFGDefault;
@@ -53,21 +52,21 @@ cfg.bpinstabilityfix = 'reduce'; %deal with filter instability
 %n-condition length cell to hold all the data
 data = cell(numel(FT_DATA.epoch),1);
 
-FT.Progress2((nFreq*2)+1,'Computing spectrogram');
+FT.Progress2((param.n*2)+1,'Computing spectrogram');
 
 %bandpass filter and hilbert transform for each frequency band
-% yields a nFreq x 1 cell of channel x time power values
+% yields a cfg.n x 1 cell of channel x time power values
 data_raw   = cellfun(@HilbertXFM,cBands,'uni',false);
 
-%scale each frequency band by total mean power
-%NOTE: should we calculate total mean power within or across channels?
-mean_power = mean(cellfun(@(x) mean(reshape(x,[],1),1),data_raw));
-data_raw   = cellfun(@(x) x/mean_power,data_raw,'uni',false);
+%scale each channel/frequency band by total mean power across bands
+mean_power = cellfun(@(x) mean(x,2),data_raw,'uni',false);
+mean_power = mean(cat(2,mean_power{:}),2);
+data_raw   = cellfun(@(x) x./repmat(mean_power,1,size(x,2)),data_raw,'uni',false);
 FT.Progress2;
 
 %segment and reshape data
 %yields a ncondition x 1 cell of freq x time x channel x trial matricies
-cellfun(@SegmentData,data_raw,num2cell(1:nFreq),'uni',false);
+cellfun(@SegmentData,data_raw,num2cell(1:param.n),'uni',false);
 
 %add to the data struct
 FT_DATA.power.raw     = data_raw;
@@ -77,6 +76,8 @@ FT_DATA.power.bands   = cBands;
 FT_DATA.power.time    = GetTime;
 
 FT_DATA.saved = false;
+
+FT.UpdateGUI;
 
 %-------------------------------------------------------------------------%
 function tmp = HilbertXFM(freq)

@@ -10,7 +10,7 @@ function GUI()
 %
 % Out: 
 %
-% Updated: 2013-08-30
+% Updated: 2014-03-29
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
@@ -80,12 +80,12 @@ FT.UpdateGUI;
     hViewMenu = uimenu(h,'Label','View');
     hViewIfo  = uimenu(hViewMenu,'Label','Data Info','Callback',@(x,y) FT.RunFunction(x,y,@FT.DataSummery));
     hViewData = uimenu(hViewMenu,'Label','Channel Data','Callback',@(x,y) FT.RunFunction(x,y,@FT.PlotData));
+    hViewERP  = uimenu(hViewMenu,'Label','Average ERP','Callback',@(x,y) FT.RunFunction(x,y,@FT.PlotERP));
     hViewERPim= uimenu(hViewMenu,'Label','ERP Image','Callback',@(x,y) FT.RunFunction(x,y,@FT.ERPImage));
     hViewCorr = uimenu(hViewMenu,'Label','Channel Correlations','Callback',@(x,y) FT.RunFunction(x,y,@FT.ChannelCorr));
-    hViewCoh  = uimenu(hViewMenu,'Label','Channel Coherence','Callback',@(x,y) FT.RunFunction(x,y,@FT.Coherence));
-    hViewERP  = uimenu(hViewMenu,'Label','Average ERP','Callback',@(x,y) FT.RunFunction(x,y,@FT.PlotERP));    
+    hViewCoh  = uimenu(hViewMenu,'Label','Channel Coherence','Callback',@(x,y) FT.RunFunction(x,y,@FT.Coherence));    
     %hViewPow  = uimenu(hViewMenu,'Label','Average Power Spectra','Callback',@(x,y) FT.RunFunction(x,y,@() FT.PlotPower('spectra')));
-    hViewSpec = uimenu(hViewMenu,'Label','Average Spectrogram','Callback',@(x,y) FT.RunFunction(x,y,@() FT.PlotPower('spectrogram')));
+    % hViewSpec = uimenu(hViewMenu,'Label','Average Spectrogram','Callback',@(x,y) FT.RunFunction(x,y,@() FT.PlotPower('spectrogram')));
     hReDraw   = uimenu(hViewMenu,'Label','Redraw GUI Display','Callback',@(x,y) FT.RunFunction(x,y,@FT.RedrawGUI));
     
 %preprocessing

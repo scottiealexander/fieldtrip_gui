@@ -10,7 +10,7 @@ function AverageERP(varargin)
 %
 % Out: 
 %
-% Updated: 2013-08-30
+% Updated: 2014-03-30
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
@@ -52,8 +52,9 @@ for k = 1:numel(FT_DATA.data)
 	n	  = sum(~isnan(d),3);
 	FT_DATA.data{k}.err = stdev./sqrt(n);
 
-	%add sampling rate back in
+	%add sampling rate and raw data back in
 	FT_DATA.data{k}.fsample = fs;
+	FT_DATA.data{k}.raw = d;
 end
 
 if ishandle(hMsg)

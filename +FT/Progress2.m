@@ -18,14 +18,16 @@ function Progress2(varargin)
 strPathProc = fullfile(fileparts(mfilename('fullpath')),'tmp','progress.txt');
 strPathIfo  = fullfile(fileparts(mfilename('fullpath')),'tmp','info.txt');
 
-if exist(strPathProc,'file')
+if ~isempty(varargin)
+    if isnumeric(varargin{1})
+        ACTION = 'start';
+    elseif ischar(varargin{1})
+        ACTION = varargin{1};
+    end
+elseif exist(strPathProc,'file')
     ACTION = 'update';
 else
-    ACTION = 'start';
-end
-
-if ~isempty(varargin) && ischar(varargin{1})
-	ACTION = varragin{1};
+    error('Improper syntax: inputs are required on first call');
 end
 
 switch lower(ACTION)
@@ -67,7 +69,7 @@ switch lower(ACTION)
         %get info on the current process
         ifo = ReadIfo;       
 
-    case 'close'
+    case {'close','clear'}
         CleanUp;
     otherwise
         error('Invalid action - %s',opt.action);
@@ -87,9 +89,12 @@ function CleanUp(varargin)
     	end        
     	delete(tmr);
     end
-
-    delete(strPathProc);
-    delete(strPathIfo);
+    if exist(strPathProc,'file') == 2
+        delete(strPathProc);
+    end
+    if exist(strPathIfo,'file') == 2
+        delete(strPathIfo);
+    end
 end
 %-------------------------------------------------------------------------%
 function UpdateWaitbar(varargin)
