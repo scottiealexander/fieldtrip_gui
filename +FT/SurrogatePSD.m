@@ -1,11 +1,11 @@
-function SurrogatePSD()
+function SurrogatePSD(nITER)
 
 % FT.SurrogatePSD
 %
 % Description: construct surrogate PSD by phase scrambling the instantaneous power values
 %			   from a hilbert decomposition
 %
-% Syntax: FT.SurrogatePSD
+% Syntax: FT.SurrogatePSD(nITER)
 %
 % In:
 %
@@ -25,8 +25,6 @@ function SurrogatePSD()
 %	5) compute mean and std of average ERSPs
 
 global FT_DATA;
-
-nITER   = 500;
 
 if ~isfield(FT_DATA,'power') || ~isfield(FT_DATA.power,'raw') || isempty(FT_DATA.power.raw)
 	msg = ['\bf[\color{red}ERROR\color{black}]: Hilbert decomposition has not been ',...

@@ -20,7 +20,7 @@ function s = ParseEquation(str)
 %
 % Please report bugs to: scottiealexander11@gmail.com
 
-re = regexp(str,'(?<label>[^\s\=]*)\s?\=\s?(?<expr>[^\=]*)\s*$','names');
+re = regexp(str,'(?<label>[^\s\=]*)\s*\=\s*(?<expr>[^\=]*)\s*$','names');
 
 %capture label and raw expression for output
 s.label = re.label;

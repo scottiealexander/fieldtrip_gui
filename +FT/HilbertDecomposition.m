@@ -1,4 +1,4 @@
-function HilbertDecomposition(varargin)
+function [b,param] = HilbertDecomposition(varargin)
 
 % FT.HilbertDecomposition
 %
@@ -23,9 +23,9 @@ if ~b
 end
 
 %run hilbert decomposition
-bContinue =FT.HilbertPSD(param);
+bContinue = FT.HilbertPSD(param);
 
 %generate surrogate dataset
-if bContinue && param.surrogate
-	FT.SurrogatePSD;
+if bContinue && param.surrogate && param.nsurrogate > 0
+	FT.SurrogatePSD(param.nsurrogate);
 end
