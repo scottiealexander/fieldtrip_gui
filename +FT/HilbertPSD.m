@@ -1,10 +1,10 @@
-function HilbertPSD(param)
+function bRun = HilbertPSD(param)
 
 % FT.HilbertPSD
 %
 % Description: time-frequency decomposition based on the Hilbert transform
 %
-% Syntax: FT.HilbertPSD
+% Syntax: bContinue = FT.HilbertPSD
 %
 % In:
 %
@@ -18,10 +18,11 @@ function HilbertPSD(param)
 
 global FT_DATA;
 FS = FT_DATA.data.fsample;
-
+bRun = true;
 %make sure there is trial info
 if ~isfield(FT_DATA,'epoch') || isempty(FT_DATA.epoch)
-    if ~FT.DefineTrial        
+    if ~FT.DefineTrial
+        bRun = false;      
         return;
     end
 end

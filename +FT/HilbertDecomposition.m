@@ -23,9 +23,9 @@ if ~b
 end
 
 %run hilbert decomposition
-FT.HilbertPSD(param);
+bContinue =FT.HilbertPSD(param);
 
 %generate surrogate dataset
-if cfg.surrogate
+if bContinue && param.surrogate
 	FT.SurrogatePSD;
 end

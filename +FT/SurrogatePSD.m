@@ -26,7 +26,7 @@ function SurrogatePSD()
 
 global FT_DATA;
 
-nITER   = 20;
+nITER   = 500;
 
 if ~isfield(FT_DATA,'power') || ~isfield(FT_DATA.power,'raw') || isempty(FT_DATA.power.raw)
 	msg = ['\bf[\color{red}ERROR\color{black}]: Hilbert decomposition has not been ',...
@@ -35,7 +35,7 @@ if ~isfield(FT_DATA,'power') || ~isfield(FT_DATA.power,'raw') || isempty(FT_DATA
 	return;
 end
 
-if false %nITER > 3
+if nITER > 3
 	s = ver;
 	bParallel = any(strcmpi({s(:).Name},'Parallel Computing Toolbox'));
 	if bParallel
