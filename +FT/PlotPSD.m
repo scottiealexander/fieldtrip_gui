@@ -25,8 +25,11 @@ end
 
 time = FT_DATA.power.time;
 
-if isempty(BASELINE)
+if isempty(BASELINE) && ~isfield(FT_DATA.power,'surrogate')
 	cfg = FT.BaselineCorrect;
+	if ~isfield(cfg,'baselinewindow')
+		return;
+	end
 	BASELINE = cfg.baselinewindow;
 	BASELINE = [find(time>=BASELINE(1),1,'first') find(time>=BASELINE(2),1,'first')];
 end

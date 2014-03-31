@@ -22,6 +22,8 @@ global FT_DATA
 ext = strrep(ext,'.','');
 
 if any(strcmpi(ext,{'mat','set'}))
+    hMsg = FT.UserInput('Reading data from file, plese wait...',1);    
+
     %load FiledTripGUI dataset file
     sTmp = load(strPath,'-mat');
     cFields = fieldnames(sTmp);
@@ -39,6 +41,10 @@ if any(strcmpi(ext,{'mat','set'}))
     FT_DATA.gui.screen_size = tmp_gui.screen_size;
     
     clear('sTmp','tmp_gui'); %clean up
+
+    if ishandle(hMsg)
+        close(hMsg);
+    end
 else
     %read data from raw eeg file
     cfg = CFGDefault;

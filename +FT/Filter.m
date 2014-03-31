@@ -10,7 +10,7 @@ function Filter(varargin)
 %
 % Out: 
 %
-% Updated: 2013-08-07
+% Updated: 2014-03-31
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
@@ -22,7 +22,7 @@ if ~FT.CheckStage('filter')
     return;
 end
 
-bRun = false;
+[bLP,bHP,bNF] = deal(false);
 bSelect = false;
 
 cfg = CFGDefault;
@@ -93,25 +93,39 @@ hEdt = .12;
 uicontrol(hHP);
 uiwait(h);
 
-%perform the filtering
-if bRun
+%perform the filtering 
+%NOTE we are doing this in series to avoid errors thrown by ft_preprocessing
+%when both hpfilter and lpfilter are specified and hpfreq < ~1Hz
+nFilt = bHP + bLP + bNF;
+if nFilt > 0
+    cFilt = {'hpfilter','lpfilter','dftfilter'};
     hMsg = FT.UserInput('Filtering data...',1);
     bErr = false;
-    try
-        if bSelect
-            %only filter specified channels
-            datTmp = ft_preprocessing(cfg,FT_DATA.data);
-            
-            %replace orig channels with result of filtering
-            bNew = strcmpi(datTmp.label,FT_DATA.data.label);
-            FT_DATA.data.trial{1}(bNew,:) = datTmp.trial{1};
-        else
-            %filter everything
-            FT_DATA.data = ft_preprocessing(cfg,FT_DATA.data);
+    for kA = 1:nFilt
+        if nFilt > 1            
+            cfg.(cFilt{kA}) = 'yes';
+            kRM = setdiff(1:nFilt,kA);
+            for kB = 1:numel(kRM)
+                cfg.(cFilt{kRM(kB)}) = 'no';
+            end
+        end        
+        try
+            if bSelect            
+                %only filter specified channels
+                datTmp = ft_preprocessing(cfg,FT_DATA.data);
+                
+                %replace orig channels with result of filtering
+                bNew = strcmpi(datTmp.label,FT_DATA.data.label);
+                FT_DATA.data.trial{1}(bNew,:) = datTmp.trial{1};
+            else
+                %filter everything
+                FT_DATA.data = ft_preprocessing(cfg,FT_DATA.data);
+            end
+        catch me
+            bErr = true;
+            FT.ProcessError(me);
+            break;
         end
-    catch me
-        bErr = true;
-        FT.ProcessError(me);
     end
     if ishandle(hMsg)
         close(hMsg);
@@ -170,9 +184,11 @@ function BuildFilter(obj,evt)
     
     %line noise removal
     cfg.dftfilter = Ternary(get(hNotch,'Value'),'yes','no');
-    cfg.dftfreq   = 10;%[60,120,180];
+    cfg.dftfreq   = [60,120,180];
     
-    bRun = true;
+    bLP = strcmpi(cfg.lpfilter,'yes');
+    bHP = strcmpi(cfg.hpfilter,'yes');
+    bNF = strcmpi(cfg.dftfilter,'yes');
     CloseFig(obj,evt);
 end
 %------------------------------------------------------------------------------%

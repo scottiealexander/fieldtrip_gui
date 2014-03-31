@@ -1,9 +1,5 @@
 #FIELDTRIP_GUI master TODO list
 
-# ITEM *** TODO EDIT FIXME ERROR WARNING NOTE FINISH
-	- DetectEvents fails for TT's IAPS dataset!!!!!
-	- FIX DETECT EVENTS!!!!!!!!
-
 #ITEM 1
 	- seperate GUI's from all processing functions
 	- GUI figure helper class
@@ -12,22 +8,18 @@
 	- templating system
 
 #ITEM 3
-	- grand average ERPS for new emotion
-
-#ITEM 4
 	- need a tool to scroll through stim channel (maybe place markers???)
 
-#ITEM 5
+#ITEM 4
 	- fix keyborad controls for FT.CheckEvents
 		* 2 modes, one for moving the new event marker, one for moving b/t event segments
-#ITEM 6
+#ITEM 5
 	- enable colon operator in NewChannels (e.g. mean(ch23:34))
 
-#ITEM 7
+#ITEM 6
 	- REMOVE GranAverage function from all repos
 
-#ITEM 8
-	- add figure save tool to ERP PlotCtrl
+#ITEM 7
 	- add label editor to PlotCtrl
 
 JB:

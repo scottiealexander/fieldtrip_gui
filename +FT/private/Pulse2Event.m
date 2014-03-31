@@ -21,7 +21,7 @@ function evt = Pulse2Event(data,fs,varargin)
 %       ('Stimulus' for all events), 'duration' (1 for all events) and
 %       'offset' ([])
 %
-% Updated: 2013-08-14
+% Updated: 2014-03-31
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
@@ -36,6 +36,8 @@ opt.width = opt.width/1000;
 opt.interval = opt.interval/1000;
 
 evt = struct('type',[],'value',[],'sample',[],'duration',[],'offset',[]);
+
+nData = numel(data);
 
 %event pluse thresholds
 thresh = -150;
@@ -60,8 +62,8 @@ for k = 1:numel(kP)
     end
     
     kEnd = .2*fs;
-    if kP(k)+kEnd > numel(data)
-        kEnd = numel(data);
+    if kP(k)+kEnd > nData
+        kEnd = nData;
     else
         kEnd = kP(k)+kEnd;
     end
@@ -69,10 +71,13 @@ for k = 1:numel(kP)
     r = FitPulse(data(kStart:kEnd),'max_width',max_width,'neg_thresh',thresh,'pos_thresh',thresh2,'plot',false);
     
     if r > .8 && kP(k) > kLast
-        if kP(end) < k+chunk_size
-            kChunk = kP(k):kP(end);
+        if  kP(k)+chunk_size > nData
+            kChunk = kP(k):nData;
         else
             kChunk = kP(k):kP(k)+chunk_size;
+        end
+        if kChunk(end) > numel(data)
+            error('oh dear...');
         end
         if numel(kChunk) > 3
             dTmp = data(kChunk);

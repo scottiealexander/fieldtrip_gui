@@ -1,4 +1,4 @@
-function [b,param] = HilbertDecomposition()
+function HilbertDecomposition(varargin)
 
 % FT.HilbertDecomposition
 %
@@ -18,9 +18,9 @@ function [b,param] = HilbertDecomposition()
 %get parameters from user
 [b,param] = GetHilbertParameters;
 
-% if ~b
+if ~b
 	return;
-% end
+end
 
 %run hilbert decomposition
 FT.HilbertPSD(param);

@@ -82,6 +82,7 @@ FT.UpdateGUI;
     hViewData = uimenu(hViewMenu,'Label','Channel Data','Callback',@(x,y) FT.RunFunction(x,y,@FT.PlotData));
     hViewERP  = uimenu(hViewMenu,'Label','Average ERP','Callback',@(x,y) FT.RunFunction(x,y,@FT.PlotERP));
     hViewERPim= uimenu(hViewMenu,'Label','ERP Image','Callback',@(x,y) FT.RunFunction(x,y,@FT.ERPImage));
+    hViewHilb = uimenu(hViewMenu,'Label','Hilbert PSD','Callback',@(x,y) FT.RunFunction(x,y,@FT.PlotPSD));
     hViewCorr = uimenu(hViewMenu,'Label','Channel Correlations','Callback',@(x,y) FT.RunFunction(x,y,@FT.ChannelCorr));
     hViewCoh  = uimenu(hViewMenu,'Label','Channel Coherence','Callback',@(x,y) FT.RunFunction(x,y,@FT.Coherence));    
     %hViewPow  = uimenu(hViewMenu,'Label','Average Power Spectra','Callback',@(x,y) FT.RunFunction(x,y,@() FT.PlotPower('spectra')));
@@ -104,15 +105,16 @@ FT.UpdateGUI;
     hChkEvt   = uimenu(hSegMenu,'Label','Manual Event Checking','Callback',@(x,y) FT.RunFunction(x,y,@FT.CheckEvents));
     hDefTrial = uimenu(hSegMenu,'Label','Segment Trials','Callback',@(x,y) FT.RunFunction(x,y,@FT.SegmentTrials));
     hBaseCor  = uimenu(hSegMenu,'Label','Baseline Correct','Callback',@(x,y) FT.RunFunction(x,y,@FT.BaselineCorrect));
-    hArtRej   = uimenu(hSegMenu,'Label','Reject Trials','Callback',@(x,y) FT.RunFunction(x,y,@FT.RejectTrials));    
+    hArtRej   = uimenu(hSegMenu,'Label','Reject Trials','Callback',@(x,y) FT.RunFunction(x,y,@FT.RejectTrials));
 
 %analysis
     hAnaMenu  = uimenu(h,'Label','Analysis');
     hAvgERP   = uimenu(hAnaMenu,'Label','Average ERPs','Callback',@(x,y) FT.RunFunction(x,y,@FT.AverageERP));
+    hHilbert  = uimenu(hAnaMenu,'Label','Hilbert Decomposition','Callback',@(x,y) FT.RunFunction(x,y,@FT.HilbertDecomposition));
     hGrandERP = uimenu(hAnaMenu,'Label','ERP Grand Average','Callback',@(x,y) FT.RunFunction(x,y,@FT.GrandAverage));
     hPeak     = uimenu(hAnaMenu,'Label','Find Peaks & Valleys','Callback',@(x,y) FT.RunFunction(x,y,@FT.PeakFinder));
-    hPower    = uimenu(hAnaMenu,'Label','Power Spectrum','Callback',@(x,y) FT.RunFunction(x,y,@FT.PowerSpec));
-    hSpec     = uimenu(hAnaMenu,'Label','Spectrogram','Callback','disp(''@(x,y) FT.RunFunction(x,y,@FT.Spectrogram)'')');
+    % hPower    = uimenu(hAnaMenu,'Label','Power Spectrum','Callback',@(x,y) FT.RunFunction(x,y,@FT.PowerSpec));
+    % hSpec     = uimenu(hAnaMenu,'Label','Spectrogram','Callback','disp(''@(x,y) FT.RunFunction(x,y,@FT.Spectrogram)'')');
     
 % %template operations
 %     hTempMenu = uimenu(h,'Label','Template');
