@@ -1,4 +1,4 @@
-function hA = ChannelCorr()
+function ChannelCorr()
 
 % ChannelCorr
 %

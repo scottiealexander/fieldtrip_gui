@@ -1,4 +1,4 @@
-function ERPImage()
+    function ERPImage()
 
 % ERPImage
 %

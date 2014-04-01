@@ -33,7 +33,7 @@ function trl = MakeTRL(fmt,sOpt,field)
 %             positive offset indicates that the first sample is later than the trigger, 
 %             a negative offset indicates that the trial begins before the trigger.
 %
-% Updated: 2013-08-19
+% Updated: 2014-03-31
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
@@ -71,6 +71,16 @@ switch lower(fmt)
         trl = TimeLock;
     otherwise
         %this should never happen
+end
+
+%make sure no trial definition samples fall outside the data range
+k = 1;
+while k <= size(trl,1)
+    if trl(k,1) < 1 || trl(k,2) > size(FT_DATA.data.trial{1},2)
+        trl = [trl(1:k-1,:); trl(k+1:end,:)];
+    else
+        k = k+1;
+    end
 end
 
 % %add trialdef

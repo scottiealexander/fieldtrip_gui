@@ -1,30 +1,37 @@
-function c = ERPFileOps(action)
+function c = AvgFileOps(action,varargin)
 
-% ERPFileOps
+% AvgFileOps
 %
 % Description: 
 %
-% Syntax: c = ERPFileOps(action)
+% Syntax: c = AvgFileOps(action,[type]=prompt)
 %
 % In:
-%		action     - the action	to perform, one of:
-%						'add': add the current dataset to the ERP file list
-%						'get': fetch the ERP file list for the current analysis
+%		action  - the action to perform, one of:
+%				  'add': add the current dataset to the average file list
+%				  'get': fetch the ERP file list for the current analysis
+%		[type] 	- the type of average dataset (e.g. 'erp',or 'psd')
 %
 % Out:
-%		c - if 'action' == 'get', a cell of the ERP files for this analysis
+%		c - if 'action' == 'get', a cell of the average files for this analysis
 %
-% Updated: 2014-03-11
+% Updated: 2014-03-31
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
 
 global FT_DATA;
+if isempty(varargin) || isempty(varargin{1}) || ~ischar(varargin{1})
+	type = FT.UserInput('\bfPlease select an average dataset type:',1,'button',{'ERP','PSD'},'title','Save Average Dataset');
+	type = lower(type);
+else
+	type = lower(varargin{1});
+end
 
-strPathERP = fullfile(FT_DATA.path.base_directory,'erp.cfg');
+strPathAvg = fullfile(FT_DATA.path.base_directory,[type '.cfg']);
 strPathSet = FT_DATA.path.dataset;
 
-c = ReadERPFile(strPathERP);
+c = ReadAvgFile(strPathAvg);
 
 switch lower(action)
 	case {'add','append'}
@@ -32,7 +39,7 @@ switch lower(action)
 		if ~any(strcmpi(c,strPathSet))
 			c{end+1,1} = strPathSet;
 		end
-		WriteERPFile(c,strPathERP);
+		WriteAvgFile(c,strPathAvg);
 
 	case {'get','fetch'}
 		%nothing to do
@@ -41,7 +48,7 @@ switch lower(action)
 end
 
 %-----------------------------------------------------------------------------%
-function c = ReadERPFile(strPath)
+function c = ReadAvgFile(strPath)
 	if exist(strPath,'file') == 2
 		fid = fopen(strPath,'r');
 		if fid > 0
@@ -57,7 +64,7 @@ function c = ReadERPFile(strPath)
 	end
 end
 %-----------------------------------------------------------------------------%
-function WriteERPFile(c,strPath)
+function WriteAvgFile(c,strPath)
 	if ~isempty(c)
 		fid = fopen(strPath,'w');
 		if fid > 0	    

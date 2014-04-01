@@ -77,18 +77,19 @@ for k = 1:numel(kP)
             kChunk = kP(k):kP(k)+chunk_size;
         end
         if kChunk(end) > numel(data)
-            error('oh dear...');
+            error('invalid chunk size detected!');
         end
         if numel(kChunk) > 3
             dTmp = data(kChunk);
             [~,kPeak] = findpeaks(dTmp,'minpeakheight',100,'minpeakdistance',opt.width*fs);      
-
-            %find the next point where the stim channel < 0, put the marker there
-            kEvt = kP(k)+kPeak(end)+find(dTmp(kPeak(end):end) < 80,1,'first');
-            if ~isempty(kEvt)
-                evt.sample(end+1,1) = kEvt;
-                evt.value(end+1,1) = numel(kPeak);
-                kLast = kEvt;
+            if ~isempty(kPeak)
+                %find the next point where the stim channel < 0, put the marker there
+                kEvt = kP(k)+kPeak(end)+find(dTmp(kPeak(end):end) < 80,1,'first');
+                if ~isempty(kEvt)
+                    evt.sample(end+1,1) = kEvt;
+                    evt.value(end+1,1) = numel(kPeak);
+                    kLast = kEvt;
+                end
             end
         end
     end    

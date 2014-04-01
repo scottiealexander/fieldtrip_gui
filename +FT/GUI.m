@@ -67,8 +67,8 @@ FT.UpdateGUI;
         'Callback',@(x,y) SaveDataset(x,y,'as'),'Accelerator','S');
     
     %save ERP
-    uimenu(hFileMenu,'Label','Save Average ERP',...
-        'Callback',@(x,y) SaveDataset(x,y,'erp'));
+    uimenu(hFileMenu,'Label','Save Average Dataset',...
+        'Callback',@(x,y) SaveDataset(x,y,'avg'));
 
     %clear 
     uimenu(hFileMenu,'Label','Clear Dataset','Callback',@ClearDataset);
@@ -256,19 +256,23 @@ end
 %-------------------------------------------------------------------------%
 function SaveDataset(obj,evt,varargin)
 %save the current state of the analysis
-    action = '';
+    [action,type] = deal('');
     if ~isempty(varargin) && ~isempty(varargin{1}) && ischar(varargin{1})
         action = varargin{1};
         switch lower(action)
             %save as?
-            case {'as','erp'}
+            case {'as','avg'}
                 %move into the subjects dir or base dir for this analysis
                 if isfield(FT_DATA.path,'raw_file') && ~isempty(FT_DATA.path.raw_file)
                     strDir = fileparts(FT_DATA.path.raw_file);
                 else
                     strDir = FT_DATA.path.base_directory;
                 end
-                
+                if strcmpi(action,'avg')
+                    type = FT.UserInput('\bfPlease select an average dataset type:',1,'button',{'ERP','PSD'},'title','Save Average Dataset');
+                    type = lower(type);
+                end
+
                 %get the filepath the user wants to sue
                 strPathDef = fullfile(strDir,[FT_DATA.current_dataset '.set']);
                 [strName,strPath] = uiputfile('*.set','Save Analysis As...',strPathDef);
@@ -331,8 +335,8 @@ function SaveDataset(obj,evt,varargin)
         WriteDataset(strPathOut);
 
         %averaged erp?
-        if strcmpi(action,'erp') && FT_DATA.done.average
-            ERPFileOps('add');
+        if strcmpi(action,'avg') && FT_DATA.done.average
+            AvgFileOps('add',type);
         end
 
         if ishandle(hMsg)

@@ -21,7 +21,7 @@ global FT_DATA;
 
 hMsg = FT.UserInput('Calculating Grand Average ERP',1);
 
-cPathERP = ERPFileOps('get');
+cPathERP = AvgFileOps('get','erp');
 nFile    = numel(cPathERP);
 
 s.files  = cPathERP;
