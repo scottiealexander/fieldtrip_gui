@@ -7,7 +7,7 @@ A graphical user interface that extends and simplifies the [FieldTrip](http://fi
 
 For full copyright information see FIELDTRIP.md and fieldtrip/COPYING.
 
-** plot2svg is Copyright (c) 2005, Juerg Schwizer. All rights reserved.**
+**plot2svg is Copyright (c) 2005, Juerg Schwizer. All rights reserved.**
 
 For full copyright information see plot2svg.license.
 
