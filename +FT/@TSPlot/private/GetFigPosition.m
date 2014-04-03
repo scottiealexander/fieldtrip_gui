@@ -39,8 +39,11 @@ if isempty(SCREEN_SIZE)
     set(0,'Units',ROOT_UNITS);
 end
 
-if w > SCREEN_SIZE(3) || h > SCREEN_SIZE(4)
-    error('figure dimentions exceede the screen size!');
+if w > SCREEN_SIZE(3) 
+    w = SCREEN_SIZE(3);
+elseif h > SCREEN_SIZE(4)
+    h = SCREEN_SIZE(4);
+%     error('figure dimentions exceede the screen size!');
 end
 
 %make the position vector

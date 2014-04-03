@@ -95,8 +95,17 @@ function SaveBtn(obj,varargin)
     hChild  = get(hFIG,'Children');
     bAx     = strcmpi(get(hChild,'Type'),'axes');
     bAx     = bAx & ~strcmpi(get(hChild,'Tag'),'legend');
-    strName = regexprep(get(get(hChild(bAx),'Title'),'String'),'\W+','_');
+    if sum(bAx) > 1
+        strName = 'figure';
+    elseif sum(bAx) == 1
+        strName = regexprep(get(get(hChild(bAx),'Title'),'String'),'\W+','_');
+    else
+        error('Das ist foul...');
+    end
     strDir  = fileparts(FT_DATA.path.dataset);
+    if isempty(strDir)
+        strDir = pwd;
+    end
     x       = pwd;
     try
         cd(strDir)
