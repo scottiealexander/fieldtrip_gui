@@ -1,46 +1,59 @@
 classdef ROA < handle
 
-%NOTE: for reading from an array, a ROA is on average ~.1ms slower per-element than a standard matlab double matrix, that's ~100sec slower for acessing 1,000,000 elements...
-
-%TODO: implement consecutive bytes reading!
+% ROA
+%
+% Description: a read-only matrix-like class that, on construction, writes the
+%			   data to disk and then reads from disk as needed
+%
+% Syntax: r = ROA(x)
+%
+% In:
+%		x - a n-dimentional numeric or character matrix
+%
+% Out:
+%		r - an instance of the ROA class that can be indexed *EXACTLY* like the
+%			original matrix (x)
+%
+% Updated: 2014-04-23
+% Scottie Alexander
+%
+% Please send bug reports to scottiealexander11@gmail.com
 
 %PRIVATE PROPERTIES-----------------------------------------------------------%
 properties (Access=private)
-	debug = 0;
-	data;
 	d_size;
 	d_class;
 	bytes;
 	file;
-	file_id;
 end
 %PRIVATE PROPERTIES-----------------------------------------------------------%
 
 %PUBLIC METHODS---------------------------------------------------------------%
 methods
 	%-------------------------------------------------------------------------%
-	function r = ROA(x)		
+	function r = ROA(x)
+		if ~isnumeric(x) || ~ischar(x)
+			error('input *MUST* be numeric or char!');
+		end
 		r.file 	  = fullfile(fileparts(mfilename('fullpath')),...
-						'private',[num2str(randi(1e6,1)) '.dat']);
+						'private',['roa_' num2str(randi(1e6,1)) '.dat']);
 		r.d_size  = size(x);
 		r.d_class = class(x);
 		r.bytes   = getfield(whos('x'),'bytes') / numel(x);
-		if ~r.debug
-			fid  = fopen(r.file,'w');
-			if fid < 1
-				error('could not open file %s!',r.file);
-			end
-			count = fwrite(fid,x,r.d_class);
-			fclose(fid);
-		else
-			r.data = x;
+		fid  = fopen(r.file,'w');
+		if fid < 1
+			error('could not open file %s!',r.file);
+		end
+		count = fwrite(fid,x,r.d_class);
+		fclose(fid);
+		if count ~= numel(x)
+			error('Failed to write the correct number of bytes to file!');
 		end
 	end
 	%-------------------------------------------------------------------------%
 	function x = subsref(r,s)		
 		switch s.type
 		case '()'
-			% id = tic;
 			if ~all(cellfun(@r.checkref,s.subs))
 				error('Invalid index detected');
 			end
@@ -72,53 +85,17 @@ methods
 				kSiz = 1:numel(siz);
 			end
 
-			if ~r.debug
-				% r.file_id = fopen(r.file,'r');
-				% [kIdx,kSort] = sort(kIdx);
-				% c = r.groupconsecutive(kIdx);
-				% n = numel(c);
-				% x = cell(n,1);
-				% for k = 1:n					
-				% 	x{k} = r.fetch(c{k});					
-				% end
-				% fclose(r.file_id);
-				% r.file_id = [];
-				% x = cat(1,x{:});
-				% x(kSort) = x;
-                x = readmatrix(r.file,kIdx,r.bytes);
-			else
-				x = r.data(kIdx);
-			end			
+            x = readmatrix(r.file,kIdx,r.bytes);		
 
 			%reshape the output so that we get the same answer as what matlab would give
 			x = permute(reshape(x,siz),kSiz);
-			% fprintf('TOTAL READ TIME = %.3f sec\n',toc(id));
-		% case '{}'
-		% 	fprintf('[WARNING]: cell reference is not implemented!\n');
-		case '.'
-			x = r.(s.subs);
 		otherwise
-			fprintf('[WARNING]: %s reference is not implemented!\n',s.type);
+			fprintf('[WARNING]: %s reference is not supported for instances of class ROA!\n',s.type);
 			x = [];
 		end
 	end
 	%-------------------------------------------------------------------------%
-	function x = fetch(r,kIdx)
-		try
-			fseek(r.file_id,(kIdx(1)-1)*r.bytes,-1);
-			x = fread(r.file_id,numel(kIdx),r.d_class);
-		catch me
-			keyboard;
-			fprintf('[WARNING]: caught error\n=>\t%s\nin ROA.fetch!\n',me.message);
-			x = [];
-		end
-	end
-	%-------------------------------------------------------------------------%
-	function delete(r)		
-		fid_all = fopen('all');
-		if any(fid_all == r.file_id)
-			fclose(r.file_id);
-		end
+	function delete(r)
 		if exist(r.file,'file') == 2
 			delete(r.file);
 		end
@@ -131,17 +108,12 @@ end
 methods (Static=true,Access=private)
 	%-------------------------------------------------------------------------%
 	function x = fill(x,nR1,nR2)
-		x = reshape(repmat(reshape(x,1,[]),nR1,1),[],1)';
+		x = transpose(reshape(repmat(reshape(x,1,[]),nR1,1),[],1));
 		x = repmat(x,1,nR2);
 	end
 	%-------------------------------------------------------------------------%
 	function b = checkref(x)
 		b = isnumeric(x) || (numel(x) == 1 && x == ':');
-	end
-	%-------------------------------------------------------------------------%
-	function c = groupconsecutive(x)
-		x = reshape(x,1,[]);
-		c = mat2cell(x,1,diff([0,find(diff(x) ~= 1),length(x)]));
 	end
 	%-------------------------------------------------------------------------%
 end
