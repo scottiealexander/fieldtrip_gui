@@ -32,7 +32,7 @@ end
 methods
 	%-------------------------------------------------------------------------%
 	function r = ROA(x)
-		if ~isnumeric(x) || ~ischar(x)
+		if ~isnumeric(x) && ~ischar(x)
 			error('input *MUST* be numeric or char!');
 		end
 		r.file 	  = fullfile(fileparts(mfilename('fullpath')),...
@@ -85,7 +85,7 @@ methods
 				kSiz = 1:numel(siz);
 			end
 
-            x = readmatrix(r.file,kIdx,r.bytes);		
+			x = readmatrix(r.file,kIdx,r.bytes);		
 
 			%reshape the output so that we get the same answer as what matlab would give
 			x = permute(reshape(x,siz),kSiz);
