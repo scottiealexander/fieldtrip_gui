@@ -47,6 +47,7 @@ switch lower(ACTION)
         tmr = timer('TimerFcn',@UpdateWaitbar,...
             'Period'        , .5                    ,...
             'ExecutionMode' , 'fixedDelay'          ,...
+            'Name'          , 'FT_PROGRESS_TIMER'   ,...
             'Tag'           , 'FT_PROGRESS_TIMER'    ...
             );
         
@@ -114,7 +115,7 @@ function UpdateWaitbar(varargin)
     drawnow;
 
     if N_DONE == ifo.process
-            CleanUp();           
+        CleanUp();           
     else
         TIC_ID = tic;
 

@@ -56,8 +56,6 @@ i = sqrt(-1);
 % Half of the data points
 h = floor(N/2);
 
-s = nan(size(x));
-
 % Randomized phases
 if rem(N,2) == 0
 	p1 = rand(h-1,k)*2*pi;

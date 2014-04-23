@@ -33,11 +33,11 @@ if ~isfield(FT_DATA,'power') || ~isfield(FT_DATA.power,'raw') || isempty(FT_DATA
 	return;
 end
 
-if nITER > 3
+if nITER > 1
 	s = ver;
 	bParallel = any(strcmpi({s(:).Name},'Parallel Computing Toolbox'));
 	if bParallel
-		nWorker = java.lang.Runtime.getRuntime().availableProcessors-1;
+		nWorker = 2;%java.lang.Runtime.getRuntime().availableProcessors-1;
 	end
 	if isnan(nWorker) || nWorker < 2
 		bParallel = false;
@@ -80,12 +80,14 @@ cKStart = mat2cell(kTrial,nTrial,2);
 nBand = numel(FT_DATA.power.bands);
 data = cell(nITER,1);
 
+s = MemUsage;
+fprintf('MEMORY USAGE: %f MB\n',s.used);
+
 %generate the surrogate ERSP matricies
 FT.Progress2(nBand*numel(cKStart)*nITER,'Generating surrogate data');
 id = tic;
 if bParallel
 	%use multiple workers in parallel
-	hMsg = FT.UserInput('Creating surrogate data',1);
 	fprintf('Using %d threads for processing\n',nWorker);
     if matlabpool('size') > 0
         matlabpool('close');
@@ -94,16 +96,13 @@ if bParallel
 	pc.NumWorkers = nWorker;
 	matlabpool(pc,nWorker);
 	parfor kIter = 1:nITER
-		data{kIter,1} = SurrogateERSP(FT_DATA.power,cKStart,true);
+		data{kIter,1} = SurrogateERSP(FT_DATA.power,cKStart);
 	end
 	matlabpool('close');
-	if ishandle(hMsg)
-		delete(hMsg);
-	end
 else
 	%single worker
 	for kIter = 1:nITER
-		data{kIter,1} = SurrogateERSP(FT_DATA.power,cKStart,false);
+		data{kIter,1} = SurrogateERSP(FT_DATA.power,cKStart);
 	end
 end
 fprintf('TOTAL ELASPED TIME: %.2f\n',toc(id));
@@ -112,6 +111,7 @@ fprintf('TOTAL ELASPED TIME: %.2f\n',toc(id));
 data = reshape(data,1,1,1,[]);
 data = CellJoin(cat(4,data{:}),1);
 
+return;
 %compute mean and std
 %here mean and std are nCondition x 1 cells of freq x time x channel matricies
 %representing the mean and std (respectivly) of all surrogate ERSP matricies
@@ -119,14 +119,14 @@ FT_DATA.power.surrogate.mean = cellfun(@(x) mean(x,4),data,'uni',false);
 FT_DATA.power.surrogate.std  = cellfun(@(x) std(x,[],4),data,'uni',false);
 
 %remove the raw data
-FT_DATA.power = rmfield(FT_DATA.power,'raw');
+% FT_DATA.power = rmfield(FT_DATA.power,'raw');
 
 FT_DATA.saved = false;
 
 FT.UpdateGUI;
 
 %-----------------------------------------------------------------------------%
-function cD = SurrogateERSP(power,cKStart,bpar)
+function cD = SurrogateERSP(power,cKStart)
 % SurrogateERSP
 %
 % Description: compute a surrogate ERSP from hilbert decomposition data
@@ -137,14 +137,14 @@ function cD = SurrogateERSP(power,cKStart,bpar)
 %		power   - the power struct computed by FT.HilbertPSD
 %		cKStart - a nCondition length cell of start and end indicies for each 
 %				  trial
-%		bpar    - true if this function is being called with a parfor loop
-%				  (i.e. don't try and update a progress bar)
 %
 % Out:
 %		cD - a nCondition length cell of ERSP matricies (freq x time x channel) 
 %
-% Updated: 2014-01-23
+% Updated: 2014-04-15
 % Scottie Alexnader
+
+%TODO: fix memory porblems!
 
 %INFO the function that actually computes a surrogate ERSP by:
 %		1) scrambling the phase of the hilbert decomposition matrix of each 
@@ -153,8 +153,9 @@ function cD = SurrogateERSP(power,cKStart,bpar)
 %		3) reformatting our trials matrix to be freq x time x channel x trial
 %		4) averaging accross trials to get a surrogate ERSP matrix that is
 %		   freq x time x channel
-	id2 = tic;
-
+	id2 = tic;313132
+	s = MemUsage;
+	fprintf('MEMORY USAGE: %f MB\n',s.used);
 	%initialize a cell of nans for each condition
 	nband 	  = numel(power.bands);
 	trial_len = numel(power.time);
@@ -172,17 +173,25 @@ function cD = SurrogateERSP(power,cKStart,bpar)
 			kStart = cKStart{kB};
 			
 			%extract trials for the current condition
-			tmp = reshape(arrayfun(@(y,z) d(:,y:z),kStart(:,1),kStart(:,2),'uni',false),1,1,[]);
+			nTrial   = size(kStart,1);
+			durTrial = (kStart(1,2) - kStart(1,1))+1; %plus 1 for numel
+			tmp 	 = zeros(size(d,1),durTrial,nTrial);
+			for kC = 1:nTrial
+				tmp(:,:,kC) =  d(:,kStart(kC,1):kStart(kC,2));
+			end
+			% tmp = reshape(arrayfun(@(y,z) d(:,y:z),kStart(:,1),kStart(:,2),'uni',false),1,1,[]);
 
 			%reformat to be 1 x time x channel x trial and insert into
 			%the cell element that corresponds with the condition, and the row
 			%of the contents of that cell element that corresponds to the
 			%current frequency band	
-			tmp = cat(3,tmp{:});
+			% tmp = cat(3,tmp{:});
 			cD{kB}(kA,:,:) = mean(permute(reshape(tmp,[1 size(tmp)]),[1,3,2,4]),4);
-			
+
 			FT.Progress2;            
 		end
+		s = MemUsage;
+		fprintf('MEMORY USAGE: %f MB\n',s.used);
 	end	
 	fprintf('%s: iter done [%.2f]\n',datestr(now,13),toc(id2));
 %-----------------------------------------------------------------------------%

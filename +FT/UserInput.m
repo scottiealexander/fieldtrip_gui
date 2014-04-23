@@ -20,7 +20,7 @@ function [output,strBtn] = UserInput(strMsg,vType,varargin)
 %                     0 - error message
 %                     1 - status message
 %   options:
-%       button - (<none>) a cell of up to 3 buttons to show, set to false or 
+%       button - (<none>) a cell of buttons to show, set to false or 
 %                leave empty to omit
 %       input  - (false) true to add a input box above the buttons (buttons are
 %                required if this option is set)

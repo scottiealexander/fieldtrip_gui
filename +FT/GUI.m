@@ -378,15 +378,17 @@ function ClearDataset(obj,evt)
 end
 %-------------------------------------------------------------------------%
 function QuitGUI(obj,evt)
-    if FT_DATA.saved || ~isfield(FT_DATA,'data') || isempty(FT_DATA.data)
-        %data is saved or there is none, print our message and quit
-    else        
-        resp = FT.UserInput('\fontsize{14}\bfThis dataset has unsaved changes.\nWould you like to save them?',1,...
-                'button',{'Yes','No'},'title','Unsaved Changes');
-        if strcmpi(resp,'yes')
-            SaveDataset(obj,evt,'as');
-            if ~FT_DATA.saved
-                return;
+    if isfield(FT_DATA,'gui') && isfield(FT_DATA,'saved')
+        if FT_DATA.saved || ~isfield(FT_DATA,'data') || isempty(FT_DATA.data)
+            %data is saved or there is none, print our message and quit
+        else        
+            resp = FT.UserInput('\fontsize{14}\bfThis dataset has unsaved changes.\nWould you like to save them?',1,...
+                    'button',{'Yes','No'},'title','Unsaved Changes');
+            if strcmpi(resp,'yes')
+                SaveDataset(obj,evt,'as');
+                if ~FT_DATA.saved
+                    return;
+                end
             end
         end
     end

@@ -75,6 +75,11 @@ FT_DATA.power.data    = data;
 FT_DATA.power.centers = centers;
 FT_DATA.power.bands   = cBands;
 FT_DATA.power.time    = GetTime;
+FT_DATA.power.label   = FT_DATA.data.label;
+FT_DATA.power.fsample = FT_DATA.data.fsample;
+
+%remove the data field to save memory
+FT_DATA = rmfield(FT_DATA,'data');
 
 FT_DATA.saved = false;
 

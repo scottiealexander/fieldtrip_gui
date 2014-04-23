@@ -7,7 +7,7 @@
 	- downsample to 436Hz
 	- bandpass filter (1-232Hz)
 	- abs(hilbert XFM)^2
-	- scale the power at each frequency by the total mean power WTF???
+	- scale the power at each frequency by the total mean power
 	- segment
 	- average trials => ERSP
 
