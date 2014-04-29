@@ -8,10 +8,11 @@ function SurrogatePSD(nITER)
 % Syntax: FT.SurrogatePSD(nITER)
 %
 % In:
+%		nITER - the number of surrogate datasets to generate
 %
 % Out: 
 %
-% Updated: 2014-03-29
+% Updated: 2014-04-24
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
@@ -37,7 +38,7 @@ if nITER > 1
 	s = ver;
 	bParallel = any(strcmpi({s(:).Name},'Parallel Computing Toolbox'));
 	if bParallel
-		nWorker = 2;%java.lang.Runtime.getRuntime().availableProcessors-1;
+		nWorker = java.lang.Runtime.getRuntime().availableProcessors-1;
 	end
 	if isnan(nWorker) || nWorker < 2
 		bParallel = false;
@@ -53,7 +54,7 @@ nTrial = cellfun(@(x) size(x,4),FT_DATA.power.data);
 
 %trial and data length in number of data points
 trial_len 	 = numel(FT_DATA.power.time);
-data_length  = size(FT_DATA.power.raw{1},2);
+data_length  = size(FT_DATA.power.raw,2);
 
 %indicies of points that mark the start of a trial
 kStart = nan(sum(nTrial),1);
@@ -80,8 +81,13 @@ cKStart = mat2cell(kTrial,nTrial,2);
 nBand = numel(FT_DATA.power.bands);
 data = cell(nITER,1);
 
-s = MemUsage;
-fprintf('MEMORY USAGE: %f MB\n',s.used);
+%lock the underlying matrix to prevent clearing
+FT_DATA.power.raw.lock;
+
+%get the data we need as local variables
+raw   = FT_DATA.power.raw;
+bands = FT_DATA.power.bands;
+time  = FT_DATA.power.time;
 
 %generate the surrogate ERSP matricies
 FT.Progress2(nBand*numel(cKStart)*nITER,'Generating surrogate data');
@@ -96,16 +102,19 @@ if bParallel
 	pc.NumWorkers = nWorker;
 	matlabpool(pc,nWorker);
 	parfor kIter = 1:nITER
-		data{kIter,1} = SurrogateERSP(FT_DATA.power,cKStart);
+		data{kIter,1} = SurrogateERSP(raw,bands,time,cKStart);
 	end
 	matlabpool('close');
 else
 	%single worker
 	for kIter = 1:nITER
-		data{kIter,1} = SurrogateERSP(FT_DATA.power,cKStart);
+		data{kIter,1} = SurrogateERSP(raw,bands,time,cKStart);
 	end
 end
 fprintf('TOTAL ELASPED TIME: %.2f\n',toc(id));
+
+%unlock the underlying matrix
+FT_DATA.power.raw.unlock;
 
 %group surrogates by condition
 data = reshape(data,1,1,1,[]);
@@ -119,14 +128,14 @@ FT_DATA.power.surrogate.mean = cellfun(@(x) mean(x,4),data,'uni',false);
 FT_DATA.power.surrogate.std  = cellfun(@(x) std(x,[],4),data,'uni',false);
 
 %remove the raw data
-% FT_DATA.power = rmfield(FT_DATA.power,'raw');
+FT_DATA.power = rmfield(FT_DATA.power,'raw');
 
 FT_DATA.saved = false;
 
 FT.UpdateGUI;
 
 %-----------------------------------------------------------------------------%
-function cD = SurrogateERSP(power,cKStart)
+function cD = SurrogateERSP(raw,bands,time,cKStart)
 % SurrogateERSP
 %
 % Description: compute a surrogate ERSP from hilbert decomposition data
@@ -153,20 +162,18 @@ function cD = SurrogateERSP(power,cKStart)
 %		3) reformatting our trials matrix to be freq x time x channel x trial
 %		4) averaging accross trials to get a surrogate ERSP matrix that is
 %		   freq x time x channel
-	id2 = tic;313132
-	s = MemUsage;
-	fprintf('MEMORY USAGE: %f MB\n',s.used);
+	id2 = tic;
 	%initialize a cell of nans for each condition
-	nband 	  = numel(power.bands);
-	trial_len = numel(power.time);
-	nchan 	  = size(power.raw{1},1);
+	nband 	  = numel(bands);
+	trial_len = numel(time);
+	nchan 	  = size(raw,1);
 
 	cD = repmat({nan(nband,trial_len,nchan)},numel(cKStart),1);
 	
 	%iterate through the hilbert decomposition matrix for each power band
 	for kA = 1:nband
 		%scramble the phases
-		d = phaseran2(power.raw{kA});	
+		d = phaseran2(raw(:,:,kA));	
 
 		%iterate through the cell of trial start and end indicies
 		for kB = 1:numel(cKStart)
@@ -190,8 +197,6 @@ function cD = SurrogateERSP(power,cKStart)
 
 			FT.Progress2;            
 		end
-		s = MemUsage;
-		fprintf('MEMORY USAGE: %f MB\n',s.used);
 	end	
 	fprintf('%s: iter done [%.2f]\n',datestr(now,13),toc(id2));
 %-----------------------------------------------------------------------------%

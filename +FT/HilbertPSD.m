@@ -59,7 +59,7 @@ FT.Progress2((param.n*2)+1,'Computing spectrogram');
 % yields a cfg.n x 1 cell of channel x time power values
 data_raw   = cellfun(@HilbertXFM,cBands,'uni',false);
 
-%scale each channel/frequency band by total mean power across bands
+%scale each channel/frequency band by total mean power across bands, but within channel
 mean_power = cellfun(@(x) mean(x,2),data_raw,'uni',false);
 mean_power = mean(cat(2,mean_power{:}),2);
 data_raw   = cellfun(@(x) x./repmat(mean_power,1,size(x,2)),data_raw,'uni',false);
@@ -70,7 +70,10 @@ FT.Progress2;
 cellfun(@SegmentData,data_raw,num2cell(1:param.n),'uni',false);
 
 %add to the data struct
-FT_DATA.power.raw     = data_raw;
+fprintf('Creating ROA instance\n');
+id = tic;
+FT_DATA.power.raw     = FT.ROA(cat(3,data_raw{:}));
+fprintf('Done | %.3f\n',toc(id));
 FT_DATA.power.data    = data;
 FT_DATA.power.centers = centers;
 FT_DATA.power.bands   = cBands;

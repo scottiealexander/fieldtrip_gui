@@ -85,10 +85,12 @@ function CleanUp(varargin)
     end
     tmr = timerfind('Tag','FT_PROGRESS_TIMER');
     if ~isempty(tmr)
-    	if isvalid(tmr) && strcmpi(tmr.Running,'on')
-    		stop(tmr);
-    	end        
-    	delete(tmr);
+        for k = 1:numel(tmr)
+        	if isvalid(tmr(k)) && strcmpi(tmr(k).Running,'on')
+        		stop(tmr(k));
+        	end        
+        	delete(tmr(k));
+        end
     end
     if exist(strPathProc,'file') == 2
         delete(strPathProc);
