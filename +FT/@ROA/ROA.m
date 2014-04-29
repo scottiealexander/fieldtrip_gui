@@ -45,8 +45,7 @@ methods
 		end
 		r.id = randi(1e6,1);
 		r.file 	  = fullfile(fileparts(mfilename('fullpath')),...
-						'private',['roa_' num2str(r.id) '.dat']);
-        disp(r.id);
+						'private',['roa_' num2str(r.id) '.dat']);        
 		r.d_size  = size(x);
 		r.d_class = class(x);
 		r.bytes   = getfield(whos('x'),'bytes') / numel(x);

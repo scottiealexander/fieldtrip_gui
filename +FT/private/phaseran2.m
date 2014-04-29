@@ -35,7 +35,7 @@ function s = phaseran2(x)
 %
 %		12 Apr 2002
 %
-% Updated: 2014-01-22
+% Updated: 2014-04-29
 % Scottie Alexander
 
 %reshape so that each column is a variable (for fft etc..)
@@ -47,23 +47,22 @@ k = size(x,2);
 
 % FFT on x
 y = fft(x);
-% Magnitudes
+% magnitudes
 m = abs(y);
-% Angles
+% angles
 p = angle(y);
-% The imaginary unit
+% the imaginary unit
 i = sqrt(-1);
-% Half of the data points
+% half of the data points
 h = floor(N/2);
 
-% Randomized phases
+% randomize phases
 if rem(N,2) == 0
 	p1 = rand(h-1,k)*2*pi;
     p(2:N,:) = [p1; p(h+1,:); -flipud(p1)];
-	% Adjust the magnitudes
+	% adjust the magnitudes
 	m = [m(1:h+1,:);flipud(m(2:h,:))];
 else
-    fprintf('%s\n','odd number of points');
 	p1 = rand(h,k)*2*pi;
 	p(2:N,:) = [p1;-flipud(p1)];
 end

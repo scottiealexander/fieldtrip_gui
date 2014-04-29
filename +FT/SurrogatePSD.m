@@ -120,12 +120,11 @@ FT_DATA.power.raw.unlock;
 data = reshape(data,1,1,1,[]);
 data = CellJoin(cat(4,data{:}),1);
 
-return;
 %compute mean and std
 %here mean and std are nCondition x 1 cells of freq x time x channel matricies
 %representing the mean and std (respectivly) of all surrogate ERSP matricies
-FT_DATA.power.surrogate.mean = cellfun(@(x) mean(x,4),data,'uni',false);
-FT_DATA.power.surrogate.std  = cellfun(@(x) std(x,[],4),data,'uni',false);
+FT_DATA.power.surrogate.mean = cellfun(@(x) nanmean(x,4),data,'uni',false);
+FT_DATA.power.surrogate.std  = cellfun(@(x) nanstd(x,[],4),data,'uni',false);
 
 %remove the raw data
 FT_DATA.power = rmfield(FT_DATA.power,'raw');
@@ -172,13 +171,15 @@ function cD = SurrogateERSP(raw,bands,time,cKStart)
 	
 	%iterate through the hilbert decomposition matrix for each power band
 	for kA = 1:nband
+		id3 = tic;
 		%scramble the phases
-		d = phaseran2(raw(:,:,kA));	
+		d = phaseran2(raw(:,:,kA));
+		fprintf('%s: phaseran done [%.2f]\n',datestr(now,13),toc(id3));
 
 		%iterate through the cell of trial start and end indicies
 		for kB = 1:numel(cKStart)
 			kStart = cKStart{kB};
-			
+			id4 = tic;
 			%extract trials for the current condition
 			nTrial   = size(kStart,1);
 			durTrial = (kStart(1,2) - kStart(1,1))+1; %plus 1 for numel
@@ -194,7 +195,7 @@ function cD = SurrogateERSP(raw,bands,time,cKStart)
 			%current frequency band	
 			% tmp = cat(3,tmp{:});
 			cD{kB}(kA,:,:) = mean(permute(reshape(tmp,[1 size(tmp)]),[1,3,2,4]),4);
-
+			fprintf('%s: segment done [%.2f]\n',datestr(now,13),toc(id4));
 			FT.Progress2;            
 		end
 	end	

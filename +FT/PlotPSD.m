@@ -34,7 +34,7 @@ if isempty(BASELINE) && ~isfield(FT_DATA.power,'surrogate')
 	BASELINE = [find(time>=BASELINE(1),1,'first') find(time>=BASELINE(2),1,'first')];
 end
 
-cLabel = Ternary(iscell(FT_DATA.data),FT_DATA.data.label{1},FT_DATA.data.label);
+cLabel = FT_DATA.power.label;
 data = cellfun(@(x) mean(x,4),FT_DATA.power.data,'uni',false);
 
 pFig = GetFigPosition(1200,500);
