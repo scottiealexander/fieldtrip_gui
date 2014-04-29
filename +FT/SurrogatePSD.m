@@ -171,15 +171,12 @@ function cD = SurrogateERSP(raw,bands,time,cKStart)
 	
 	%iterate through the hilbert decomposition matrix for each power band
 	for kA = 1:nband
-		id3 = tic;
 		%scramble the phases
 		d = phaseran2(raw(:,:,kA));
-		fprintf('%s: phaseran done [%.2f]\n',datestr(now,13),toc(id3));
 
 		%iterate through the cell of trial start and end indicies
 		for kB = 1:numel(cKStart)
 			kStart = cKStart{kB};
-			id4 = tic;
 			%extract trials for the current condition
 			nTrial   = size(kStart,1);
 			durTrial = (kStart(1,2) - kStart(1,1))+1; %plus 1 for numel
@@ -195,7 +192,6 @@ function cD = SurrogateERSP(raw,bands,time,cKStart)
 			%current frequency band	
 			% tmp = cat(3,tmp{:});
 			cD{kB}(kA,:,:) = mean(permute(reshape(tmp,[1 size(tmp)]),[1,3,2,4]),4);
-			fprintf('%s: segment done [%.2f]\n',datestr(now,13),toc(id4));
 			FT.Progress2;            
 		end
 	end	
