@@ -1,3 +1,0 @@
-process	10
-done	3
-time	123
