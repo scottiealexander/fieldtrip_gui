@@ -110,8 +110,9 @@ if any(strcmpi(opt.type,{'all','path'}))
     end
 
     %add the packaged version of fieldtrip to the matlab path
-    strDirFT = fullfile(fileparts(fileparts(mfilename('fullpath'))),'fieldtrip');
-    addpath(strDirFT);
+    strDirMain = fileparts(fileparts(mfilename('fullpath')));
+    strDirFT = fullfile(strDirMain,'fieldtrip');    
+    addpath(strDirMain,strDirFT);
 
     %and let fieldtrip set itself up
     hMsg = FT.UserInput('Initializing FieldTrip components... Please Wait.',1);
