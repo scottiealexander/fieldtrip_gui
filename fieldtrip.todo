@@ -22,6 +22,10 @@
 #ITEM 7
 	- add label editor to PlotCtrl
 
+#ITEM 8
+	- seperate trial definition from trial segmentations... (maybe...)
+
+# --- SURROGATEPSD TEST RESULTS --- %
 2-core, 2 surrgate test
 TOTAL ELASPED TIME: 304.52 
 PEAK MEMORY USAGE:  8342.390936 MB

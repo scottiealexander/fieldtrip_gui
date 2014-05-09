@@ -43,8 +43,6 @@ function [output,strBtn] = UserInput(strMsg,vType,varargin)
 %
 % Please report bugs to: scottiealexander11@gmail.com
 
-global FT_DATA;
-
 opt = FT.ParseOpts(varargin,...
     'button' , []     ,...
     'input'  , false  ,...
@@ -92,11 +90,12 @@ im = imread(strPathIcon);
 im = imresize(im,[NaN 100]);
 
 %get the size and position for the figure
-siz = FT_DATA.gui.screen_size;
+siz = get(0,'ScreenSize');
 wFig = 440;
 hFig = 160;
 lFig = (siz(3)/2)-(wFig/2);
 bFig = (siz(4)/2)-(hFig/2);
+
 
 %main figure
 h = figure('Units','pixels','OuterPosition',[lFig bFig wFig hFig],...

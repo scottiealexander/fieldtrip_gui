@@ -15,12 +15,13 @@ function p = GetFigPosition(w,h,varargin)
 %                     screen (positive moves right, negative moves left)
 %       yoffset - (0) vertical offset in pixels relative to the center of the
 %                     screen (positive move up, negative moves down)
+%       reference - ('center') the reference point, either 'center' or 'absolute'
 %
 % Out: 
 %       p - the position of the figure as a 1x4 position vector in the order:
 %           [left,bottom,width,height]
 %
-% Updated: 2013-09-18
+% Updated: 2014-05-09
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com

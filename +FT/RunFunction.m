@@ -1,21 +1,18 @@
-function RunFunction(obj,evt,f)
+function RunFunction(f)
 
 % FT.RunFunction
 %
 % Description: run a FieldTrip processing function, catching any errors that
 %              occur so that they can be reported
 %
-% Syntax: FT.RunFunction(obj,evt,f)
+% Syntax: FT.RunFunction(f)
 %
 % In:
-%       obj - the calling object, this will be uimenu object that runs the
-%             command
-%       evt - the calling event, again specified by the calling uimenu
 %       f   - a handle to the FieldTrip function to run
 %
 % Out: 
 %
-% Updated: 2013-08-19
+% Updated: 2014-05-09
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com

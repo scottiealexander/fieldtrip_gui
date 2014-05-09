@@ -10,7 +10,7 @@ function GUI()
 %
 % Out: 
 %
-% Updated: 2014-03-29
+% Updated: 2014-05-09
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
@@ -19,18 +19,17 @@ dbstop if error;
 
 global FT_DATA;
 
+FT.Update(true);
+
 %prepare everything we need for our FieldTrip GUI analysis session
 if ~FT.Prepare
     return;
 end
 
 %initialize the GUI figure
-wFig = 480;
-hFig = 350;
-lFig = 200;
-bFig = 200;
+pFig = GetFigPosition(480,350,'xoffset',200,'yoffset',200,'reference','absolute');
 
-h = figure('Units','pixels','OuterPosition',[lFig bFig wFig hFig],...
+h = figure('Units','pixels','OuterPosition',pFig,...
            'Name','FieldTrip GUI','NumberTitle','off','MenuBar','none',...
            'CloseRequestFcn',@GUICloseFcn);
 
@@ -78,44 +77,47 @@ FT.UpdateGUI;
     
 %view operations
     hViewMenu = uimenu(h,'Label','View');
-    hViewIfo  = uimenu(hViewMenu,'Label','Data Info','Callback',@(x,y) FT.RunFunction(x,y,@FT.DataSummery));
-    hViewData = uimenu(hViewMenu,'Label','Channel Data','Callback',@(x,y) FT.RunFunction(x,y,@FT.PlotData));
-    hViewERP  = uimenu(hViewMenu,'Label','Average ERP','Callback',@(x,y) FT.RunFunction(x,y,@FT.PlotERP));
-    hViewERPim= uimenu(hViewMenu,'Label','ERP Image','Callback',@(x,y) FT.RunFunction(x,y,@FT.ERPImage));
-    hViewHilb = uimenu(hViewMenu,'Label','Hilbert PSD','Callback',@(x,y) FT.RunFunction(x,y,@FT.PlotPSD));
-    hViewCorr = uimenu(hViewMenu,'Label','Channel Correlations','Callback',@(x,y) FT.RunFunction(x,y,@FT.ChannelCorr));
-    hViewCoh  = uimenu(hViewMenu,'Label','Channel Coherence','Callback',@(x,y) FT.RunFunction(x,y,@FT.Coherence));    
-    %hViewPow  = uimenu(hViewMenu,'Label','Average Power Spectra','Callback',@(x,y) FT.RunFunction(x,y,@() FT.PlotPower('spectra')));
-    % hViewSpec = uimenu(hViewMenu,'Label','Average Spectrogram','Callback',@(x,y) FT.RunFunction(x,y,@() FT.PlotPower('spectrogram')));
-    hReDraw   = uimenu(hViewMenu,'Label','Redraw GUI Display','Callback',@(x,y) FT.RunFunction(x,y,@FT.RedrawGUI));
+    hViewIfo  = uimenu(hViewMenu,'Label','Data Info','Callback',@(varargin) FT.RunFunction(@FT.DataSummery));
+    hViewData = uimenu(hViewMenu,'Label','Channel Data','Callback',@(varargin) FT.RunFunction(@FT.PlotData));
+    hViewERP  = uimenu(hViewMenu,'Label','Average ERP','Callback',@(varargin) FT.RunFunction(@FT.PlotERP));
+    hViewERPim= uimenu(hViewMenu,'Label','ERP Image','Callback',@(varargin) FT.RunFunction(@FT.ERPImage));
+    hViewHilb = uimenu(hViewMenu,'Label','Hilbert PSD','Callback',@(varargin) FT.RunFunction(@FT.PlotPSD));
+    hViewCorr = uimenu(hViewMenu,'Label','Channel Correlations','Callback',@(varargin) FT.RunFunction(@FT.ChannelCorr));
+    hViewCoh  = uimenu(hViewMenu,'Label','Channel Coherence','Callback',@(varargin) FT.RunFunction(@FT.Coherence));    
+    %hViewPow  = uimenu(hViewMenu,'Label','Average Power Spectra','Callback',@(varargin) FT.RunFunction(@() FT.PlotPower('spectra')));
+    % hViewSpec = uimenu(hViewMenu,'Label','Average Spectrogram','Callback',@(varargin) FT.RunFunction(@() FT.PlotPower('spectrogram')));
+    hReDraw   = uimenu(hViewMenu,'Label','Redraw GUI Display','Callback',@(varargin) FT.RunFunction(@FT.RedrawGUI));
     
 %preprocessing
     hProcMenu = uimenu(h,'Label','Preprocessing');
-    hChanVeiw = uimenu(hProcMenu,'Label','Remove Channels','Callback',@(x,y) FT.RunFunction(x,y,@FT.RemoveChannels));
-    hReSamp   = uimenu(hProcMenu,'Label','Resample Data','Callback',@(x,y) FT.RunFunction(x,y,@FT.Resample));
-    hReFilt   = uimenu(hProcMenu,'Label','Filter Data','Callback',@(x,y) FT.RunFunction(x,y,@FT.Filter));
-    hReRef    = uimenu(hProcMenu,'Label','Rereference Data','Callback',@(x,y) FT.RunFunction(x,y,@FT.Rereference));
-    hNewChan  = uimenu(hProcMenu,'Label','Create New Channel','Callback',@(x,y) FT.RunFunction(x,y,@FT.NewChannel));
-    hBPFilt   = uimenu(hProcMenu,'Label','Bandpass Filter','Callback',@(x,y) FT.RunFunction(x,y,@FT.BandPass));
+    hChanVeiw = uimenu(hProcMenu,'Label','Remove Channels','Callback',@(varargin) FT.RunFunction(@FT.RemoveChannels));
+    hReSamp   = uimenu(hProcMenu,'Label','Resample Data','Callback',@(varargin) FT.RunFunction(@FT.Resample));
+    hReFilt   = uimenu(hProcMenu,'Label','Filter Data','Callback',@(varargin) FT.RunFunction(@FT.Filter));
+    hReRef    = uimenu(hProcMenu,'Label','Rereference Data','Callback',@(varargin) FT.RunFunction(@FT.Rereference));
+    hNewChan  = uimenu(hProcMenu,'Label','Create New Channel','Callback',@(varargin) FT.RunFunction(@FT.NewChannel));
+    hBPFilt   = uimenu(hProcMenu,'Label','Bandpass Filter','Callback',@(varargin) FT.RunFunction(@FT.BandPass));
     
 %segmentation
     hSegMenu  = uimenu(h,'Label','Segmentation');
-    hFndEvt   = uimenu(hSegMenu,'Label','Process Events','Callback',@(x,y) FT.RunFunction(x,y,@FT.ProcessEvents));
-    hRecodeEvt= uimenu(hSegMenu,'Label','Re-label Events','Callback',@(x,y) FT.RunFunction(x,y,@FT.RecodeEvents));
-    hChkEvt   = uimenu(hSegMenu,'Label','Manual Event Checking','Callback',@(x,y) FT.RunFunction(x,y,@FT.CheckEvents));
-    hDefTrial = uimenu(hSegMenu,'Label','Segment Trials','Callback',@(x,y) FT.RunFunction(x,y,@FT.SegmentTrials));
-    hBaseCor  = uimenu(hSegMenu,'Label','Baseline Correct','Callback',@(x,y) FT.RunFunction(x,y,@FT.BaselineCorrect));
-    hArtRej   = uimenu(hSegMenu,'Label','Reject Trials','Callback',@(x,y) FT.RunFunction(x,y,@FT.RejectTrials));
+    hFndEvt   = uimenu(hSegMenu,'Label','Process Events','Callback',@(varargin) FT.RunFunction(@FT.ProcessEvents));
+    hRecodeEvt= uimenu(hSegMenu,'Label','Re-label Events','Callback',@(varargin) FT.RunFunction(@FT.RecodeEvents));
+    hChkEvt   = uimenu(hSegMenu,'Label','Manual Event Checking','Callback',@(varargin) FT.RunFunction(@FT.CheckEvents));
+    hDefTrial = uimenu(hSegMenu,'Label','Segment Trials','Callback',@(varargin) FT.RunFunction(@FT.SegmentTrials));
+    hBaseCor  = uimenu(hSegMenu,'Label','Baseline Correct','Callback',@(varargin) FT.RunFunction(@FT.BaselineCorrect));
+    hArtRej   = uimenu(hSegMenu,'Label','Reject Trials','Callback',@(varargin) FT.RunFunction(@FT.RejectTrials));
 
 %analysis
     hAnaMenu  = uimenu(h,'Label','Analysis');
-    hAvgERP   = uimenu(hAnaMenu,'Label','Average ERPs','Callback',@(x,y) FT.RunFunction(x,y,@FT.AverageERP));
-    hHilbert  = uimenu(hAnaMenu,'Label','Hilbert Decomposition','Callback',@(x,y) FT.RunFunction(x,y,@FT.HilbertDecomposition));
-    hGrandERP = uimenu(hAnaMenu,'Label','ERP Grand Average','Callback',@(x,y) FT.RunFunction(x,y,@FT.GrandAverage));
-    hPeak     = uimenu(hAnaMenu,'Label','Find Peaks & Valleys','Callback',@(x,y) FT.RunFunction(x,y,@FT.PeakFinder));
-    % hPower    = uimenu(hAnaMenu,'Label','Power Spectrum','Callback',@(x,y) FT.RunFunction(x,y,@FT.PowerSpec));
-    % hSpec     = uimenu(hAnaMenu,'Label','Spectrogram','Callback','disp(''@(x,y) FT.RunFunction(x,y,@FT.Spectrogram)'')');
-    
+    hAvgERP   = uimenu(hAnaMenu,'Label','Average ERPs','Callback',@(varargin) FT.RunFunction(@FT.AverageERP));
+    hHilbert  = uimenu(hAnaMenu,'Label','Hilbert Decomposition','Callback',@(varargin) FT.RunFunction(@FT.HilbertDecomposition));
+    hGrandERP = uimenu(hAnaMenu,'Label','ERP Grand Average','Callback',@(varargin) FT.RunFunction(@FT.GrandAverage));
+    hPeak     = uimenu(hAnaMenu,'Label','Find Peaks & Valleys','Callback',@(varargin) FT.RunFunction(@FT.PeakFinder));
+    % hPower    = uimenu(hAnaMenu,'Label','Power Spectrum','Callback',@(varargin) FT.RunFunction(@FT.PowerSpec));
+    % hSpec     = uimenu(hAnaMenu,'Label','Spectrogram','Callback','disp(''@(x,y) FT.RunFunction(@FT.Spectrogram)'')');
+%update
+    hUpdMenu  = uimenu(h,'Label','Update');
+    hUpdate   = uimenu(hUpdMenu,'Label','Update Toolbox','Callback',@(varargin) FT.Update(false));
+
 % %template operations
 %     hTempMenu = uimenu(h,'Label','Template');
 %     hSaveTemplate = uimenu(hTempMenu,'Label','Save Current Template','Callback','disp(''save current template'')');
