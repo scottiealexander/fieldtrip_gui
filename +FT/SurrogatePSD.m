@@ -99,12 +99,22 @@ if bParallel
         matlabpool('close');
     end    
     pc = parcluster;
-	pc.NumWorkers = nWorker;
-	matlabpool(pc,nWorker);
-	parfor kIter = 1:nITER
-		data{kIter,1} = SurrogateERSP(raw,bands,time,cKStart);
-	end
-	matlabpool('close');
+    pc.NumWorkers = nWorker;
+    if exist('parpool','file') == 2
+        bUsePar = true;
+        pp = parpool(pc);
+    else
+        bUsePar = false;
+        matlabpool(pc,nWorker);
+    end	
+    parfor kIter = 1:nITER
+        data{kIter,1} = SurrogateERSP(raw,bands,time,cKStart);
+    end
+    if bUsePar
+        delete(pp);
+    else
+        matlabpool('close');
+    end
 else
 	%single worker
 	for kIter = 1:nITER
