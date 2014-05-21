@@ -151,8 +151,7 @@ methods
 	end
 	%-------------------------------------------------------------------------%
 	function delete(r)
-		if ~r.locked
-			fprintf('DELETING ROA INSTANCE\n');
+		if ~r.locked			
 			if exist(r.file,'file') == 2
 				delete(r.file);
 			end
