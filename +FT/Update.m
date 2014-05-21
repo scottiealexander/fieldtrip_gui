@@ -27,11 +27,12 @@ end
 %-----------------------------------------------------------------------------%
 function DoUpdate
 	x = pwd;
-	cd(fileparts(gitdir));
-    system('git remote update >>/dev/null');
-	[b,local]  = system('git rev-parse master >>/dev/null');
-	[b,remote] = system('git rev-parse origin/master >>/dev/null');
-	[b,base]   = system('git merge-base master origin/master >>/dev/null');
+	gitdir = fileparts(gitdir); %make sure we are NOT in the .git directory
+	cd(gitdir);
+    system('git remote update >> /dev/null');
+	[b,local]  = system('git rev-parse master >> /dev/null');
+	[b,remote] = system('git rev-parse origin/master >> /dev/null');
+	[b,base]   = system('git merge-base master origin/master >> /dev/null');
 	cd(x);
 	if strcmpi(local,remote)
 		%everything is up-to-date		
@@ -45,7 +46,7 @@ function DoUpdate
 		resp = FT.UserInput(msg,1,'title','Update Available','button',{'Yes','No'});
 		if strcmpi(resp,'yes')
 			cd(gitdir);
-			[b,msg] = system('git pull origin master >>/dev/null');
+			[b,msg] = system('git pull origin master >> /dev/null');
 			if b
 				cd(x);
 				me = MException('VersionMgmt:PullFail',['Toolbox update failed: ' msg]);
