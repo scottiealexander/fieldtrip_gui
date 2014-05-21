@@ -51,7 +51,7 @@ end
 l_pad = opt.h_pad/pFig(3);
 b_pad = opt.v_pad/pFig(4);
 pad_total = l_pad*(n+1);
-w_ax = (1-pad_total)/3;
+w_ax = (1-pad_total)/n;
 pos = cell(n,1);
 left = l_pad;
 for kP = 1:n

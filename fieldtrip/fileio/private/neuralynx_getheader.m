@@ -69,12 +69,17 @@ for i=1:num
       % remove unuseable characters from the variable name (key)
       key = key(key~=':');
       % assign the value to the header structure
-      indx =  strfind(key,'µs'); % avoid problems with this field in the new Neuralynx header      
+      indx =  strfind(key,'ï¿½s'); % avoid problems with this field in the new Neuralynx header      
       if ~isempty(indx)
         key(indx:indx+1) = 'ms';
       end
-      hdr = setfield(hdr, key, val);
+      %hdr = setfield(hdr, key, val);
+      hdr.(tofieldname(key)) = val; %EDIT: scottie alexander, 2014-05-20
     end
   end
 end
+
+%EDIT: scottie alexander, 2014-05-20
+function str = tofieldname(str)
+    str(str > 122) = '';
 

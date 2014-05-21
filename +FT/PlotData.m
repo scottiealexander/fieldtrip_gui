@@ -58,7 +58,13 @@ else
     cfg.blocksize   = 30; 
 end
 
-cfg.channel     = data.label(1:9);  %channels (and number of channels) to display initially
+if numel(data.label) > 9
+    nChan = 9;
+else
+    nChan = numel(data.label);
+end
+
+cfg.channel     = data.label(1:nChan);  %channels (and number of channels) to display initially
 cfg.viewmode    = 'vertical';
 cfg.plotlabels  = 'yes';
 cfg.ylim        = [-100 100];

@@ -20,7 +20,9 @@ global FT_DATA;
 CFG = CFGDefault;
 
 %check if this baseline correction has already been preformed
-if ~FT.CheckStage('baseline_correction')
+%if ~FT.CheckStage('baseline_correction')
+if (~isfield(FT_DATA,'data') || isempty(FT_DATA.data)) && (~isfield(FT_DATA,'power') || isempty(FT_DATA.power))
+    FT.UserInput('\bfThis dataset appears to lack data...',0,'button','OK');
     return;
 end
 

@@ -15,6 +15,7 @@ function PlotPSD()
 %
 % Please report bugs to: scottiealexander11@gmail.com
 
+
 global FT_DATA;
 persistent BASELINE;
 
@@ -37,9 +38,10 @@ end
 cLabel = FT_DATA.power.label;
 data = cellfun(@(x) mean(x,4),FT_DATA.power.data,'uni',false);
 
-pFig = GetFigPosition(1200,500);
+pFig = GetFigPosition(700,500);
 h = figure('Units','pixels','Position',pFig,'Name','Spectrogram',...
-		   'Menubar','none','NumberTitle','off');
+		   ...'Menubar','none',...
+           'NumberTitle','off');
 
 %smoothing
 f = fspecial('gaussian',[10 10], 3);
@@ -88,7 +90,7 @@ function PlotOne(strChan)
 		set(hAx,'CLim',[cMin cMax],'XTick',xT,'XTickLabel',xTL,'YTick',yT,'YTickLabel',yTL(end:-1:1));
 		
 		%add the name of each condition
-		set(get(hAx,'Title'),'String',FT_DATA.epoch{k}.name);
+		set(get(hAx,'Title'),'String',FT_DATA.epoch{k}.name);        
 	end
 
 	%colorbar
