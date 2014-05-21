@@ -32,20 +32,6 @@
 #item 10
 	- the version of plot2svg seems not to work for 2013b...???
 
-# --- SURROGATEPSD TEST RESULTS --- %
-2-core, 2 surrgate test
-TOTAL ELASPED TIME: 304.52 
-PEAK MEMORY USAGE:  8342.390936 MB
-
-4-core, 4 surrgate test
-TOTAL ELASPED TIME: 318.09
-PEAK MEMORY USAGE:  9221.190936
-
-11-core, 11 surrgate test
-TOTAL ELASPED TIME: 360.03
-
-11-core, 50 surrogate test
-TOTAL ELASPED TIME: 1537.46
 
 JB:
 OF 1-20; R AMY 21,22,23; R INS 37,38,39; R HIP 29,30,31
