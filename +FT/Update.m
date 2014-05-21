@@ -44,7 +44,7 @@ function DoUpdate
 		resp = FT.UserInput(msg,1,'title','Update Available','button',{'Yes','No'});
 		if strcmpi(resp,'yes')
 			cd(gitdir);
-			[b,msg] = system('git pull "origin" "master"');
+			[b,msg] = system('git pull "origin" "master" >>/dev/null');
 			if b
 				cd(x);
 				me = MException('VersionMgmt:PullFail',['Toolbox update failed: ' msg]);
