@@ -25,6 +25,11 @@
 #ITEM 8
 	- seperate trial definition from trial segmentations... (maybe...)
 
+#ITEM 9
+	- enable figure saving in multiple formats
+		*formats: epsc (encapsulated postscript, color), jpeg, tiff, png
+		* resolution (in dpi) e.g. -r200 for 200dpi
+
 # --- SURROGATEPSD TEST RESULTS --- %
 2-core, 2 surrgate test
 TOTAL ELASPED TIME: 304.52 
