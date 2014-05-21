@@ -27,8 +27,8 @@ end
 %-----------------------------------------------------------------------------%
 function DoUpdate
 	x = pwd;
-	cd(gitdir);
-        system('git remote update >>/dev/null');
+	cd(fileparts(gitdir));
+    system('git remote update >>/dev/null');
 	[b,local]  = system('git rev-parse master >>/dev/null');
 	[b,remote] = system('git rev-parse origin/master >>/dev/null');
 	[b,base]   = system('git merge-base master origin/master >>/dev/null');
