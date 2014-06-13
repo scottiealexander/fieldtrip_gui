@@ -29,8 +29,9 @@
 	- enable figure saving in multiple formats
 		*formats: epsc (encapsulated postscript, color), jpeg, tiff, png
 		* resolution (in dpi) e.g. -r200 for 200dpi
-#item 10
+#ITEM 10
 	- the version of plot2svg seems not to work for 2013b...???
+	- fix email for R2013b
 
 #electrode mappings:
 JB:

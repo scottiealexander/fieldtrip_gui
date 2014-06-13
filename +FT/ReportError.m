@@ -19,7 +19,11 @@ dbstop if error;
 strServer = '';
 
 %get previous email to help user
-lastEmail = getpref('Internet','E_mail');
+if ispref('Internet') && ispref('Internet','E_mail')
+    lastEmail = getpref('Internet','E_mail');
+else
+    lastEmail = '';
+end
 
 while isempty(strServer)
     %get the users email
