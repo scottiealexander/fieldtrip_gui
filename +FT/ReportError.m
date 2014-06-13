@@ -84,7 +84,7 @@ strMsg = [strMsg 'Cause: ' 10 FT.Join(me.cause,10) 10 10];
 strMsg = [strMsg 'Stack Trace: ' 10 FormatStack(me.stack)];
 
 %send the email -- we really should add log file to this -- %
-sendmail('scottiealexander11@gmail.com','FieldTrip Error Report',strMsg);
+sendmail('scottiealexander11+ft@gmail.com','FieldTrip Error Report',strMsg);
 
 %reset password!
 setpref('Internet','SMTP_Password','********');
