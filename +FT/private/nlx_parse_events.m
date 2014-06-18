@@ -25,7 +25,7 @@ opt = FT.ParseOpts(varargin ,...
     'pulse_interval' , 50    ...
     );
 
-if numel(FT_DATA.event > 1)
+if numel(FT_DATA.event) > 1
 	evt = FT.ReStruct(FT_DATA.event);
 end
 

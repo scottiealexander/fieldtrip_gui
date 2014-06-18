@@ -69,11 +69,7 @@ else
             end
         end
 
-        FT_DATA.event = FT.ReStruct(evt);
-        %neuralynx dataset
-        if isempty(ext)
-            nlx_parse_events;
-        end        
+        FT_DATA.event = FT.ReStruct(evt);        
         FT_DATA.done.read_events = true;
     end
 
@@ -98,5 +94,7 @@ else
                     'Make SURE you process event BEFORE resampling!'],...
                     1,'button','OK','title','WARNING!');
         end
+    elseif isempty(ext)
+        nlx_parse_events;        
     end
 end
