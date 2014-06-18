@@ -380,7 +380,7 @@ function ClearDataset(obj,evt)
 end
 %-------------------------------------------------------------------------%
 function QuitGUI(obj,evt)
-    if isfield(FT_DATA,'gui') && isfield(FT_DATA,'saved')
+    if exist('FT_DATA','var') && isfield(FT_DATA,'gui') && isfield(FT_DATA,'saved')
         if FT_DATA.saved || ~isfield(FT_DATA,'data') || isempty(FT_DATA.data)
             %data is saved or there is none, print our message and quit
         else        

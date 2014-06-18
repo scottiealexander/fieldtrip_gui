@@ -19,7 +19,7 @@ global FT_DATA
 
 %get extension
 [~,~,ext] = fileparts(strPath);
-ext = strrep(ext,'.','');
+ext = regexprep(ext,'^\.','');
 
 if any(strcmpi(ext,{'mat','set'}))
     hMsg = FT.UserInput('Reading data from file, plese wait...',1);    
@@ -49,7 +49,7 @@ else
     %read data from raw eeg file
     cfg = CFGDefault;
     cfg.dataset    = FT_DATA.path.raw_file;
-    cfg.continuous = 'yes';
+    cfg.continuous = 'yes';    
     if ~strcmpi(ext,'edf')
         cfg.trialdef.triallength = Inf;
         cfg = ft_definetrial(cfg);
@@ -68,7 +68,12 @@ else
                error('Poorly formated event code values. Please contact the developer with the circumstances of this error'); 
             end
         end
+
         FT_DATA.event = FT.ReStruct(evt);
+        %neuralynx dataset
+        if isempty(ext)
+            nlx_read_events;
+        end        
         FT_DATA.done.read_events = true;
     end
 
