@@ -72,7 +72,7 @@ else
         FT_DATA.event = FT.ReStruct(evt);
         %neuralynx dataset
         if isempty(ext)
-            nlx_read_events;
+            nlx_parse_events;
         end        
         FT_DATA.done.read_events = true;
     end

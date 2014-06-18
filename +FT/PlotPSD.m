@@ -38,7 +38,7 @@ end
 cLabel = FT_DATA.power.label;
 data = cellfun(@(x) mean(x,4),FT_DATA.power.data,'uni',false);
 
-pFig = GetFigPosition(700,500);
+pFig = GetFigPosition(1200,500);
 h = figure('Units','pixels','Position',pFig,'Name','Spectrogram',...
 		   ...'Menubar','none',...
            'NumberTitle','off');
