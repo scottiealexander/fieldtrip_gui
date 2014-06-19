@@ -48,7 +48,11 @@ re    = FT.ReStruct(cat(2,re{:}));
 cName = strtrim(re.new);
 
 %convert rhs into a usable matlab data format
-cCode = cellfun(@ParseRHS,re.old,'uni',false);
+if iscell(re.old)
+    cCode = cellfun(@ParseRHS,re.old,'uni',false);
+else
+    cCode = {ParseRHS(re.old)};
+end
 
 %add new codes
 for k = 1:numel(cName)

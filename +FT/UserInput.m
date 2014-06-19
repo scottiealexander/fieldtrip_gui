@@ -58,6 +58,8 @@ strBtn = '';
 %approx. number of charachers per line for word wrapping
 nCharPerLine = 80;
 
+top_pad = 45;
+
 %make sure no reports are currently open
 hMsg = findobj('Tag','ft_report');
 for kM = 1:numel(hMsg)
@@ -103,7 +105,7 @@ h = figure('Units','pixels','OuterPosition',[lFig bFig wFig hFig],...
            'KeyPressFcn',@KeyPress,'Tag','ft_report');
 
 %axes for the icon
-pAxIm = [10 (hFig/2)-30 round(wFig/6) (hFig/2)-10];
+pAxIm = [10 (hFig/2)-top_pad round(wFig/6) (hFig/2)-10];
 ax = axes('Color',[1 1 1],'Units','pixels','Position',pAxIm,'Parent',h);
 
 %add icon
@@ -193,14 +195,14 @@ nExt = Axes2Fig(ax2,get(hT,'Extent'));
 %increase the width of the figure to fit the text
 right = nExt(1)+nExt(3);
 if right > wFig
-    wFig = wFig + (right-wFig) + 10;
+    wFig = wFig + (right-wFig) + top_pad;
     set(h,'OuterPosition',[lFig,bFig,wFig,hFig]);
 end
 
 %center the text within the axes
 top = nExt(2)+nExt(4);
-if  top > hFig-30
-    sep = (top/(hFig-30))-1;
+if  top > hFig-(top_pad+5)
+    sep = (top/(hFig-(top_pad+5)))-1;
     if sep > .4
         sep = .4;
     end
@@ -220,13 +222,13 @@ end
 %increase figure height
 nExt = Axes2Fig(ax2,get(hT,'Extent'));
 top = nExt(2)+nExt(4);
-if  top > hFig - 30
-    hFig = hFig + (top-(hFig-35));
+if  top > hFig - top_pad
+    hFig = hFig + (top-(hFig-(top_pad+5)));
     set(h,'OuterPosition',[lFig,bFig,wFig,hFig]);
     
     %move the image axes up to account for our new height
     pAxIm = get(ax,'Position');
-    pAxIm(2) = (hFig-30)-pAxIm(4)-10;
+    pAxIm(2) = (hFig-top_pad)-pAxIm(4)-10;
     set(ax,'Position',pAxIm);
 end
 
