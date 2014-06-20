@@ -102,7 +102,7 @@ if nFilt > 0
     hMsg = FT.UserInput('Filtering data...',1);
     bErr = false;
     for kA = 1:nFilt
-        if nFilt > 1            
+        if nFilt > 1
             cfg.(cFilt{kA}) = 'yes';
             kRM = setdiff(1:nFilt,kA);
             for kB = 1:numel(kRM)

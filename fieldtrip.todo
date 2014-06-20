@@ -2,7 +2,6 @@
 
 #ITEM 1
 	- seperate GUI's from all processing functions
-	- GUI figure helper class
 
 #ITEM 2
 	- templating system
@@ -30,8 +29,11 @@
 		*formats: epsc (encapsulated postscript, color), jpeg, tiff, png
 		* resolution (in dpi) e.g. -r200 for 200dpi
 #ITEM 10
-	- the version of plot2svg seems not to work for 2013b...???
-	- fix email for R2013b
+	- the version of plot2svg seems not to work for 2013b...???	
+
+#ITEM 11
+	- find a really good monospace font for each major platform (Win, Mac, Linux) and use
+	- otherwise use Courier
 
 #electrode mappings:
 JB:
