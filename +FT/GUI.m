@@ -401,6 +401,7 @@ function QuitGUI(obj,evt)
     end
     clear('global','FT_DATA');
     evalin('base','clear FT_DATA');
+    exit;
 end
 %-------------------------------------------------------------------------%
 function GUICloseFcn(varargin)

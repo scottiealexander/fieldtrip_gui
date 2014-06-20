@@ -93,19 +93,26 @@ im = imresize(im,[NaN 100]);
 
 %get the size and position for the figure
 siz = get(0,'ScreenSize');
-wFig = 440;
-hFig = 160;
-lFig = (siz(3)/2)-(wFig/2);
-bFig = (siz(4)/2)-(hFig/2);
+% wFig = 440;
+% hFig = 160;
+% lFig = (siz(3)/2)-(wFig/2);
+% bFig = (siz(4)/2)-(hFig/2);
 
+pFig = GetFigPosition(440,160);
 
 %main figure
-h = figure('Units','pixels','OuterPosition',[lFig bFig wFig hFig],...
+h = figure('Units','pixels','OuterPosition',pFig,... %[lFig bFig wFig hFig],...
            'Name',strTitle,'NumberTitle','off','MenuBar','none',...
            'KeyPressFcn',@KeyPress,'Tag','ft_report');
 
+tmp = get(h,'Position');
+lFig = tmp(1);
+bFig = tmp(2);
+wFig = tmp(3);
+hFig = tmp(4);
+
 %axes for the icon
-pAxIm = [10 (hFig/2)-top_pad round(wFig/6) (hFig/2)-10];
+pAxIm = [10 (hFig/2)-top_pad round(wFig/6) (hFig/2)];
 ax = axes('Color',[1 1 1],'Units','pixels','Position',pAxIm,'Parent',h);
 
 %add icon
@@ -114,7 +121,7 @@ set(ax,'Visible','off');
 
 %axes for the text
 lTxt = pAxIm(1)+pAxIm(3)+10;
-pAxTxt = [lTxt 10 wFig-(lTxt+10) hFig-50];
+pAxTxt = [lTxt 10 wFig-(lTxt+10) hFig-top_pad];
 ax2 = axes('Visible','off','Units','pixels','Position',pAxTxt,'Parent',h);
 
 %allow newline escapes
@@ -196,7 +203,7 @@ nExt = Axes2Fig(ax2,get(hT,'Extent'));
 right = nExt(1)+nExt(3);
 if right > wFig
     wFig = wFig + (right-wFig) + top_pad;
-    set(h,'OuterPosition',[lFig,bFig,wFig,hFig]);
+    set(h,'OuterPosition',[lFig,bFig,wFig,hFig+10]);
 end
 
 %center the text within the axes
@@ -285,16 +292,16 @@ end
 %-------------------------------------------------------------------------%
 function pos = Axes2Fig(hAx,pos)
 %function to convert data units within an axes to normalized figure units
-    pAxes = get(hAx,'Position');
+    pAx  = get(hAx,'Position');
     yLim = get(hAx,'YLim');
     yExt = yLim(2)-yLim(1);
     xLim = get(hAx,'XLim');
-    xExt = xLim(2) - xLim(1);
+    xExt = xLim(2)-xLim(1);
         
-    pos(1) = pAxes(1)+((pos(1)-xLim(1))/xExt)*pAxes(3);
-    pos(2) = pAxes(2)+((pos(2)-yLim(1))/yExt)*pAxes(4);
-    pos(3) = pos(3)*pAxes(3);%+pAxes(3);
-    pos(4) = pos(4)*pAxes(4);%+pAxes(4);
+    pos(1) = pAx(1)+((pos(1)-xLim(1))/xExt)*pAx(3);
+    pos(2) = pAx(2)+((pos(2)-yLim(1))/yExt)*pAx(4);
+    pos(3) = (pos(3)/yExt) * pAx(3);
+    pos(4) = (pos(4)/yExt) * pAx(4);
 end
 %-------------------------------------------------------------------------%
 function KeyPress(obj,evt)
