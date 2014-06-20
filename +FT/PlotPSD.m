@@ -17,7 +17,7 @@ function PlotPSD()
 
 
 global FT_DATA;
-persistent BASELINE;
+persistent BASELINE NORM_TYPE;
 
 if ~isfield(FT_DATA,'power') || isempty(FT_DATA.power)
 	FT.UserInput('\bfPSD does not yet exist for this data set',0,'button','OK');
@@ -26,7 +26,17 @@ end
 
 time = FT_DATA.power.time;
 
-if isempty(BASELINE) && ~isfield(FT_DATA.power,'surrogate')
+if isfield(FT_DATA.power,'surrogate')
+	NORM_TYPE = FT.UserInput('Normalization method?',1,'button',{'z-score','baseline'});
+	if isempty(NORM_TYPE)
+		return;
+	end
+else
+	NORM_TYPE = 'baseline';	
+end
+
+if strcmpi(NORM_TYPE,'baseline') && isempty(BASELINE)
+	NORM_TYPE = 'baseline';	
 	cfg = FT.BaselineCorrect;
 	if ~isfield(cfg,'baselinewindow')
 		return;
@@ -34,6 +44,7 @@ if isempty(BASELINE) && ~isfield(FT_DATA.power,'surrogate')
 	BASELINE = cfg.baselinewindow;
 	BASELINE = [find(time>=BASELINE(1),1,'first') find(time>=BASELINE(2),1,'first')];
 end
+
 
 cLabel = FT_DATA.power.label;
 data = cellfun(@(x) mean(x,4),FT_DATA.power.data,'uni',false);
@@ -54,7 +65,7 @@ function PlotOne(strChan)
 
 	%FIXME FINISH TODO
 	% this is terrible, please do something at least halfway intelligent here....
-	if isfield(FT_DATA.power,'surrogate')
+	if strcmpi(NORM_TYPE,'z-score')
 		kChan = find(bChan);
         d = cell(size(data));
         for k = 1:numel(data)

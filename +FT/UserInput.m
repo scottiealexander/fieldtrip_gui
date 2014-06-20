@@ -199,13 +199,13 @@ nExt = Axes2Fig(ax2,get(hT,'Extent'));
 right = nExt(1)+nExt(3);
 if right > wFig
     wFig = wFig + (right-wFig) + top_pad;
-    set(h,'OuterPosition',[lFig,bFig,wFig,hFig+10]);
+    set(h,'OuterPosition',[lFig,bFig,wFig,hFig+top_pad]);
 end
 
 %center the text within the axes
 top = nExt(2)+nExt(4);
 if  top > hFig-(top_pad+5)
-    sep = (top/(hFig-(top_pad+5)))-1;
+    sep = (top/(hFig-5))-1;
     if sep > .4
         sep = .4;
     end

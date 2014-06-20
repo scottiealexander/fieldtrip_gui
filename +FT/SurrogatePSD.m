@@ -60,9 +60,6 @@ data_length  = size(FT_DATA.power.raw,2);
 %indicies of points that mark the start of a trial
 kStart = nan(nTrialTotal,1);
 
-%all possible starting points for trials
-pnts = 1:(data_length-trial_len);
-
 %split up the entire timeseries into nTrialTotal equally sized 'bins',
 %assign trial start indicies to a random point within each 'bin' such
 %that each trial is fully contained within each bin
