@@ -35,6 +35,12 @@
 	- find a really good monospace font for each major platform (Win, Mac, Linux) and use
 	- otherwise use Courier
 
+#ITEM 12
+	- add tests for each operation
+	- basic test for errors
+	- full test (possibly with visual feedback when needed) for actual operations
+		*i.e. to test if data was actually filtered
+
 #electrode mappings:
 JB:
 OF 1-20; R AMY 21,22,23; R INS 37,38,39; R HIP 29,30,31
