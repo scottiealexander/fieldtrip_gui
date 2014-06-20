@@ -93,10 +93,6 @@ im = imresize(im,[NaN 100]);
 
 %get the size and position for the figure
 siz = get(0,'ScreenSize');
-% wFig = 440;
-% hFig = 160;
-% lFig = (siz(3)/2)-(wFig/2);
-% bFig = (siz(4)/2)-(hFig/2);
 
 pFig = GetFigPosition(440,160);
 
@@ -112,7 +108,7 @@ wFig = tmp(3);
 hFig = tmp(4);
 
 %axes for the icon
-pAxIm = [10 (hFig/2)-top_pad round(wFig/6) (hFig/2)];
+pAxIm = [10 (hFig/2)-10 round(wFig/6) (hFig/2)];
 ax = axes('Color',[1 1 1],'Units','pixels','Position',pAxIm,'Parent',h);
 
 %add icon
