@@ -76,17 +76,23 @@ methods
             self.valfun = @self.DefaultValFun;
         end
 
+        if isfield(s,'validate') && (islogical(s.validate) || isnumeric(s.validate))
+            validate = s.validate;
+            s = rmfield(s,'validate');
+        else
+            validate = true;
+        end
         c = self.AddDefaultValues(rmfield(s,'type'));
 
         switch lower(self.type)
         case 'text'
-            self.h = text(c{:});
+            self.h = uicontrol('Style',self.type,c{:});
             self.InitTextPosition;
         case {'pushbutton','edit','checkbox'}
             self.h = uicontrol('Style',self.type,c{:});
             self.InitUIPosition;
             if strcmpi(self.type,'pushbutton') && isempty(get(self.h,'Callback'))
-                set(self.h,'Callback',@win.BtnPush);
+                set(self.h,'Callback',@(x,varargin) win.BtnPush(x,validate));
             end
         otherwise
             error('not yet supported');
@@ -151,9 +157,9 @@ methods (Access=private)
     %-------------------------------------------------------------------------%
     function SetPosition(self,pos)
         switch lower(self.type)
-        case 'text'
-            tmp = self.Fig2Axes(pos);
-            set(self.h,'Position',[tmp(1:2) 0]);
+        % case 'text'
+        %     tmp = self.Fig2Axes(pos);
+        %     set(self.h,'Position',[tmp(1:2) 0]);
         otherwise
             set(self.h,'Position',pos);
         end
@@ -161,16 +167,20 @@ methods (Access=private)
     end
     %-------------------------------------------------------------------------%
     function InitTextPosition(self)
-        yLim = get(self.ax,'YLim');       
-        xLim = get(self.ax,'XLim');
-        p = self.Axes2Fig(get(self.h,'Extent'));
-        left   = self.GetLeft(p(3));
-        bottom = self.GetBottom(p(4));
-        pos = self.Fig2Axes([left,bottom]);
-        self.SetPosition([left,bottom,p(3:4)]);
+        % yLim = get(self.ax,'YLim');       
+        % xLim = get(self.ax,'XLim');
+        % p = self.Axes2Fig(get(self.h,'Extent'));
+        % left   = self.GetLeft(p(3));
+        % bottom = self.GetBottom(p(4));
+        % pos = self.Fig2Axes([left,bottom]);
+        % self.SetPosition([left,bottom,p(3:4)]);
+        ext = get(self.h,'Extent');
+        p = get(self.h,'Position');
+        p(3:4) = ext(3:4);
+        self.SetPosition(p);
     end
     %-------------------------------------------------------------------------%
-    function InitUIPosition(self)     
+    function InitUIPosition(self)
         set(self.h,'Units','characters');
         p = get(self.h,'Position');
         p(3) = self.GetWidth(self.len);
@@ -211,7 +221,7 @@ methods (Access=private)
     function w = GetWidth(self,nchar)
         switch lower(self.type)
         case {'pushbutton','edit'}
-            fsiz = get(self.h,'FontSize');        
+            fsiz = get(self.h,'FontSize');
             w = (nchar * (fsiz/8)) + 2.5;
         case 'checkbox'
             w = 4;
@@ -242,32 +252,17 @@ methods (Access=private)
     end
     %-------------------------------------------------------------------------%
     function def = AddDefaultValues(self,s)
-        def = { 'FontName' , 'Courier' ,... %it appears that this needs to be 'Courier'
-                'FontSize' , 14 ...         %in order to achieve the desired layout on Linux    
+        def = { 'FontName' , 'Monospaced' ,... %it appears that this needs to be 'Courier'
+                'FontSize' , 14           ,... %in order to achieve the desired layout on Linux 
+                'Units'    , 'pixels'     ,...
+                'Position' , self.pos     ,...
+                'Parent'   , self.fig      ...
               };
         switch lower(self.type)
-        case 'text'
-            self.ax = axes('Visible','off',...
-                'Units','pixels',...                
-                'Position',self.pos,...
-                'Parent',self.fig ...
-                );
-            def = [{ ...
-                'Units' , 'data' ,...
-                'Position' , [0 .5 0] ,...              
-                'Interpreter', 'tex' ,...
-                'VerticalAlignment','bottom',...
-                'Parent' , self.ax ...
-                }, def];            
-        otherwise
-            def = [{ ...                
-                'Units' , 'pixels',...
-                'Position' , self.pos ,...
-                'Parent' , self.fig ...
-                }, def];
-            if any(strcmpi(self.type,{'edit','checkbox'}))
+            case {'edit','checkbox'}
                 def = [def {'BackgroundColor',[1 1 1]}];
-            end
+            case 'text'
+                def = [def {'BackgroundColor',get(self.fig,'Color')}];
         end
         def = self.pvpair2struct(def);
         fields = fieldnames(s);
