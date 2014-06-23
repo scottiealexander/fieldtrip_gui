@@ -30,9 +30,9 @@ cfg.demean  = 'no';
 
 c = {...
     {'text','String','New Sampling Rate [Hz]:'},...
-    {'edit','size',5,'tag','fr','valfun',{'inrange',1,FT_DATA.data.fsample-1,false}};...
+    {'edit','size',5,'tag','fr','valfun',{'inrange',1,FT_DATA.data.fsample-1,true}};...
     {'pushbutton','String','Run'},...
-    {'pushbutton','String','Cancel'};...
+    {'pushbutton','String','Cancel','validate',false};...
     };
 
 win = FT.tools.Win(c);
@@ -40,15 +40,13 @@ uiwait(win.h);
 
 if strcmpi(win.res.btn,'cancel')
     return;
-elseif ~isempty(win.res.fr)
+else
     cfg.resamplefs = win.res.fr;
 
     if numel(FT_DATA.data.trial)~=1
         FT.UserInput('Cannot resample segmented data.',0);
         return;
     end
-else
-    return;
 end
 
 hMsg = FT.UserInput('Resampling data...',1,'button',false);

@@ -36,7 +36,7 @@ if strcmpi(ext,'edf')
         FT_DATA.event = FT.ReStruct(FT_DATA.event);
     end
     FT_DATA.data.cfg.event = FT_DATA.event;
-elseif ~isfield(FT_DATA.event) || isempty(FT_DATA.event)    
+elseif ~isfield(FT_DATA,'event') || isempty(FT_DATA.event)    
     hMsg = FT.UserInput('Reading events, please wait...',1);
     
     %use fieldtrip's ft_definetrial
