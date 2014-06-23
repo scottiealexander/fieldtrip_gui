@@ -3,6 +3,10 @@
 #GRAPHICAL
 	* find a really good monospace font for each major platform (Win, Mac, Linux) and use, otherwise use Courier
 	* continue adding functionality to Win/Element classes
+	* fix the awful position calculation mess between the Win and Element classes
+		- Win should make a guess for position
+		- Element should make available precise position
+		- Win should update all positions once it knows the height and width of all elements
 
 #ORGANIZATIONAL
 	* remove GranAverage function from all repos

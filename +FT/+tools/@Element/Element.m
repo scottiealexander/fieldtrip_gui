@@ -10,14 +10,10 @@ classdef Element < handle
 %
 % Out:
 %
-% Updated: 2014-05-01
+% Updated: 2014-06-23
 % Scottie Alexander
 %
 % Please send bug reports to: scottiealexander11@gmail.com
-
-%TODO:
-%   1) given the position of our GUI rect, figure out how large the element
-%      should be, and then center the element within the rect
 
 %PROPERTIES-------------------------------------------------------------------%
 properties
@@ -112,6 +108,14 @@ methods
         self.SetPosition(pos);
     end
     %-------------------------------------------------------------------------%
+    function x = Width(self)
+        x = self.pos(3);
+    end
+    %-------------------------------------------------------------------------%
+    function x = Height(self)
+        x = self.pos(4);
+    end
+    %-------------------------------------------------------------------------%
     function out = Response(self)
         switch lower(self.type)
         case 'edit'
@@ -156,24 +160,11 @@ methods (Access=private)
     end
     %-------------------------------------------------------------------------%
     function SetPosition(self,pos)
-        switch lower(self.type)
-        % case 'text'
-        %     tmp = self.Fig2Axes(pos);
-        %     set(self.h,'Position',[tmp(1:2) 0]);
-        otherwise
-            set(self.h,'Position',pos);
-        end
+        set(self.h,'Position',pos);
         self.pos = pos;
     end
     %-------------------------------------------------------------------------%
     function InitTextPosition(self)
-        % yLim = get(self.ax,'YLim');       
-        % xLim = get(self.ax,'XLim');
-        % p = self.Axes2Fig(get(self.h,'Extent'));
-        % left   = self.GetLeft(p(3));
-        % bottom = self.GetBottom(p(4));
-        % pos = self.Fig2Axes([left,bottom]);
-        % self.SetPosition([left,bottom,p(3:4)]);
         ext = get(self.h,'Extent');
         p = get(self.h,'Position');
         p(3:4) = ext(3:4);
@@ -262,7 +253,7 @@ methods (Access=private)
             case {'edit','checkbox'}
                 def = [def {'BackgroundColor',[1 1 1]}];
             case 'text'
-                def = [def {'BackgroundColor',get(self.fig,'Color')}];
+                def = [def {'BackgroundColor',[1 1 1]}]; %get(self.fig,'Color')
         end
         def = self.pvpair2struct(def);
         fields = fieldnames(s);

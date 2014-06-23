@@ -165,7 +165,9 @@ methods (Access=private)
     function AddElements(self)
         left  = Inf;
         right = -Inf;
-        height = 0;        
+        height = 0;
+        [width,height] = deal(zeros(self.nrow,max(self.ncol)));
+
         for kR = 1:self.nrow
             row_height = 0;
             for kC = 1:max(self.ncol)
@@ -179,27 +181,27 @@ methods (Access=private)
                 if ~isempty(self.content{kR,kC})                    
                     pos = self.GetElementPosition(kR,kC);                    
                     self.el{kR,kC} = FT.tools.Element(self,pos,self.content{kR,kC},'halign',align);
-                    if self.el{kR,kC}.pos(1) < left
-                        left = self.el{kR,kC}.pos(1);
-                    end
 
-                    if self.el{kR,kC}.pos(1) + self.el{kR,kC}.pos(3) > right
-                        right = self.el{kR,kC}.pos(1) + self.el{kR,kC}.pos(3);
-                    end
-
-                    if self.el{kR,kC}.pos(4) > row_height
-                        row_height = self.el{kR,kC}.pos(4) + (self.inch2px(self.pad)*2);
-                    end
+                    width(kR,kC) = self.el{kR,kC}.Width;
+                    height(kR,kC) = self.el{kR,kC}.Height;
                 else
                     self.el{kR,kC} = {};
                 end
-            end
-            height = height + row_height;
+            end            
         end
+        %width for each column and height for each row
+        width  = max(width,[],1);
+        height = min(height,[],2);
+
+        for kR = 1:self.nrow
+            for kC = 1:max(self.ncol)
+                
+            end
+        end
+
         left  = left - self.inch2px(self.pad);
         right = right + self.inch2px(self.pad);
-        width = right - left;
-        p = get(self.h,'Position');
+        width = right - left;        
         p = self.GetFigPosition(width,height,...
               'xoffset',self.opt.position(1),'yoffset',self.opt.position(2));
         set(self.h,'Position',p);
@@ -221,6 +223,28 @@ methods (Access=private)
         ep(3) = (fp(3)/nC) - (self.inch2px(self.pad));
         ep(4) = height;
     end    
+    %-------------------------------------------------------------------------%
+    function mx_right = GetColRight(self,kC)
+        mx_right = 0;
+        for k = 1:self.nrow
+            if ~isempty(self.content{k,kC})
+                if self.el{kR,kC}.pos(1) + self.el{kR,kC}.pos(3) > mx_right
+                    mx_right = self.el{kR,kC}.pos(1) + self.el{kR,kC}.pos(3);
+                end
+            end
+        end
+    end
+    %-------------------------------------------------------------------------%
+    function mx_bottom = GetRowBottom(self,kR)
+        mx_bottom = Inf;
+        for k = 1:max(self.ncol)
+            if ~isempty(self.content{kR,k})
+                if self.el{kR,kC}.pos(2) < mx_bottom
+                    mx_bottom = self.el{kR,kC}.pos(2);
+                end
+            end
+        end
+    end
     %-------------------------------------------------------------------------%
     function KeyPress(self,obj,evt)
         switch lower(evt.Key)
