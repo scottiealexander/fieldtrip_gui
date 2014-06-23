@@ -112,9 +112,9 @@ methods
         end
     end
     %-------------------------------------------------------------------------%
-    function BtnPush(self,obj,varargin)
+    function BtnPush(self,obj,validate)
         self.res.btn = get(obj,'String');
-        self.validate = true;
+        self.validate = validate;
         self.FetchResult;
     end
     %-------------------------------------------------------------------------%    
@@ -146,8 +146,10 @@ methods (Access=private)
     end
     %-------------------------------------------------------------------------%
     function InitFigure(self)
-        %get the size and position for the figure        
-        pos = self.GetFigPosition(175*max(self.ncol),50*self.nrow,...
+        %get the size and position for the figure
+        w = self.inch2px(2.5) * max(self.ncol);
+        h = self.inch2px(.5) * self.nrow;       
+        pos = self.GetFigPosition(w,h,...
               'xoffset',self.opt.position(1),'yoffset',self.opt.position(2));
 
         %main figure
@@ -163,7 +165,9 @@ methods (Access=private)
     function AddElements(self)
         left  = Inf;
         right = -Inf;
+        height = 0;        
         for kR = 1:self.nrow
+            row_height = 0;
             for kC = 1:max(self.ncol)
                 if kC == 1
                     align = 'right';
@@ -182,16 +186,21 @@ methods (Access=private)
                     if self.el{kR,kC}.pos(1) + self.el{kR,kC}.pos(3) > right
                         right = self.el{kR,kC}.pos(1) + self.el{kR,kC}.pos(3);
                     end
+
+                    if self.el{kR,kC}.pos(4) > row_height
+                        row_height = self.el{kR,kC}.pos(4) + (self.inch2px(self.pad)*2);
+                    end
                 else
                     self.el{kR,kC} = {};
                 end
             end
+            height = height + row_height;
         end
         left  = left - self.inch2px(self.pad);
         right = right + self.inch2px(self.pad);
         width = right - left;
-        p = get(self.h,'Position');        
-        p = self.GetFigPosition(width,p(4),...
+        p = get(self.h,'Position');
+        p = self.GetFigPosition(width,height,...
               'xoffset',self.opt.position(1),'yoffset',self.opt.position(2));
         set(self.h,'Position',p);
         for k = 1:numel(self.el)
@@ -202,7 +211,7 @@ methods (Access=private)
     end
     %-------------------------------------------------------------------------%
     function ep = GetElementPosition(self,kR,kC)
-        fp = get(self.h,'Position');
+        fp = get(self.h,'OuterPosition');
         nC = self.ncol(kR);
         sum_pad = self.inch2px(self.pad)/self.nrow;
         height = (fp(4)/self.nrow) - (self.inch2px(self.pad) + sum_pad);
@@ -226,7 +235,7 @@ methods (Access=private)
 end
 %PRIVATE METHODS--------------------------------------------------------------%
 
-%PRIVATE METHODS--------------------------------------------------------------%
+%PRIVATE STATIC METHODS-------------------------------------------------------%
 methods (Static=true,Access=private)
     %-------------------------------------------------------------------------%
     function s = pvpair2struct(c)
@@ -240,6 +249,12 @@ methods (Static=true,Access=private)
     end
     %-------------------------------------------------------------------------%
 end
-%PRIVATE METHODS--------------------------------------------------------------%
+%PRIVATE STATIC METHODS-------------------------------------------------------%
+
+%STATIC METHODS---------------------------------------------------------------%
+methods (Static=true)
+    w = Test(varargin);
+end
+%STATIC METHODS---------------------------------------------------------------%
 
 end
