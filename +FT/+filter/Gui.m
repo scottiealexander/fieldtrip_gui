@@ -84,7 +84,7 @@ FT.UpdateGUI;
 
 %------------------------------------------------------------------------------%
 function SelectChannels(obj,evt)
-%allow user to select specific channels for filtering    
+%allow user to select specific channels
     %set the height of the figure
     nChan = numel(FT_DATA.data.label);
     if nChan < 40
