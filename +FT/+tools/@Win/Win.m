@@ -83,6 +83,9 @@ methods
         
         self.id = [datestr(now,'yyyymmddHHMMSSFFF') '_win'];
 
+        %convert padding to pixels
+        self.pad = self.inch2px(self.pad);
+
         self.InitFigure;
 
         %uiwait(self.h);
@@ -189,38 +192,45 @@ methods (Access=private)
                 end
             end            
         end
-        %width for each column and height for each row
+
         width  = max(width,[],1);
-        height = min(height,[],2);
-
-        for kR = 1:self.nrow
-            for kC = 1:max(self.ncol)
-                
-            end
-        end
-
-        left  = left - self.inch2px(self.pad);
-        right = right + self.inch2px(self.pad);
-        width = right - left;        
-        p = self.GetFigPosition(width,height,...
+        height = max(height,[],2);
+        fig_width = sum(width) + (self.pad * max(self.ncol));
+        fig_height = sum(height) + (self.pad * (self.nrow+1));
+        pFig = self.GetFigPosition(fig_width,fig_height,...
               'xoffset',self.opt.position(1),'yoffset',self.opt.position(2));
-        set(self.h,'Position',p);
-        for k = 1:numel(self.el)
-            if ~isempty(self.el{k})
-                self.el{k}.Move('left',left);
+        
+        set(self.h,'Position',pFig);
+
+        %width for each column and height for each row
+        btm_cur = pFig(4);
+        for kR = 1:self.nrow
+            btm_cur = btm_cur - (height(kR) + self.pad);
+            left_cur = self.pad;
+            for kC = 1:max(self.ncol)
+                % self.el{kR,kC}.SetPos({'left','bottom'},[left_cur,btm_cur]);
+                self.el{kR,kC}.SetLR(left_cur, left_cur + width(kC));
+                self.el{kR,kC}.SetLR(btm_cur, btm_cur + height(kC));
+                left_cur = left_cur + width(kC) + self.pad;
             end
         end
+        
+        % for k = 1:numel(self.el)
+        %     if ~isempty(self.el{k})
+        %         self.el{k}.Move('left',left);
+        %     end
+        % end
     end
     %-------------------------------------------------------------------------%
     function ep = GetElementPosition(self,kR,kC)
         fp = get(self.h,'OuterPosition');
         nC = self.ncol(kR);
-        sum_pad = self.inch2px(self.pad)/self.nrow;
-        height = (fp(4)/self.nrow) - (self.inch2px(self.pad) + sum_pad);
+        sum_pad = self.pad/self.nrow;
+        height = (fp(4)/self.nrow) - (self.pad + sum_pad);
         ep = zeros(1,4);        
-        ep(1) = ((fp(3)/nC) * (kC-1)) + self.inch2px(self.pad);
-        ep(2) = fp(4) - (kR * (height + self.inch2px(self.pad)));
-        ep(3) = (fp(3)/nC) - (self.inch2px(self.pad));
+        ep(1) = ((fp(3)/nC) * (kC-1)) + self.pad;
+        ep(2) = fp(4) - (kR * (height + self.pad));
+        ep(3) = (fp(3)/nC) - (self.pad);
         ep(4) = height;
     end    
     %-------------------------------------------------------------------------%

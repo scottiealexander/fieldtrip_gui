@@ -108,6 +108,33 @@ methods
         self.SetPosition(pos);
     end
     %-------------------------------------------------------------------------%
+    function SetPos(self,dir,loc)        
+        if ~iscell(dir)
+            dir = {dir};
+        elseif ~iscellstr(dir)
+            return;
+        end
+        n = FT.tools.Ternary(numel(dir)<numel(loc),numel(dir),numel(loc));
+        for k = 1:n
+            b = strcmpi(dir{k},{'left','bottom','width','height'});
+            pos = self.pos;
+            pos(b) = loc(k);
+            self.SetPosition(pos);
+        end
+    end
+    %-------------------------------------------------------------------------%
+    function SetLR(self,l,r)
+        pos = self.pos;
+        pos(1) = self.GetLeft(l,r);
+        self.SetPosition(pos);
+    end
+    %-------------------------------------------------------------------------%
+    function SetBT(self,b,t)
+        pos = self.pos;
+        pos(2) = self.GetBottom(b,t);
+        self.SetPosition(pos);
+    end
+    %-------------------------------------------------------------------------%
     function x = Width(self)
         x = self.pos(3);
     end
@@ -178,32 +205,34 @@ methods (Access=private)
         set(self.h,'Position',p);
         set(self.h,'Units','pixels');
         p = get(self.h,'Position');
-        p(1) = self.GetLeft(p(3));
-        p(2) = self.GetBottom(p(4));
+        p(1) = self.GetLeft(p(1),p(1)+p(3));
+        p(2) = self.GetBottom(p(2),p(2)+p(4));
         self.SetPosition(p);
     end
     %-------------------------------------------------------------------------%
-    function l = GetLeft(self,w)
+    function l = GetLeft(self,l,r)
+        w = r-l;
         switch lower(self.opt.halign)
         case 'left'
-            l = self.pos(1);
+            l = l;
         case 'center'
-            l = self.pos(1) + ((self.pos(3)/2) - (w/2));
+            l = (l + w/2) - (self.pos(3)/2); %((self.pos(3)/2) - (w/2));
         case 'right'
-            l = (self.pos(1) + self.pos(3)) - w;
+            l = r - self.pos(3); %(l + self.pos(3)) - w;
         otherwise
             error('Invalid alignment specified');
         end
     end
     %-------------------------------------------------------------------------%
-    function b = GetBottom(self,h)
+    function b = GetBottom(self,b,t)
+        h = t-b;
         switch lower(self.opt.valign)
         case 'top'
-            b = self.pos(2);
+            b = t - self.pos(4);
         case 'center'
-            b = self.pos(2) + ((self.pos(4)/2) - (h/2));
+            b = (b + h/2) - (self.pos(4)/2);
         case 'bottom'
-            b = (self.pos(2) + self.pos(4)) - h;
+            b = b;
         otherwise
             error('Invalid alignment specified');
         end
