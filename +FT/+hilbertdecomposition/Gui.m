@@ -1,17 +1,19 @@
 function Gui(varargin)
 
-% GetHilbertParameters
+% FT.hilbertdecomposition.Gui
 %
-% Description: 
+% Description: get parameters for Hilbert decomposition from user via a GUI
 %
-% Syntax: GetHilbertParameters
+% Syntax: FT.hilbertdecomposition.Gui
 %
 % In: 
 %
 % Out: 
 %
-% Updated: 2014-03-31
-% Scottie Alexander
+% Updated: 2014-06-23
+% Peter Horak
+%
+% See also: FT.hilbertdecomposition.Run
 %
 % Please report bugs to: scottiealexander11@gmail.com
 

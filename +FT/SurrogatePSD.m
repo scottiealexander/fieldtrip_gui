@@ -12,7 +12,7 @@ function SurrogatePSD(nITER)
 %
 % Out: 
 %
-% Updated: 2014-06-20
+% Updated: 2014-06-24
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
@@ -60,19 +60,20 @@ data_length  = size(FT_DATA.power.raw,2);
 %indicies of points that mark the start of a trial
 kStart = nan(nTrialTotal,1);
 
-%split up the entire timeseries into nTrialTotal equally sized 'bins',
-%assign trial start indicies to a random point within each 'bin' such
-%that each trial is fully contained within each bin
-bin_length = floor(data_length/nTrialTotal);
-for k = 1:nTrialTotal
-	%the first point within the bin that could serve as out trial start index
-	kfirst = (bin_length*(k-1))+1;
+%all possible starting points for trials
+pnts = 1:(data_length-trial_len);
 
-	%the last point in the bin that could serve as our trial start index
-	klast = (bin_length*k) - (trial_len-1);
-	kStart(k) = randi([kfirst klast],1,1);
+%choose a random starting point for each trial such that no trials will overlap
+%and no randomly selected trials will be discontinuous
+for k = 1:nTrialTotal
+	trial_start = pnts(randi(numel(pnts),1));
+
+	%setting up the 'window' both before and after our starting index
+	%prevents and future trials from being discontinuous	
+	bRM = (pnts > trial_start-trial_len) & (pnts < trial_start+trial_len);
+	pnts(bRM) = [];
+	kStart(k) = trial_start;
 end
-kStart = randomize(kStart);
 
 %group trials for each condition
 %NOTE: we need to subtract 1 from the trial length as the point

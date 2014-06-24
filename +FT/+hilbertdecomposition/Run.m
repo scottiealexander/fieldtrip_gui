@@ -1,17 +1,19 @@
 function bRun = Run(param)
 
-% FT.HilbertPSD
+% FT.hilbertdecomposition.Run
 %
-% Description: time-frequency decomposition based on the Hilbert transform
+% Description:  time-frequency decomposition based on the Hilbert transform
 %
-% Syntax: bContinue = FT.HilbertPSD
+% Syntax: me = FT.hilbertdecomposition.Run(cfg)
 %
-% In:
+% In: 
 %
 % Out:
 %
-% Updated: 2014-03-29
-% Scottie Alexander
+% Updated: 2014-06-23
+% Peter Horak
+%
+% See also: FT.hilbertdecomposition.Gui
 %
 % Please report bugs to: scottiealexander11@gmail.com
 

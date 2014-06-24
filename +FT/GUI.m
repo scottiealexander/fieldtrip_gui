@@ -401,7 +401,10 @@ function QuitGUI(obj,evt)
     end
     clear('global','FT_DATA');
     evalin('base','clear FT_DATA');
-    exit;
+    resp = FT.UserInput('Would you like to close MATLAB?',1,'button',{'Yes','No'},'title','Close MATLAB');
+    if ~strcmpi(resp,'No')
+        exit;
+    end
 end
 %-------------------------------------------------------------------------%
 function GUICloseFcn(varargin)
