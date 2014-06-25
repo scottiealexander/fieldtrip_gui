@@ -217,8 +217,7 @@ methods (Access=private)
     %-------------------------------------------------------------------------%
     function h = GetHeight(self,nchar)
         switch self.type
-        case 'checkbox'
-            fprintf('Setting height...\n');
+        case 'checkbox'            
             h = 1.5;
         otherwise
             h = nchar;
