@@ -25,7 +25,7 @@ properties
     len = 5;
     pos = zeros(1,4);   
     opt;
-    tag;
+    tag = '';
     valfun;
 end
 %PROPERTIES-------------------------------------------------------------------%
@@ -52,11 +52,13 @@ methods
         end
 
         if isfield(s,'string')
-            if numel(s.string) > self.len
-                self.len = numel(s.string);
-            end
-            if strcmpi(s.string,'default')
-                s.string = ['\' s.string];
+            if strcmp(self.type,'edit')
+                if numel(s.string) > self.len
+                    self.len = numel(s.string);
+                end
+                if strcmpi(s.string,'default')
+                    s.string = ['\' s.string];
+                end
             end
             self.string = s.string;
         end     
@@ -85,7 +87,7 @@ methods
         switch self.type
         case 'text'
             self.InitTextPosition;
-        case {'pushbutton','edit','checkbox'}            
+        case {'pushbutton','edit','checkbox','listbox'}            
             self.InitUIPosition;
             if strcmpi(self.type,'pushbutton') && isempty(get(self.h,'Callback'))
                 set(self.h,'Callback',@(x,varargin) win.BtnPush(x,validate));
@@ -95,14 +97,36 @@ methods
         end
     end
     %-------------------------------------------------------------------------%
-    function SetOuterRect(self,rect)
+    function SetOuterRect(self,rect,varargin)
+        self.opt = self.ParseOptions(varargin,...
+            'halign' , self.opt.halign,...
+            'valign' , self.opt.valign ...
+            );
         pos = self.pos;
         pos(1) = self.GetLeft(rect(1),rect(3));
         pos(2) = self.GetBottom(rect(2),rect(4));
         self.SetPosition(pos);
     end
     %-------------------------------------------------------------------------%
-    function [w,h] = size(self,varargin)
+    function SetProp(self,field,val)
+        if isprop(self.h,field)
+            set(self.h,field,val);
+        elseif isprop(self,field)
+            self.(field) = val;
+        end
+    end
+    %-------------------------------------------------------------------------%
+    function val = GetProp(self,field)
+        if isprop(self.h,field)
+            val = get(self.h,field);
+        elseif isprop(self,field)
+            val = self.(field);
+        else
+            val = [];
+        end
+    end
+    %-------------------------------------------------------------------------%
+    function [w,h] = GetSize(self,varargin)
         w = self.pos(3);
         h = self.pos(4);
     end
@@ -111,8 +135,8 @@ methods
         switch self.type
         case 'edit'
             out = get(self.h,'String');
-        case 'checkbox'
-            out = get(self.h,'Value');
+        case {'checkbox','listbox'}
+            out = get(self.h,'Value');        
         otherwise
             out = [];
         end
@@ -179,7 +203,7 @@ methods (Access=private)
         r = l+w;        
         switch lower(self.opt.halign)
         case 'left'
-            l = l;
+            % do nothing
         case 'center'
             l = (l + w/2) - (self.pos(3)/2); %((self.pos(3)/2) - (w/2));
         case 'right'
@@ -197,7 +221,7 @@ methods (Access=private)
         case 'center'
             b = (b + h/2) - (self.pos(4)/2);
         case 'bottom'
-            b = b;
+            %do nothing
         otherwise
             error('Invalid alignment specified');
         end
@@ -205,9 +229,15 @@ methods (Access=private)
     %-------------------------------------------------------------------------%
     function w = GetWidth(self,nchar)
         switch self.type
-        case {'pushbutton','edit'}
+        case 'edit'
             fsiz = get(self.h,'FontSize');
             w = (nchar * (fsiz/8)) + 2.5;
+        case 'pushbutton'
+            w = get(self.h,'Extent');
+            w = w(3)+2;
+        case 'listbox'
+            w = get(self.h,'Extent');
+            w = w(3)+3;
         case 'checkbox'
             w = 3.5;
         otherwise
@@ -219,6 +249,9 @@ methods (Access=private)
         switch self.type
         case 'checkbox'            
             h = 1.5;
+        case 'listbox'
+            h = get(self.h,'Extent');
+            h = numel(self.string)*h(4);
         otherwise
             h = nchar;
         end

@@ -36,8 +36,8 @@ params.method = availableMethods{1};
 loShared = params.lo;
 
 c = {...
-    {'text','String','Select Method:'},...
-    {'pushbutton','String',params.method,'Callback',@SelectMethod};...
+    {'text','String','Select Method:'},...    
+    {'listbox','String',availableMethods,'tag','method','Callback',@MethodCB};...
     {'text','String','Starting Frequency [Hz]:'},...
     {'edit','size',5,'String',num2str(params.lo),'tag','lo','valfun',@CheckLo};...
     {'text','String','Ending Frequency [Hz]:'},...
@@ -50,7 +50,7 @@ c = {...
     {'text','string','Use logarithmmic spacing?:'},...
 	{'checkbox','value',params.log,'tag','log'};...
     {'text','string','Generate surrogate data?:'},...
-	{'checkbox','value',params.surrogate,'tag','surrogate'};...
+	{'checkbox','value',params.surrogate,'tag','surrogate','Callback',@SurrogateCB};...
     ...
     {'text','String','# Surrogate Datasets:'},...
     {'edit','size',5,'String',num2str(params.nsurrogate),'tag','nsurrogate','valfun',{'inrange',0,1e4,true}};...
@@ -59,19 +59,15 @@ c = {...
     {'pushbutton','String','Cancel','validate',false};...
     };
 
-win = FT.tools.Win(c,'title','Time-Frequency Decomposition');
+win = FT.tools.Win(c,'title','Time-Frequency Decomposition','grid',true);
+uicontrol(win.GetElementProp('method','h'));
 uiwait(win.h);
 
 if strcmpi(win.res.btn,'cancel')
     return;
 else
-    params.lo = win.res.lo;
-    params.hi = win.res.hi;
-    params.n = win.res.n;
-    params.w = win.res.w;
-    params.log = win.res.log;
-    params.surrogate = win.res.surrogate;
-    params.nsurrogate = win.res.nsurrogate;
+    params = rmfield(win.res,'btn');
+    params.method = availableMethods{win.res.method};
 end
 
 me = FT.tfd.Run(params);
@@ -81,6 +77,25 @@ FT.ProcessError(me);
 FT.UpdateGUI;
 
 %-------------------------------------------------------------------------%
+function MethodCB(varargin)
+    k = win.GetElementProp('method','Value');
+    if strcmpi(availableMethods{k},'stft')
+        win.SetElementProp('log','Value',false);
+        win.SetElementProp('log','Enable','off');
+    else
+        win.SetElementProp('log','Value',true);
+        win.SetElementProp('log','Enable','on');
+    end
+end
+%-------------------------------------------------------------------------%
+function SurrogateCB(varargin)
+    if ~win.GetElementProp('surrogate','Value')
+        win.SetElementProp('nsurrogate','String','0');
+    else
+        win.SetElementProp('nsurrogate','String',num2str(params.nsurrogate));
+    end
+end
+%-------------------------------------------------------------------------%
 function [b,val] = CheckLo(str)
     loShared = str2double(str);
     [b,val] = FT.tools.Element.inrange(str,0,fnyq,true);
@@ -88,22 +103,6 @@ end
 %-------------------------------------------------------------------------%
 function [b,val] = CheckHi(str)
     [b,val] = FT.tools.Element.inrange(str,loShared,fnyq,true);
-end
-%-------------------------------------------------------------------------%
-function SelectMethod(obj,evt)
-%allow user to select the frequency decomposition method   
-    %set the size of the figure
-    hFig = FT.tools.Inch2Px(0.171)*numel(availableMethods);
-    wFig = FT.tools.Inch2Px(2.5);
-    
-    %get the users selection
-    [kMeth,b] = listdlg('Name','Select Method',...
-       'ListString',availableMethods,'ListSize',[wFig,hFig],...
-       'SelectionMode','single');
-    if b && ~isempty(kMeth)
-        params.method = availableMethods{kMeth};
-        set(obj,'String',params.method);        
-    end
 end
 %-------------------------------------------------------------------------%
 end
