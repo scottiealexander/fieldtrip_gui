@@ -160,16 +160,9 @@ methods (Access=private)
         right = -Inf;
         height = 0;
         [width,height] = deal(zeros(self.nrow,max(self.ncol)));
-
         for kR = 1:self.nrow            
-            for kC = 1:max(self.ncol)
-                if kC == 1
-                    align = 'right';
-                elseif kC == self.ncol(kR)
-                    align = 'left';
-                else
-                    align = 'center';
-                end
+            for kC = 1:max(self.ncol)                
+                align = self.GetHAlignment(kC,self.ncol(kR));
                 if ~isempty(self.content{kR,kC})                    
                     pos = self.GetElementPosition(kR,kC);                    
                     self.el{kR,kC} = FT.tools.Element(self,pos,self.content{kR,kC},'halign',align);
@@ -180,10 +173,10 @@ methods (Access=private)
             end            
         end
 
-        width  = max(width,[],1);
-        height = max(height,[],2);
-        fig_width = sum(width) + (self.pad * (max(self.ncol)+1));
-        fig_height = sum(height) + (self.pad * (self.nrow+1));
+        mx_width  = max(width,[],1);
+        mx_height = max(height,[],2);
+        fig_width = sum(mx_width) + (self.pad * (max(self.ncol)+1));
+        fig_height = sum(mx_height) + (self.pad * (self.nrow+1));
         pFig = self.GetFigPosition(fig_width,fig_height,...
               'xoffset',self.opt.position(1),'yoffset',self.opt.position(2));
         
@@ -192,13 +185,28 @@ methods (Access=private)
         %width for each column and height for each row
         btm_cur = pFig(4);
         for kR = 1:self.nrow
-            btm_cur = btm_cur - (height(kR) + self.pad);
-            left_cur = self.pad;
-            for kC = 1:max(self.ncol)
+            btm_cur = btm_cur - (mx_height(kR) + self.pad);            
+            % if self.ncol(kR) < max(self.ncol)
+            %     fprintf('centering row...\n');
+                % align = 'auto';
+                row_width = sum(width(kR,:)) + (self.pad * (self.ncol(kR)-1));
+                left_cur = (pFig(3)/2) - (row_width/2);
+            % else                
+            %     left_cur = self.pad;
+            % end
+            for kC = 1:max(self.ncol)                
                 if ~isempty(self.el{kR,kC})
-                    rect = [left_cur, btm_cur, width(kC), height(kR)];
-                    self.el{kR,kC}.SetOuterRect(rect);                
-                    left_cur = left_cur + width(kC) + self.pad;
+                    % if strcmpi(align,'auto')
+                        halign = self.GetHAlignment(kC,self.ncol(kR));
+                        width_use = width(kR,kC);
+                    % else
+                    %     halign = align;
+                    %     width_use = mx_width(kC);
+                    % end
+                    fprintf('ALIGNMENT: %s\n',halign);
+                    rect = [left_cur, btm_cur, width_use, mx_height(kR)];
+                    self.el{kR,kC}.SetOuterRect(rect,'halign',halign);
+                    left_cur = left_cur + width_use + self.pad;
                 end
             end
         end
@@ -214,6 +222,16 @@ methods (Access=private)
         ep(2) = fp(4) - (kR * (height + self.pad));
         ep(3) = (fp(3)/nC) - (self.pad);
         ep(4) = height;
+    end
+    %-------------------------------------------------------------------------%
+    function algn = GetHAlignment(self,kC,nC)
+        if kC == 1
+            algn = 'left';
+        elseif kC == nC
+            algn = 'right';
+        else
+            algn = 'center';
+        end
     end
     %-------------------------------------------------------------------------%
     function KeyPress(self,obj,evt)

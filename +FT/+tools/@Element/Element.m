@@ -95,7 +95,11 @@ methods
         end
     end
     %-------------------------------------------------------------------------%
-    function SetOuterRect(self,rect)
+    function SetOuterRect(self,rect,varargin)
+        self.opt = self.ParseOptions(varargin,...
+            'halign' , self.opt.halign,...
+            'valign' , self.opt.valign ...
+            );
         pos = self.pos;
         pos(1) = self.GetLeft(rect(1),rect(3));
         pos(2) = self.GetBottom(rect(2),rect(4));
@@ -179,7 +183,7 @@ methods (Access=private)
         r = l+w;        
         switch lower(self.opt.halign)
         case 'left'
-            l = l;
+            % do nothing
         case 'center'
             l = (l + w/2) - (self.pos(3)/2); %((self.pos(3)/2) - (w/2));
         case 'right'
@@ -197,7 +201,7 @@ methods (Access=private)
         case 'center'
             b = (b + h/2) - (self.pos(4)/2);
         case 'bottom'
-            b = b;
+            %do nothing
         otherwise
             error('Invalid alignment specified');
         end
@@ -205,9 +209,12 @@ methods (Access=private)
     %-------------------------------------------------------------------------%
     function w = GetWidth(self,nchar)
         switch self.type
-        case {'pushbutton','edit'}
+        case 'edit'
             fsiz = get(self.h,'FontSize');
             w = (nchar * (fsiz/8)) + 2.5;
+        case 'pushbutton'
+            w = get(self.h,'Extent');
+            w = w(3)+2;
         case 'checkbox'
             w = 3.5;
         otherwise
