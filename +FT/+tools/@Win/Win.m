@@ -198,9 +198,7 @@ methods (Access=private)
             left_cur = self.pad;
             for kC = 1:max(self.ncol)
                 rect = [left_cur, btm_cur, width(kC), height(kR)];
-                self.el{kR,kC}.SetOuterRect(rect);
-                % self.el{kR,kC}.SetLR(left_cur, left_cur + width(kC));
-                % self.el{kR,kC}.SetBT(btm_cur, btm_cur + height(kR));
+                self.el{kR,kC}.SetOuterRect(rect);                
                 left_cur = left_cur + width(kC) + self.pad;
             end
         end
@@ -216,28 +214,6 @@ methods (Access=private)
         ep(2) = fp(4) - (kR * (height + self.pad));
         ep(3) = (fp(3)/nC) - (self.pad);
         ep(4) = height;
-    end    
-    %-------------------------------------------------------------------------%
-    function mx_right = GetColRight(self,kC)
-        mx_right = 0;
-        for k = 1:self.nrow
-            if ~isempty(self.content{k,kC})
-                if self.el{kR,kC}.pos(1) + self.el{kR,kC}.pos(3) > mx_right
-                    mx_right = self.el{kR,kC}.pos(1) + self.el{kR,kC}.pos(3);
-                end
-            end
-        end
-    end
-    %-------------------------------------------------------------------------%
-    function mx_bottom = GetRowBottom(self,kR)
-        mx_bottom = Inf;
-        for k = 1:max(self.ncol)
-            if ~isempty(self.content{kR,k})
-                if self.el{kR,kC}.pos(2) < mx_bottom
-                    mx_bottom = self.el{kR,kC}.pos(2);
-                end
-            end
-        end
     end
     %-------------------------------------------------------------------------%
     function KeyPress(self,obj,evt)

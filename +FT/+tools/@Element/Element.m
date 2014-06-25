@@ -44,7 +44,7 @@ methods
 
         self.fig = win.h;
         self.pos = p;
-        self.type = s.type;
+        self.type = lower(s.type);
         
         if isfield(s,'size')
             self.len = s.size;
@@ -80,12 +80,12 @@ methods
         end
         c = self.AddDefaultValues(rmfield(s,'type'));
 
-        switch lower(self.type)
+        self.h = uicontrol('Style',self.type,c{:});
+
+        switch self.type
         case 'text'
-            self.h = uicontrol('Style',self.type,c{:});
             self.InitTextPosition;
-        case {'pushbutton','edit','checkbox'}
-            self.h = uicontrol('Style',self.type,c{:});
+        case {'pushbutton','edit','checkbox'}            
             self.InitUIPosition;
             if strcmpi(self.type,'pushbutton') && isempty(get(self.h,'Callback'))
                 set(self.h,'Callback',@(x,varargin) win.BtnPush(x,validate));
@@ -108,7 +108,7 @@ methods
     end
     %-------------------------------------------------------------------------%
     function out = Response(self)
-        switch lower(self.type)
+        switch self.type
         case 'edit'
             out = get(self.h,'String');
         case 'checkbox'
@@ -166,6 +166,7 @@ methods (Access=private)
         set(self.h,'Units','characters');
         p = get(self.h,'Position');
         p(3) = self.GetWidth(self.len);
+        p(4) = self.GetHeight(p(4));
         set(self.h,'Position',p);
         set(self.h,'Units','pixels');
         p = get(self.h,'Position');
@@ -203,14 +204,24 @@ methods (Access=private)
     end
     %-------------------------------------------------------------------------%
     function w = GetWidth(self,nchar)
-        switch lower(self.type)
+        switch self.type
         case {'pushbutton','edit'}
             fsiz = get(self.h,'FontSize');
             w = (nchar * (fsiz/8)) + 2.5;
         case 'checkbox'
-            w = 4;
+            w = 3.5;
         otherwise
             error('Das ist foul...');
+        end
+    end
+    %-------------------------------------------------------------------------%
+    function h = GetHeight(self,nchar)
+        switch self.type
+        case 'checkbox'
+            fprintf('Setting height...\n');
+            h = 1.5;
+        otherwise
+            h = nchar;
         end
     end
     %-------------------------------------------------------------------------%
@@ -242,7 +253,7 @@ methods (Access=private)
                 'Position' , self.pos     ,...
                 'Parent'   , self.fig      ...
               };
-        switch lower(self.type)
+        switch self.type
             case {'edit','checkbox'}
                 def = [def {'BackgroundColor',[1 1 1]}];
             case 'text'
