@@ -111,6 +111,17 @@ methods
         self.validate = validate;
         self.FetchResult;
     end
+    %-------------------------------------------------------------------------%
+    function SetElementProp(self,tag,field,val)
+        for k = 1:numel(self.el)
+            if ~isempty(self.el{k})
+                if strcmpi(tag,self.el{k}.tag)
+                    self.el{k}.SetProp(field,val);
+                    return;
+                end
+            end
+        end
+    end
     %-------------------------------------------------------------------------%    
     function delete(self)
         if isvalid(self) && ishandle(self.h)
@@ -163,10 +174,10 @@ methods (Access=private)
         [width,height] = deal(zeros(self.nrow,max(self.ncol)));
         for kR = 1:self.nrow            
             for kC = 1:max(self.ncol)                
-                align = self.GetHAlignment(kC,self.ncol(kR));
+                halign = self.GetHAlignment(kC,self.ncol(kR));
                 if ~isempty(self.content{kR,kC})                    
                     pos = self.GetElementPosition(kR,kC);                    
-                    self.el{kR,kC} = FT.tools.Element(self,pos,self.content{kR,kC},'halign',align);
+                    self.el{kR,kC} = FT.tools.Element(self,pos,self.content{kR,kC},'halign',halign);
                     [width(kR,kC),height(kR,kC)] = size(self.el{kR,kC});                    
                 else
                     self.el{kR,kC} = {};
@@ -174,10 +185,14 @@ methods (Access=private)
             end            
         end
 
-        mx_width  = max(width,[],1);
+        if ~self.opt.grid
+            fig_width = max(sum(width,2)) + (self.pad * (max(self.ncol)+1));;            
+        else            
+            mx_width  = max(width,[],1);            
+            fig_width = sum(mx_width) + (self.pad * (max(self.ncol)+1));            
+        end
         mx_height = max(height,[],2);
-        fig_width = sum(mx_width) + (self.pad * (max(self.ncol)+1));
-        fig_height = sum(mx_height) + (self.pad * (self.nrow+1));
+        fig_height = sum(mx_height) + (self.pad * (self.nrow+1));        
         pFig = self.GetFigPosition(fig_width,fig_height,...
               'xoffset',self.opt.position(1),'yoffset',self.opt.position(2));
         
@@ -186,11 +201,13 @@ methods (Access=private)
         %width for each column and height for each row
         btm_cur = pFig(4);
         for kR = 1:self.nrow
-            btm_cur = btm_cur - (mx_height(kR) + self.pad);            
+                        
             if ~self.opt.grid
+                btm_cur = btm_cur - (max(height(kR,:)) + self.pad);
                 row_width = sum(width(kR,:)) + (self.pad * (self.ncol(kR)-1));
                 left_cur = (pFig(3)/2) - (row_width/2);
-            else                
+            else
+                btm_cur = btm_cur - (mx_height(kR) + self.pad);
                 left_cur = self.pad;
             end
             for kC = 1:max(self.ncol)                
@@ -198,11 +215,13 @@ methods (Access=private)
                     if ~self.opt.grid
                         halign = self.GetHAlignment(kC,self.ncol(kR));
                         width_use = width(kR,kC);
+                        height_use = height(kR,kC);
                     else
                         halign = self.el{kR,kC}.opt.halign;
                         width_use = mx_width(kC);
+                        height_use = mx_height(kR);
                     end                    
-                    rect = [left_cur, btm_cur, width_use, mx_height(kR)];
+                    rect = [left_cur, btm_cur, width_use, height_use];
                     self.el{kR,kC}.SetOuterRect(rect,'halign',halign);
                     left_cur = left_cur + width_use + self.pad;
                 end

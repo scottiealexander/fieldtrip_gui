@@ -25,7 +25,7 @@ properties
     len = 5;
     pos = zeros(1,4);   
     opt;
-    tag;
+    tag = '';
     valfun;
 end
 %PROPERTIES-------------------------------------------------------------------%
@@ -104,6 +104,12 @@ methods
         pos(1) = self.GetLeft(rect(1),rect(3));
         pos(2) = self.GetBottom(rect(2),rect(4));
         self.SetPosition(pos);
+    end
+    %-------------------------------------------------------------------------%
+    function SetProp(self,field,val)
+        if isprop(self.h,field)
+            set(self.h,field,val);
+        end
     end
     %-------------------------------------------------------------------------%
     function [w,h] = size(self,varargin)

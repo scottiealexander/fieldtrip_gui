@@ -25,11 +25,15 @@ c = {{'text','string',['Enter some value here' 10 'please if you may:']},...
 	 {'pushbutton','string','Cancel','validate',false}	 ...
 	};
 
-w = FT.tools.Win(c,'position',[0 0],'grid',false);
+w = FT.tools.Win(c,'position',[0 0],varargin{:});
 
 %-----------------------------------------------------------------------------%
-function checkbox_cb(varargin)
-	fprintf('Hello world...\n');
+function checkbox_cb(obj,varargin)
+	if get(obj,'Value')
+		w.SetElementProp('edit2','BackgroundColor',[0 0 1]);
+	else
+		w.SetElementProp('edit2','BackgroundColor',[1 1 1]);
+	end
 end
 %-----------------------------------------------------------------------------%
 function cb_test(obj,varargin)
