@@ -161,8 +161,7 @@ methods (Access=private)
         height = 0;
         [width,height] = deal(zeros(self.nrow,max(self.ncol)));
 
-        for kR = 1:self.nrow
-            row_height = 0;
+        for kR = 1:self.nrow            
             for kC = 1:max(self.ncol)
                 if kC == 1
                     align = 'right';
@@ -174,7 +173,6 @@ methods (Access=private)
                 if ~isempty(self.content{kR,kC})                    
                     pos = self.GetElementPosition(kR,kC);                    
                     self.el{kR,kC} = FT.tools.Element(self,pos,self.content{kR,kC},'halign',align);
-
                     [width(kR,kC),height(kR,kC)] = size(self.el{kR,kC});                    
                 else
                     self.el{kR,kC} = {};
@@ -197,9 +195,11 @@ methods (Access=private)
             btm_cur = btm_cur - (height(kR) + self.pad);
             left_cur = self.pad;
             for kC = 1:max(self.ncol)
-                rect = [left_cur, btm_cur, width(kC), height(kR)];
-                self.el{kR,kC}.SetOuterRect(rect);                
-                left_cur = left_cur + width(kC) + self.pad;
+                if ~isempty(self.el{kR,kC})
+                    rect = [left_cur, btm_cur, width(kC), height(kR)];
+                    self.el{kR,kC}.SetOuterRect(rect);                
+                    left_cur = left_cur + width(kC) + self.pad;
+                end
             end
         end
     end
