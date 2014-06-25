@@ -52,11 +52,13 @@ methods
         end
 
         if isfield(s,'string')
-            if numel(s.string) > self.len
-                self.len = numel(s.string);
-            end
-            if strcmpi(s.string,'default')
-                s.string = ['\' s.string];
+            if strcmp(self.type,'edit')
+                if numel(s.string) > self.len
+                    self.len = numel(s.string);
+                end
+                if strcmpi(s.string,'default')
+                    s.string = ['\' s.string];
+                end
             end
             self.string = s.string;
         end     
@@ -85,7 +87,7 @@ methods
         switch self.type
         case 'text'
             self.InitTextPosition;
-        case {'pushbutton','edit','checkbox'}            
+        case {'pushbutton','edit','checkbox','listbox'}            
             self.InitUIPosition;
             if strcmpi(self.type,'pushbutton') && isempty(get(self.h,'Callback'))
                 set(self.h,'Callback',@(x,varargin) win.BtnPush(x,validate));
@@ -109,10 +111,12 @@ methods
     function SetProp(self,field,val)
         if isprop(self.h,field)
             set(self.h,field,val);
+        elseif isprop(self,field)
+            self.(field) = val;
         end
     end
     %-------------------------------------------------------------------------%
-    function [w,h] = size(self,varargin)
+    function [w,h] = GetSize(self,varargin)
         w = self.pos(3);
         h = self.pos(4);
     end
@@ -121,8 +125,8 @@ methods
         switch self.type
         case 'edit'
             out = get(self.h,'String');
-        case 'checkbox'
-            out = get(self.h,'Value');
+        case {'checkbox','listbox'}
+            out = get(self.h,'Value');        
         otherwise
             out = [];
         end
@@ -221,6 +225,9 @@ methods (Access=private)
         case 'pushbutton'
             w = get(self.h,'Extent');
             w = w(3)+2;
+        case 'listbox'
+            w = get(self.h,'Extent');
+            w = w(3)+3;
         case 'checkbox'
             w = 3.5;
         otherwise
@@ -232,6 +239,9 @@ methods (Access=private)
         switch self.type
         case 'checkbox'            
             h = 1.5;
+        case 'listbox'
+            h = get(self.h,'Extent');
+            h = numel(self.string)*h(4);
         otherwise
             h = nchar;
         end

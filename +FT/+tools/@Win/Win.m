@@ -178,7 +178,7 @@ methods (Access=private)
                 if ~isempty(self.content{kR,kC})                    
                     pos = self.GetElementPosition(kR,kC);                    
                     self.el{kR,kC} = FT.tools.Element(self,pos,self.content{kR,kC},'halign',halign);
-                    [width(kR,kC),height(kR,kC)] = size(self.el{kR,kC});                    
+                    [width(kR,kC),height(kR,kC)] = self.el{kR,kC}.GetSize;
                 else
                     self.el{kR,kC} = {};
                 end
