@@ -10,7 +10,7 @@ function w = Test(varargin)
 % Out:
 %		w - an instance of the Win class
 %
-% Updated: 2014-06-23
+% Updated: 2014-06-25
 % Scottie Alexander
 %
 % Please send bug reports to: scottiealexander11@gmail.com
@@ -25,7 +25,7 @@ c = {{'text','string',['Enter some value here' 10 'please if you may:']},...
 	 {'pushbutton','string','Cancel','validate',false}	 ...
 	};
 
-w = Win(c,'position',[0 0]);
+w = FT.tools.Win(c,'position',[0 0]);
 
 %-----------------------------------------------------------------------------%
 function checkbox_cb(varargin)

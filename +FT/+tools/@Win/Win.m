@@ -10,7 +10,7 @@ classdef Win < handle
 %
 % Out:
 %
-% Updated: 2014-04-30
+% Updated: 2014-06-25
 % Scottie Alexander
 %
 % Please send bug reports to: scottiealexander11@gmail.com
@@ -21,16 +21,6 @@ classdef Win < handle
 %      *OR* if we use only fixed width fonts maybe we can revert to uicontrol text objects...?
 %   2) column resizing (increase only of course)
 %   3) button resizing based on string (USE FIXED WIDTH FONT)
-%
-% c = {{'text','string','this is some text'},...
-%     {'edit','size',[10 10]};               ...
-%     {'text','string','Another label'},     ...
-%     {'checkbox','size',[10 10]};           ...
-%     {'pushbutton','string','Run'},         ...
-%     {'pushbutton','string','Cancle'};      ...
-%   };
-%
-% g = Win(c,'title','Define Trial');
 
 
 %PROPERTIES-------------------------------------------------------------------%
@@ -183,7 +173,7 @@ methods (Access=private)
                 end
                 if ~isempty(self.content{kR,kC})                    
                     pos = self.GetElementPosition(kR,kC);                    
-                    self.el{kR,kC} = Element(self,pos,self.content{kR,kC},'halign',align);
+                    self.el{kR,kC} = FT.tools.Element(self,pos,self.content{kR,kC},'halign',align);
 
                     [width(kR,kC),height(kR,kC)] = size(self.el{kR,kC});                    
                 else
