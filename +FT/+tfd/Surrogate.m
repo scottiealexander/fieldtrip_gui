@@ -1,11 +1,11 @@
-function SurrogatePSD(nITER)
+function Surrogate(nITER)
 
-% FT.SurrogatePSD
+% FT.tfd.Surrogate
 %
 % Description: construct surrogate PSD by phase scrambling the instantaneous power values
 %			   from a time-frequency decomposition
 %
-% Syntax: FT.SurrogatePSD(nITER)
+% Syntax: FT.tfd.Surrogate(nITER)
 %
 % In:
 %		nITER - the number of surrogate datasets to generate

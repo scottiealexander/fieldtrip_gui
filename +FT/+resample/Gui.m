@@ -35,7 +35,7 @@ c = {...
     {'pushbutton','String','Cancel','validate',false};...
     };
 
-win = FT.tools.Win(c);
+win = FT.tools.Win(c,'title','Resampling Parameters');
 uiwait(win.h);
 
 if strcmpi(win.res.btn,'cancel')
@@ -58,9 +58,7 @@ if ishandle(hMsg)
     close(hMsg);
 end
 
-if isa(me,'MException')
-    FT.ProcessError(me);
-end
+FT.ProcessError(me);
 
 FT.UpdateGUI;
 

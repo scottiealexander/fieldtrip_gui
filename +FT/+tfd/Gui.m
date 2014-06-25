@@ -1,10 +1,10 @@
 function Gui(varargin)
 
-% FT.hilbertdecomposition.Gui
+% FT.tfd.Gui
 %
 % Description: get parameters for Hilbert decomposition from user via a GUI
 %
-% Syntax: FT.hilbertdecomposition.Gui
+% Syntax: FT.tfd.Gui
 %
 % In: 
 %
@@ -13,23 +13,31 @@ function Gui(varargin)
 % Updated: 2014-06-23
 % Peter Horak
 %
-% See also: FT.hilbertdecomposition.Run
+% See also: FT.tfd.Run
 %
 % Please report bugs to: scottiealexander11@gmail.com
 
 global FT_DATA;
-if ~isfield(FT_DATA,'data')
-    FT.UserInput(['\color{red}Cannot run Hilbert decomposition more than once!\n\color{black}'...
-        'Raw data was removed to save memory.'],...
-        0,'title','Cannot Run Hilbert Again','button','OK');
+if ~FT.CheckStage('tfd')
     return;
 end
+%make sure there is trial info
+if ~isfield(FT_DATA,'epoch') || isempty(FT_DATA.epoch)
+    if ~FT.DefineTrial
+        return;
+    end
+end
+
+availableMethods = {'Hilbert'};
 
 fnyq = floor(FT_DATA.data.fsample/2);
 cfg = struct('lo',10,'hi',fnyq,'n',42,'w',10,'log',true,'surrogate',true,'nsurrogate',10);
+cfg.method = availableMethods{1};
 loShared = cfg.lo;
 
 c = {...
+    {'text','String','Select Method:'},...
+    {'pushbutton','String',cfg.method,'Callback',@SelectMethod};...
     {'text','String','Starting Frequency [Hz]:'},...
     {'edit','size',5,'String',num2str(cfg.lo),'tag','lo','valfun',@CheckLo};...
     {'text','String','Ending Frequency [Hz]:'},...
@@ -51,7 +59,7 @@ c = {...
     {'pushbutton','String','Cancel','validate',false};...
     };
 
-win = FT.tools.Win(c);
+win = FT.tools.Win(c,'title','Time-Frequency Decomposition');
 uiwait(win.h);
 
 if strcmpi(win.res.btn,'cancel')
@@ -66,12 +74,12 @@ else
     cfg.nsurrogate = win.res.nsurrogate;
 end
 
-me = FT.hilbertdecomposition.Run(cfg);
+me = FT.tfd.Run(cfg);
 
 if isa(me,'MException')
     FT.ProcessError(me);
 elseif cfg.surrogate && cfg.nsurrogate > 0
-	FT.SurrogatePSD(cfg.nsurrogate);
+	FT.tfd.Surrogate(cfg.nsurrogate);
 end
 
 FT.UpdateGUI;
@@ -84,6 +92,22 @@ end
 %-------------------------------------------------------------------------%
 function [b,val] = CheckHi(str)
     [b,val] = FT.tools.Element.inrange(str,loShared,fnyq,true);
+end
+%-------------------------------------------------------------------------%
+function SelectMethod(obj,evt)
+%allow user to select the frequency decomposition method   
+    %set the size of the figure
+    hFig = FT.tools.Inch2Px(0.171)*numel(availableMethods);
+    wFig = FT.tools.Inch2Px(2.5);
+    
+    %get the users selection
+    [kMeth,b] = listdlg('Name','Select Method',...
+       'ListString',availableMethods,'ListSize',[wFig,hFig],...
+       'SelectionMode','single');
+    if b && ~isempty(kMeth)
+        cfg.method = availableMethods{kMeth};
+        set(obj,'String',cfg.method);        
+    end
 end
 %-------------------------------------------------------------------------%
 end

@@ -1,10 +1,10 @@
-function bRun = Run(param)
+function me = Run(param)
 
-% FT.hilbertdecomposition.Run
+% FT.tfd.Run
 %
 % Description:  time-frequency decomposition based on the Hilbert transform
 %
-% Syntax: me = FT.hilbertdecomposition.Run(cfg)
+% Syntax: me = FT.tfd.Run(cfg)
 %
 % In: 
 %
@@ -13,21 +13,14 @@ function bRun = Run(param)
 % Updated: 2014-06-23
 % Peter Horak
 %
-% See also: FT.hilbertdecomposition.Gui
+% See also: FT.tfd.Gui
 %
 % Please report bugs to: scottiealexander11@gmail.com
 
 
 global FT_DATA;
+me = [];
 FS = FT_DATA.data.fsample;
-bRun = true;
-%make sure there is trial info
-if ~isfield(FT_DATA,'epoch') || isempty(FT_DATA.epoch)
-    if ~FT.DefineTrial
-        bRun = false;      
-        return;
-    end
-end
 
 %convert to percent
 param.w = param.w/100;
@@ -87,8 +80,6 @@ FT_DATA.power.fsample = FT_DATA.data.fsample;
 FT_DATA = rmfield(FT_DATA,'data');
 
 FT_DATA.saved = false;
-
-FT.UpdateGUI;
 
 %-------------------------------------------------------------------------%
 function tmp = HilbertXFM(freq)
