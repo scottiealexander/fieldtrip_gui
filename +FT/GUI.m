@@ -91,9 +91,9 @@ FT.UpdateGUI;
 %preprocessing
     hProcMenu = uimenu(h,'Label','Preprocessing');
     hChanVeiw = uimenu(hProcMenu,'Label','Remove Channels','Callback',@(varargin) FT.RunFunction(@FT.RemoveChannels));
-    hReSamp   = uimenu(hProcMenu,'Label','Resample Data','Callback',@(varargin) FT.RunFunction(@FT.Resample));
-    hReFilt   = uimenu(hProcMenu,'Label','Filter Data','Callback',@(varargin) FT.RunFunction(@FT.Filter));
-    hReRef    = uimenu(hProcMenu,'Label','Rereference Data','Callback',@(varargin) FT.RunFunction(@FT.Rereference));
+    hReSamp   = uimenu(hProcMenu,'Label','Resample Data','Callback',@(varargin) FT.RunFunction(@FT.resample.Gui));
+    hReFilt   = uimenu(hProcMenu,'Label','Filter Data','Callback',@(varargin) FT.RunFunction(@FT.filter.Gui));
+    hReRef    = uimenu(hProcMenu,'Label','Rereference Data','Callback',@(varargin) FT.RunFunction(@FT.rereference.Gui));
     hNewChan  = uimenu(hProcMenu,'Label','Create New Channel','Callback',@(varargin) FT.RunFunction(@FT.NewChannel));
     hBPFilt   = uimenu(hProcMenu,'Label','Bandpass Filter','Callback',@(varargin) FT.RunFunction(@FT.BandPass));
     
