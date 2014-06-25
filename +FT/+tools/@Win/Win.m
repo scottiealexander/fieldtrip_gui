@@ -183,10 +183,9 @@ methods (Access=private)
                 end
                 if ~isempty(self.content{kR,kC})                    
                     pos = self.GetElementPosition(kR,kC);                    
-                    self.el{kR,kC} = FT.tools.Element(self,pos,self.content{kR,kC},'halign',align);
+                    self.el{kR,kC} = Element(self,pos,self.content{kR,kC},'halign',align);
 
-                    width(kR,kC) = self.el{kR,kC}.Width;
-                    height(kR,kC) = self.el{kR,kC}.Height;
+                    [width(kR,kC),height(kR,kC)] = size(self.el{kR,kC});                    
                 else
                     self.el{kR,kC} = {};
                 end
@@ -195,7 +194,7 @@ methods (Access=private)
 
         width  = max(width,[],1);
         height = max(height,[],2);
-        fig_width = sum(width) + (self.pad * max(self.ncol));
+        fig_width = sum(width) + (self.pad * (max(self.ncol)+1));
         fig_height = sum(height) + (self.pad * (self.nrow+1));
         pFig = self.GetFigPosition(fig_width,fig_height,...
               'xoffset',self.opt.position(1),'yoffset',self.opt.position(2));
@@ -208,18 +207,13 @@ methods (Access=private)
             btm_cur = btm_cur - (height(kR) + self.pad);
             left_cur = self.pad;
             for kC = 1:max(self.ncol)
-                % self.el{kR,kC}.SetPos({'left','bottom'},[left_cur,btm_cur]);
-                self.el{kR,kC}.SetLR(left_cur, left_cur + width(kC));
-                self.el{kR,kC}.SetLR(btm_cur, btm_cur + height(kC));
+                rect = [left_cur, btm_cur, width(kC), height(kR)];
+                self.el{kR,kC}.SetOuterRect(rect);
+                % self.el{kR,kC}.SetLR(left_cur, left_cur + width(kC));
+                % self.el{kR,kC}.SetBT(btm_cur, btm_cur + height(kR));
                 left_cur = left_cur + width(kC) + self.pad;
             end
         end
-        
-        % for k = 1:numel(self.el)
-        %     if ~isempty(self.el{k})
-        %         self.el{k}.Move('left',left);
-        %     end
-        % end
     end
     %-------------------------------------------------------------------------%
     function ep = GetElementPosition(self,kR,kC)

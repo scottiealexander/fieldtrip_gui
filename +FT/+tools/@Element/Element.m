@@ -95,52 +95,16 @@ methods
         end
     end
     %-------------------------------------------------------------------------%
-    function Move(self,dir,amt)
+    function SetOuterRect(self,rect)
         pos = self.pos;
-        switch lower(dir)
-        case 'left'
-            pos(1) = pos(1) - amt;
-        case 'down'
-            pos(2) = pos(2) - amt;
-        otherwise
-            error('%s is not a valid direction');
-        end
+        pos(1) = self.GetLeft(rect(1),rect(3));
+        pos(2) = self.GetBottom(rect(2),rect(4));
         self.SetPosition(pos);
     end
     %-------------------------------------------------------------------------%
-    function SetPos(self,dir,loc)        
-        if ~iscell(dir)
-            dir = {dir};
-        elseif ~iscellstr(dir)
-            return;
-        end
-        n = FT.tools.Ternary(numel(dir)<numel(loc),numel(dir),numel(loc));
-        for k = 1:n
-            b = strcmpi(dir{k},{'left','bottom','width','height'});
-            pos = self.pos;
-            pos(b) = loc(k);
-            self.SetPosition(pos);
-        end
-    end
-    %-------------------------------------------------------------------------%
-    function SetLR(self,l,r)
-        pos = self.pos;
-        pos(1) = self.GetLeft(l,r);
-        self.SetPosition(pos);
-    end
-    %-------------------------------------------------------------------------%
-    function SetBT(self,b,t)
-        pos = self.pos;
-        pos(2) = self.GetBottom(b,t);
-        self.SetPosition(pos);
-    end
-    %-------------------------------------------------------------------------%
-    function x = Width(self)
-        x = self.pos(3);
-    end
-    %-------------------------------------------------------------------------%
-    function x = Height(self)
-        x = self.pos(4);
+    function [w,h] = size(self,varargin)
+        w = self.pos(3);
+        h = self.pos(4);
     end
     %-------------------------------------------------------------------------%
     function out = Response(self)
@@ -205,13 +169,13 @@ methods (Access=private)
         set(self.h,'Position',p);
         set(self.h,'Units','pixels');
         p = get(self.h,'Position');
-        p(1) = self.GetLeft(p(1),p(1)+p(3));
-        p(2) = self.GetBottom(p(2),p(2)+p(4));
+        p(1) = self.GetLeft(p(1),p(3));
+        p(2) = self.GetBottom(p(2),p(4));
         self.SetPosition(p);
     end
     %-------------------------------------------------------------------------%
-    function l = GetLeft(self,l,r)
-        w = r-l;
+    function l = GetLeft(self,l,w)
+        r = l+w;        
         switch lower(self.opt.halign)
         case 'left'
             l = l;
@@ -224,8 +188,8 @@ methods (Access=private)
         end
     end
     %-------------------------------------------------------------------------%
-    function b = GetBottom(self,b,t)
-        h = t-b;
+    function b = GetBottom(self,b,h)
+        t = b+h;        
         switch lower(self.opt.valign)
         case 'top'
             b = t - self.pos(4);
@@ -282,7 +246,7 @@ methods (Access=private)
             case {'edit','checkbox'}
                 def = [def {'BackgroundColor',[1 1 1]}];
             case 'text'
-                def = [def {'BackgroundColor',[1 1 1]}]; %get(self.fig,'Color')
+                def = [def {'BackgroundColor',get(self.fig,'Color')}]; %get(self.fig,'Color')
         end
         def = self.pvpair2struct(def);
         fields = fieldnames(s);
