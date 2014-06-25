@@ -22,41 +22,50 @@ global FT_DATA;
 FS = FT_DATA.data.fsample;
 nChan = size(FT_DATA.data.trial{1},1);
 
-window = 112;%round(FS*params.n);
-overlap = 56;%round(window/2);
+window = round(FS*(params.n-1)/(params.hi-params.lo));%128
+overlap = round(window/2);%64
 
 %convert to percent
 params.w = params.w/100;
 
-%caclulate frequency bin centers
-fEnd = (params.hi/(1+params.w))-1; %last bin center should be param.w% less than param.hi
-if params.log
-    centers = logspace(log10(params.lo),log10(fEnd),params.n);
-else
-    centers = linspace(params.lo,params.hi,params.n);
-end
+% %caclulate frequency bin centers
+% fEnd = (params.hi/(1+params.w))-1; %last bin center should be param.w% less than param.hi
+% if params.log
+%     centers = logspace(log10(params.lo),log10(fEnd),params.n);
+% else
+%     centers = linspace(params.lo,params.hi,params.n);
+% end
 
 %frequency band edges
-cBands = arrayfun(@(x) [x*(1-params.w) x*(1+params.w)],centers,'uni',false);
+% cBands = arrayfun(@(x) [x*(1-params.w) x*(1+params.w)],centers,'uni',false);
 
 %n-condition length cell to hold all the data
 data = cell(numel(FT_DATA.epoch),1);
 
 FT.Progress2(nChan+params.n+1,'Computing spectrogram');
 
-data_raw = cell(length(centers),1);
+%indices for cropping frequency range
+fStart = ceil(params.n*params.lo/(params.hi-params.lo));%find(freq>=lo,1,'first');
+fEnd = floor(params.n*params.hi/(params.hi-params.lo));%find(freq>=hi,1,'first');
+
+data_raw = cell(params.n,1);
 % id = tic;
 for ch = 1:nChan
     % PSD: freq x time    
-    [~,freq,time,PSD] = spectrogram(FT_DATA.data.trial{1}(ch,:),window,overlap,centers,FS);    
+    [~,freq,time,PSD] = spectrogram(FT_DATA.data.trial{1}(ch,:),window,overlap,window,FS);
+    PSD = PSD(fStart:fEnd,:);
+
     PSD = spline(time,PSD,FT_DATA.data.time{1});    
     % PSD: freq x 1 cell of 1 x time
-    PSD = mat2cell(PSD,ones(1,length(freq)));    
+    PSD = mat2cell(PSD,ones(1,params.n));    
     % data_raw: freq x 1 cell of channel x time
     data_raw = cellfun(@(raw,psd) cat(1,raw,psd),data_raw,PSD,'uni',false);    
     FT.Progress2;
 end
 % fprintf('TOTAL TIME: %f\n',toc(id));
+freq = freq(fStart:fEnd);
+cBands = arrayfun(@(x) [x*(1-params.w) x*(1+params.w)],freq,'uni',false);
+
 
 %scale each channel/frequency band by total mean power across bands, but within channel
 mean_power = cellfun(@(x) mean(x,2),data_raw,'uni',false);
@@ -74,7 +83,7 @@ id = tic;
 FT_DATA.power.raw     = FT.ROA(cat(3,data_raw{:}));
 fprintf('Done | %.3f\n',toc(id));
 FT_DATA.power.data    = data;
-FT_DATA.power.centers = centers;
+FT_DATA.power.centers = freq;
 FT_DATA.power.bands   = cBands;
 FT_DATA.power.time    = GetTime;
 FT_DATA.power.label   = FT_DATA.data.label;

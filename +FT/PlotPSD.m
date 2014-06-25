@@ -82,10 +82,12 @@ function PlotOne(strChan)
 	%position for each axes
 	axPos = GetAxPosition(h,numel(d),'pad',75,'v_pad',30);
 
-	for k = 1:numel(d)
+	for k = 1:numel(d)        
 		%get the labels for the x and y axes
 		[xT,xTL] = GetAxLabels(time,7,'round',-1);
-		[yT,yTL] = GetAxLabels(FT_DATA.power.centers,10,'space','log','round',0);
+        strSpace = FT.tools.Ternary(FT_DATA.history.tfd.log,'log','linear');
+        nCenter = FT.tools.Ternary(numel(FT_DATA.power.centers)<10,numel(FT_DATA.power.centers),10);
+		[yT,yTL] = GetAxLabels(FT_DATA.power.centers,nCenter,'space',strSpace,'round',0);
 
 		%convert ticks to indicies
 		yT = arrayfun(@(x) find(FT_DATA.power.centers>=x,1,'first'),yT);

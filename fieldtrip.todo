@@ -1,6 +1,7 @@
 #FIELDTRIP_GUI master TODO list 06/23/2014
 
 #GRAPHICAL
+	* fix PlotPSD y-axis labels
 	* continue adding functionality to Win/Element classes
 
 #ORGANIZATIONAL
@@ -15,8 +16,10 @@
 	* seperate trial definition from trial segmentations...
 
 #GENERAL
+	* Validate/compare surrogate z-score methods
 	* Implement wavelets
 	* Add nlx to processevents
+
 	* enable colon operator in NewChannels (e.g. mean(ch23:34))
 	* add label editor to PlotCtrl
 	* enable figure saving in multiple formats
