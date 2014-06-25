@@ -25,26 +25,15 @@ if ~FT.CheckStage('read_events')
     return;
 end
 
+params = struct;
+
 %get file format
 [~,~,ext] = fileparts(FT_DATA.path.raw_file);
 ext = strrep(ext,'.','');
 
 %convert code pulses to events if need be
 if strcmpi(ext,'edf')
-    cfg = FT.tools.CFGDefault; %Really? not for all types of file?
-    cfg.channel = [];
-    
-    cfg.edf = true;
-
-    %if the stim channel needs to be filtered to detect events
-    cfg.hpfilter 	= 'yes';
-    cfg.lpfilter    = 'yes';
-    cfg.hpfreq      = 2;%.5;
-    cfg.lpfreq      = 15;
-    cfg.lpfilttype  = 'but'; %butterworth type filter
-    cfg.hpfilttype  = 'but';
-    cfg.hpfiltdir   = 'twopass'; %forward+reverse filtering
-    cfg.lpfiltdir   = 'twopass';
+    params.type = 'edf';
 
     %set default channel
     stimChan = FT_DATA.data.label(strncmpi('stim',FT_DATA.data.label,4));
@@ -53,16 +42,16 @@ if strcmpi(ext,'edf')
             FT.UserInput('No stim channels available.',0);
             return;
         else
-            cfg.channel = FT_DATA.data.label{1};
+            params.channel = FT_DATA.data.label{1};
         end
     else
-        cfg.channel = stimChan{1};
+        params.channel = stimChan{1};
     end
 
     %get necessary information from user to auto convert pulses to events
     c = {...
         {'text','String','Select Stimulus Channel:'},...
-        {'pushbutton','String',cfg.channel,'Callback',@SelectChannel};...
+        {'pushbutton','String',params.channel,'Callback',@SelectChannel};...
         {'text','String','Pulse Width [ms]:'},...
         {'edit','size',5,'String','50','tag','width','valfun',{'inrange',1,inf,true}};...
         {'text','String','Pulse Interval [ms]:'},...
@@ -73,21 +62,19 @@ if strcmpi(ext,'edf')
         {'pushbutton','String','Cancel','validate',false};...
         };
 
-    win = FT.tools.Win(c);
+    win = FT.tools.Win(c,'title','Event-Processing Parameters');
     uiwait(win.h);
     
     if strcmpi(win.res.btn,'cancel')
         return;
     end
     
-    cfg.width = win.res.width;
-    cfg.interval = win.res.interval;
-    cfg.max_pulse = win.res.max_pulse;
+    params.width = win.res.width;
+    params.interval = win.res.interval;
+    params.max_pulse = win.res.max_pulse;
     
 elseif ~isfield(FT_DATA,'event') || isempty(FT_DATA.event)  
-    cfg.edf = false;
-    cfg.trialdef.triallength = Inf;
-    cfg.dataset = FT_DATA.path.raw_file;
+    params.type = '';
 else
     %nothing to do
     return;
@@ -95,15 +82,13 @@ end
 
 hMsg = FT.UserInput('Reading events...',1);
 
-me = FT.processevents.Run(cfg);
+me = FT.processevents.Run(params);
 
 if ishandle(hMsg)
     close(hMsg);
 end
 
-if isa(me,'MException')
-    FT.ProcessError(me);
-end
+FT.ProcessError(me);
 
 FT.UpdateGUI;
 
@@ -124,8 +109,8 @@ function SelectChannel(obj,evt)
        'ListString',FT_DATA.data.label,'ListSize',[wFig,hFig],...
        'SelectionMode','single');
     if b && ~isempty(kChan)
-        cfg.channel = FT_DATA.data.label{kChan};
-        set(obj,'String',cfg.channel);        
+        params.channel = FT_DATA.data.label{kChan};
+        set(obj,'String',params.channel);        
     end
 end
 %------------------------------------------------------------------------------%

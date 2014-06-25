@@ -1,10 +1,10 @@
-function cfg = cfg_default()
+function cfg = CFGDefault(varargin)
 
-% cfg_default
+% CFGDefault
 %
 % Description: initialize a fieldtrip configuration struct with default settings
 %
-% Syntax: cfg = cfg_default
+% Syntax: cfg = CFGDefault([cfg] = [])
 %
 % In: 
 %
@@ -16,6 +16,10 @@ function cfg = cfg_default()
 %
 % Please report bugs to: scottiealexander11@gmail.com
 
-cfg = [];
+if ~isempty(varargin) && isstruct(varargin{1}) && numel(varargin{1})==1
+    cfg = varargin{1};
+else
+    cfg = [];
+end
 cfg.trackcallinfo = 'off';
 cfg.feedback      = 'no';

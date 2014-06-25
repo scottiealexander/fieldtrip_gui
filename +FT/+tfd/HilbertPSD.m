@@ -1,48 +1,42 @@
-function bRun = HilbertPSD(param)
+function HilbertPSD(params)
 
-% FT.HilbertPSD
+% FT.tfd.HilbertPSD
 %
-% Description: time-frequency decomposition based on the Hilbert transform
+% Description:  time-frequency decomposition based on the Hilbert transform
 %
-% Syntax: bContinue = FT.HilbertPSD
+% Syntax: FT.tfd.HilbertPSD(params)
 %
-% In:
+% In: 
+%       params - a struct holding parameters from the user for performing
+%                the time-frequency decomposition
+%             see 'FT.tfd.Gui'
 %
 % Out:
 %
-% Updated: 2014-03-29
-% Scottie Alexander
+% Updated: 2014-06-23
+% Peter Horak
 %
 % Please report bugs to: scottiealexander11@gmail.com
 
-
 global FT_DATA;
 FS = FT_DATA.data.fsample;
-bRun = true;
-%make sure there is trial info
-if ~isfield(FT_DATA,'epoch') || isempty(FT_DATA.epoch)
-    if ~FT.DefineTrial
-        bRun = false;      
-        return;
-    end
-end
 
 %convert to percent
-param.w = param.w/100;
+params.w = params.w/100;
 
 %caclulate frequency bin centers
-fEnd = (param.hi/(1+param.w))-1; %last bin center should be param.w% less than param.hi
-if param.log
-    centers = logspace(log10(param.lo),log10(fEnd),param.n);
+fEnd = (params.hi/(1+params.w))-1; %last bin center should be param.w% less than param.hi
+if params.log
+    centers = logspace(log10(params.lo),log10(fEnd),params.n);
 else
-    centers = linspace(param.lo,param.hi,param.n);
+    centers = linspace(params.lo,params.hi,params.n);
 end
 
 %frequency band edges
-cBands = arrayfun(@(x) [x*(1-param.w) x*(1+param.w)],centers,'uni',false);
+cBands = arrayfun(@(x) [x*(1-params.w) x*(1+params.w)],centers,'uni',false);
 
 %bandpass filtering parameters
-cfg = CFGDefault;
+cfg = FT.tools.CFGDefault;
 cfg.continuous  = 'yes';
 cfg.channel     = 'all';
 cfg.bpfilter 	= 'yes';   
@@ -53,7 +47,7 @@ cfg.bpinstabilityfix = 'reduce'; %deal with filter instability
 %n-condition length cell to hold all the data
 data = cell(numel(FT_DATA.epoch),1);
 
-FT.Progress2((param.n*2)+1,'Computing spectrogram');
+FT.Progress2((params.n*2)+1,'Computing spectrogram');
 
 %bandpass filter and hilbert transform for each frequency band
 % yields a cfg.n x 1 cell of channel x time power values
@@ -67,7 +61,7 @@ FT.Progress2;
 
 %segment and reshape data
 %yields a ncondition x 1 cell of freq x time x channel x trial matricies
-cellfun(@SegmentData,data_raw,num2cell(1:param.n),'uni',false);
+cellfun(@SegmentData,data_raw,num2cell(1:params.n),'uni',false);
 
 %add to the data struct
 fprintf('Creating ROA instance\n');
@@ -80,13 +74,6 @@ FT_DATA.power.bands   = cBands;
 FT_DATA.power.time    = GetTime;
 FT_DATA.power.label   = FT_DATA.data.label;
 FT_DATA.power.fsample = FT_DATA.data.fsample;
-
-%remove the data field to save memory
-FT_DATA = rmfield(FT_DATA,'data');
-
-FT_DATA.saved = false;
-
-FT.UpdateGUI;
 
 %-------------------------------------------------------------------------%
 function tmp = HilbertXFM(freq)

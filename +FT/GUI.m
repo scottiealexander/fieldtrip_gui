@@ -99,7 +99,7 @@ FT.UpdateGUI;
     
 %segmentation
     hSegMenu  = uimenu(h,'Label','Segmentation');
-    hFndEvt   = uimenu(hSegMenu,'Label','Process Events','Callback',@(varargin) FT.RunFunction(@FT.ProcessEvents));
+    hFndEvt   = uimenu(hSegMenu,'Label','Process Events','Callback',@(varargin) FT.RunFunction(@FT.processevents.Gui));
     hRecodeEvt= uimenu(hSegMenu,'Label','Re-label Events','Callback',@(varargin) FT.RunFunction(@FT.RecodeEvents));
     hChkEvt   = uimenu(hSegMenu,'Label','Manual Event Checking','Callback',@(varargin) FT.RunFunction(@FT.CheckEvents));
     hDefTrial = uimenu(hSegMenu,'Label','Segment Trials','Callback',@(varargin) FT.RunFunction(@FT.SegmentTrials));
@@ -109,7 +109,7 @@ FT.UpdateGUI;
 %analysis
     hAnaMenu  = uimenu(h,'Label','Analysis');
     hAvgERP   = uimenu(hAnaMenu,'Label','Average ERPs','Callback',@(varargin) FT.RunFunction(@FT.AverageERP));
-    hHilbert  = uimenu(hAnaMenu,'Label','Hilbert Decomposition','Callback',@(varargin) FT.RunFunction(@FT.HilbertDecomposition));
+    hHilbert  = uimenu(hAnaMenu,'Label','Hilbert Decomposition','Callback',@(varargin) FT.RunFunction(@FT.tfd.Gui));
     hGrandERP = uimenu(hAnaMenu,'Label','ERP Grand Average','Callback',@(varargin) FT.RunFunction(@FT.GrandAverage));
     hPeak     = uimenu(hAnaMenu,'Label','Find Peaks & Valleys','Callback',@(varargin) FT.RunFunction(@FT.PeakFinder));
     % hPower    = uimenu(hAnaMenu,'Label','Power Spectrum','Callback',@(varargin) FT.RunFunction(@FT.PowerSpec));
@@ -401,7 +401,10 @@ function QuitGUI(obj,evt)
     end
     clear('global','FT_DATA');
     evalin('base','clear FT_DATA');
-    exit;
+    resp = FT.UserInput('Would you like to close MATLAB?',1,'button',{'Yes','No'},'title','Close MATLAB');
+    if ~strcmpi(resp,'No')
+        exit;
+    end
 end
 %-------------------------------------------------------------------------%
 function GUICloseFcn(varargin)

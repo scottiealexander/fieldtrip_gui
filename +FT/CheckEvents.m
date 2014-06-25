@@ -27,6 +27,8 @@ end
 if ~isfield(FT_DATA,'pulse_evts')
     FT.UserInput(['\color{red}Events did not have to be translated from pulses for this dataset!\n\color{black}'...
         'No manual event checking is needed.'],0,'title','No Event Translation','button','OK');
+    return;
+end
 
 EVENT   = FT.ReStruct(FT_DATA.event);
 bRM     = false;

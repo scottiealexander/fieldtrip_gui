@@ -1,63 +1,62 @@
-function bRun = Run(param)
+function FourierPSD(params)
 
-% FT.HilbertPSD
+% FT.tfd.FourierPSD
 %
-% Description: time-frequency decomposition based on the Hilbert transform
+% Description:  time-frequency decomposition based on the short-time fourier transform
 %
-% Syntax: bContinue = FT.HilbertPSD
+% Syntax: FT.tfd.FourierPSD(params)
 %
-% In:
+% In: 
+%       params - a struct holding parameters from the user for performing
+%                the time-frequency decomposition
+%             see 'FT.tfd.Gui'
 %
 % Out:
 %
-% Updated: 2014-03-29
-% Scottie Alexander
+% Updated: 2014-06-25
+% Peter Horak
 %
 % Please report bugs to: scottiealexander11@gmail.com
 
-
 global FT_DATA;
 FS = FT_DATA.data.fsample;
-bRun = true;
-%make sure there is trial info
-if ~isfield(FT_DATA,'epoch') || isempty(FT_DATA.epoch)
-    if ~FT.DefineTrial
-        bRun = false;      
-        return;
-    end
-end
+nChan = size(FT_DATA.data.trial{1},1);
+
+window = 112;%round(FS*params.n);
+overlap = 56;%round(window/2);
 
 %convert to percent
-param.w = param.w/100;
+params.w = params.w/100;
 
 %caclulate frequency bin centers
-fEnd = (param.hi/(1+param.w))-1; %last bin center should be param.w% less than param.hi
-if param.log
-    centers = logspace(log10(param.lo),log10(fEnd),param.n);
+fEnd = (params.hi/(1+params.w))-1; %last bin center should be param.w% less than param.hi
+if params.log
+    centers = logspace(log10(params.lo),log10(fEnd),params.n);
 else
-    centers = linspace(param.lo,param.hi,param.n);
+    centers = linspace(params.lo,params.hi,params.n);
 end
 
 %frequency band edges
-cBands = arrayfun(@(x) [x*(1-param.w) x*(1+param.w)],centers,'uni',false);
-
-%bandpass filtering parameters
-cfg = FT.tools.CFGDefault;
-cfg.continuous  = 'yes';
-cfg.channel     = 'all';
-cfg.bpfilter 	= 'yes';   
-cfg.bpfilttype  = 'but';         %butterworth type filter
-cfg.bpfiltdir   = 'twopass';     %forward+reverse filtering
-cfg.bpinstabilityfix = 'reduce'; %deal with filter instability
+cBands = arrayfun(@(x) [x*(1-params.w) x*(1+params.w)],centers,'uni',false);
 
 %n-condition length cell to hold all the data
 data = cell(numel(FT_DATA.epoch),1);
 
-FT.Progress2((param.n*2)+1,'Computing spectrogram');
+FT.Progress2(nChan+params.n+1,'Computing spectrogram');
 
-%bandpass filter and hilbert transform for each frequency band
-% yields a cfg.n x 1 cell of channel x time power values
-data_raw   = cellfun(@HilbertXFM,cBands,'uni',false);
+data_raw = cell(length(centers),1);
+% id = tic;
+for ch = 1:nChan
+    % PSD: freq x time    
+    [~,freq,time,PSD] = spectrogram(FT_DATA.data.trial{1}(ch,:),window,overlap,centers,FS);    
+    PSD = spline(time,PSD,FT_DATA.data.time{1});    
+    % PSD: freq x 1 cell of 1 x time
+    PSD = mat2cell(PSD,ones(1,length(freq)));    
+    % data_raw: freq x 1 cell of channel x time
+    data_raw = cellfun(@(raw,psd) cat(1,raw,psd),data_raw,PSD,'uni',false);    
+    FT.Progress2;
+end
+% fprintf('TOTAL TIME: %f\n',toc(id));
 
 %scale each channel/frequency band by total mean power across bands, but within channel
 mean_power = cellfun(@(x) mean(x,2),data_raw,'uni',false);
@@ -67,7 +66,7 @@ FT.Progress2;
 
 %segment and reshape data
 %yields a ncondition x 1 cell of freq x time x channel x trial matricies
-cellfun(@SegmentData,data_raw,num2cell(1:param.n),'uni',false);
+cellfun(@SegmentData,data_raw,num2cell(1:params.n)','uni',false);
 
 %add to the data struct
 fprintf('Creating ROA instance\n');
@@ -81,26 +80,6 @@ FT_DATA.power.time    = GetTime;
 FT_DATA.power.label   = FT_DATA.data.label;
 FT_DATA.power.fsample = FT_DATA.data.fsample;
 
-%remove the data field to save memory
-FT_DATA = rmfield(FT_DATA,'data');
-
-FT_DATA.saved = false;
-
-FT.UpdateGUI;
-
-%-------------------------------------------------------------------------%
-function tmp = HilbertXFM(freq)
-
-    %bandpass filter
-    cfg.bpfreq = freq;
-    tmp = ft_preprocessing(cfg,FT_DATA.data);
-
-    %channel x time matrix of power values
-    tmp = transpose(abs(hilbert(transpose(tmp.trial{1}))).^2);
-    
-    FT.Progress2;
-
-end
 %-------------------------------------------------------------------------%
 function SegmentData(freq_data,kFreq)
 %GOAL: segment data from a given frequency band into trials 
