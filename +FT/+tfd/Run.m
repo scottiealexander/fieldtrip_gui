@@ -1,14 +1,19 @@
-function me = Run(param)
+function me = Run(params)
 
 % FT.tfd.Run
 %
-% Description:  time-frequency decomposition based on the Hilbert transform
+% Description:  time-frequency decomposition based on specified method
 %
-% Syntax: me = FT.tfd.Run(cfg)
+% Syntax: me = FT.tfd.Run(params)
 %
 % In: 
+%       params - a struct holding parameters from the user for performing
+%                the time-frequency decomposition
+%             see 'FT.tfd.Gui'
 %
 % Out:
+%       me - an empty matrix if processing finished with out error, otherwise a
+%            MException object caught from the error
 %
 % Updated: 2014-06-23
 % Peter Horak
@@ -17,130 +22,35 @@ function me = Run(param)
 %
 % Please report bugs to: scottiealexander11@gmail.com
 
-
-global FT_DATA;
+global FT_DATA
 me = [];
-FS = FT_DATA.data.fsample;
 
-%convert to percent
-param.w = param.w/100;
+try
+    switch lower(params.method)
+        case 'hilbert'
+            FT.tfd.HilbertPSD(params);
+        case 'wavelet'
+            % Wavelet
+        case 'stft'
+            FT.tfd.FourierPSD(params);
+        otherwise
+            %shouldn't ever happen
+            return;
+    end
+    %remove the data field to save memory
+    FT_DATA = rmfield(FT_DATA,'data');
 
-%caclulate frequency bin centers
-fEnd = (param.hi/(1+param.w))-1; %last bin center should be param.w% less than param.hi
-if param.log
-    centers = logspace(log10(param.lo),log10(fEnd),param.n);
-else
-    centers = linspace(param.lo,param.hi,param.n);
+    if params.surrogate && (params.nsurrogate > 0)
+        FT.tfd.Surrogate(params.nsurrogate);
+    end
+catch me;
 end
 
-%frequency band edges
-cBands = arrayfun(@(x) [x*(1-param.w) x*(1+param.w)],centers,'uni',false);
-
-%bandpass filtering parameters
-cfg = FT.tools.CFGDefault;
-cfg.continuous  = 'yes';
-cfg.channel     = 'all';
-cfg.bpfilter 	= 'yes';   
-cfg.bpfilttype  = 'but';         %butterworth type filter
-cfg.bpfiltdir   = 'twopass';     %forward+reverse filtering
-cfg.bpinstabilityfix = 'reduce'; %deal with filter instability
-
-%n-condition length cell to hold all the data
-data = cell(numel(FT_DATA.epoch),1);
-
-FT.Progress2((param.n*2)+1,'Computing spectrogram');
-
-%bandpass filter and hilbert transform for each frequency band
-% yields a cfg.n x 1 cell of channel x time power values
-data_raw   = cellfun(@HilbertXFM,cBands,'uni',false);
-
-%scale each channel/frequency band by total mean power across bands, but within channel
-mean_power = cellfun(@(x) mean(x,2),data_raw,'uni',false);
-mean_power = mean(cat(2,mean_power{:}),2);
-data_raw   = cellfun(@(x) x./repmat(mean_power,1,size(x,2)),data_raw,'uni',false);
-FT.Progress2;
-
-%segment and reshape data
-%yields a ncondition x 1 cell of freq x time x channel x trial matricies
-cellfun(@SegmentData,data_raw,num2cell(1:param.n),'uni',false);
-
-%add to the data struct
-fprintf('Creating ROA instance\n');
-id = tic;
-FT_DATA.power.raw     = FT.ROA(cat(3,data_raw{:}));
-fprintf('Done | %.3f\n',toc(id));
-FT_DATA.power.data    = data;
-FT_DATA.power.centers = centers;
-FT_DATA.power.bands   = cBands;
-FT_DATA.power.time    = GetTime;
-FT_DATA.power.label   = FT_DATA.data.label;
-FT_DATA.power.fsample = FT_DATA.data.fsample;
-
-%remove the data field to save memory
-FT_DATA = rmfield(FT_DATA,'data');
-
+%mark data as not saved
 FT_DATA.saved = false;
 
-%-------------------------------------------------------------------------%
-function tmp = HilbertXFM(freq)
+%update the history
+FT.tools.AddHistory('tfd',params);
+FT_DATA.done.tfd = FT.tools.Ternary(isempty(me),true,false);
 
-    %bandpass filter
-    cfg.bpfreq = freq;
-    tmp = ft_preprocessing(cfg,FT_DATA.data);
-
-    %channel x time matrix of power values
-    tmp = transpose(abs(hilbert(transpose(tmp.trial{1}))).^2);
-    
-    FT.Progress2;
-
-end
-%-------------------------------------------------------------------------%
-function SegmentData(freq_data,kFreq)
-%GOAL: segment data from a given frequency band into trials 
-%      reformat the matrix to be 1 x time x channel x trial
-
-    %segment into channel x time x trial matrix for each condition
-    epochs = cellfun(@SegmentOne,FT_DATA.epoch,'uni',false);
-
-    %reshape each matrix: add a singleton freq dimention (dim 1) and permute to be 
-    %time x channel x trial
-    epochs = cellfun(@(x) permute(reshape(x,[1,size(x)]),[1,3,2,4]),epochs,'uni',false);
-    
-    %assign our hilbert XFM-ed data matrix by its corresponding frequency
-    for k = 1:numel(data)
-        data{k}(kFreq,:,:,:) = epochs{k};
-    end
-    
-    FT.Progress2;
-
-    %---------------------------------------------------------------------%
-    function out = SegmentOne(s)
-    %GOAL: channel x time x trial matrix for a given condition
-        kStart = s.trl(:,1);
-        kEnd   = s.trl(:,2);
-
-        %n-trial length cell of channel x time matricies
-        out = arrayfun(@(x,y) freq_data(:,x:y),kStart,kEnd,'uni',false);
-
-        %reshape to channel x time x trial
-        out = reshape(out,1,1,[]);
-        out = cat(3,out{:});
-    end
-    %---------------------------------------------------------------------%
-end
-%-------------------------------------------------------------------------%
-function t = GetTime
-%GOAL: calculate the time vector (in seconds) given the segmentation scheme
-    nPts = size(FT_DATA.power.data{1},2);
-    s = FT_DATA.epoch{1}.ifo;
-    switch lower(s.format)        
-        case 'timelock'
-            t = linspace(-s.pre,s.post,nPts);
-        case 'endpoints'
-            t = linspace(0,nPts/FS,nPts);
-        otherwise
-            error('invalid epoch format: %s',s.format);
-    end
-end
-%-------------------------------------------------------------------------%
 end

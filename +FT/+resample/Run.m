@@ -1,13 +1,13 @@
-function me = Run(cfg)
+function me = Run(params)
 
 % FT.resample.Run
 %
 % Description: resample data and events
 %
-% Syntax: me = FT.resample.Run(cfg)
+% Syntax: me = FT.resample.Run(params)
 %
 % In: 
-%       cfg - a fieldtrip configuration struct holding the resampling parameters
+%       params - a struct holding the resampling parameters from the user
 %             see 'FT.resample.gui'
 %
 % Out:
@@ -23,6 +23,10 @@ function me = Run(cfg)
 
 global FT_DATA;
 me = [];
+
+cfg = FT.tools.CFGDefault(params);
+cfg.detrend = 'no'; %we'll have to check on these
+cfg.demean  = 'no';
 
 %cannot resample segmented data
 try
@@ -42,7 +46,7 @@ end
 FT_DATA.saved = false; 
 
 %update the history
-FT.tools.AddHistory('resample',cfg);
+FT.tools.AddHistory('resample',params);
 FT_DATA.done.resample = FT.tools.Ternary(isempty(me),true,false);
 
 %------------------------------------------------------------------------------%

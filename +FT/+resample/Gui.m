@@ -24,9 +24,7 @@ if ~FT.CheckStage('resample')
     return;
 end
 
-cfg = FT.tools.CFGDefault;
-cfg.detrend = 'no'; %we'll have to check on these
-cfg.demean  = 'no';
+params = struct;
 
 c = {...
     {'text','String','New Sampling Rate [Hz]:'},...
@@ -41,7 +39,7 @@ uiwait(win.h);
 if strcmpi(win.res.btn,'cancel')
     return;
 else
-    cfg.resamplefs = win.res.fr;
+    params.resamplefs = win.res.fr;
 
     if numel(FT_DATA.data.trial)~=1
         FT.UserInput('Cannot resample segmented data.',0);
@@ -52,7 +50,7 @@ end
 hMsg = FT.UserInput('Resampling data...',1,'button',false);
 
 %resample data
-me = FT.resample.Run(cfg);
+me = FT.resample.Run(params);
 
 if ishandle(hMsg)
     close(hMsg);

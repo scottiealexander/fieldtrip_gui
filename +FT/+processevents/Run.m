@@ -1,13 +1,13 @@
-function me = Run(cfg)
+function me = Run(params)
 
 % FT.processevents.Run
 %
 % Description: read events or translate them from pulses
 %
-% Syntax: me = FT.processevents.Run(cfg)
+% Syntax: me = FT.processevents.Run(params)
 %
 % In: 
-%       cfg - a fieldtrip configuration struct holding parameters or processing events
+%       params - a struct holding parameters from the user for processing events
 %             see 'FT.processevents.Gui'
 %
 % Out:
@@ -23,6 +23,8 @@ function me = Run(cfg)
 
 global FT_DATA;
 me = [];
+
+cfg = FT.tools.CFGDefault(params);
 
 try
     switch lower(cfg.type)
@@ -64,6 +66,8 @@ try
             me = MException('FT:NotImplemented','Try again later...');
             throw(me);
         otherwise
+            cfg.trialdef.triallength = Inf;
+            cfg.dataset = FT_DATA.path.raw_file;
             cfg = ft_definetrial(cfg);
             FT_DATA.event = cfg.event;
     end
@@ -74,7 +78,7 @@ end
 FT_DATA.saved = false;
 
 %update the history
-FT.tools.AddHistory('detect_events',cfg);
+FT.tools.AddHistory('detect_events',params);
 FT_DATA.done.read_events = FT.tools.Ternary(isempty(me),true,false);
 
 end

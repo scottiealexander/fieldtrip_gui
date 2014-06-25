@@ -1,13 +1,13 @@
-function me = Run(cfg)
+function me = Run(params)
 
 % FT.reference.Run
 %
 % Description: rereference data
 %
-% Syntax: me = FT.rereference.Run(cfg)
+% Syntax: me = FT.rereference.Run(params)
 %
 % In: 
-%       cfg - a fieldtrip configuration struct holding the rereferencing parameters
+%       params - a struct holding the rereferencing parameters from the user
 %             see 'FT.rereference.gui'
 %
 % Out:
@@ -24,6 +24,12 @@ function me = Run(cfg)
 global FT_DATA;
 me = [];
 
+cfg = FT.tools.CFGDefault(params);
+cfg.reref       = 'yes'; %we want to rereference
+cfg.channel     = 'all'; %channels to reref, all of course
+cfg.implicitref = [];    %the implicit (non-recorded) reference channel is added to the data representation (we'll have to figure out what this is if any)
+cfg.refchannel = 'all';  
+
 try
     FT_DATA.data = ft_preprocessing(cfg, FT_DATA.data);
 catch me
@@ -33,5 +39,5 @@ end
 FT_DATA.saved = false;
 
 %update the history
-FT.tools.AddHistory('rereference',cfg);
+FT.tools.AddHistory('rereference',params);
 FT_DATA.done.rereference = FT.tools.Ternary(isempty(me),true,false);

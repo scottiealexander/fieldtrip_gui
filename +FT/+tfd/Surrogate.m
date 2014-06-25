@@ -131,7 +131,7 @@ FT_DATA.power.raw.unlock;
 
 %group surrogates by condition
 data = reshape(data,1,1,1,[]);
-data = CellJoin(cat(4,data{:}),1);
+data = FT.tools.CellJoin(cat(4,data{:}),1);
 
 %compute mean and std
 %here mean and std are nCondition x 1 cells of freq x time x channel matricies
@@ -184,7 +184,7 @@ function cD = SurrogateERSP(raw,bands,trial_len,cKStart)
 	%iterate through the decomposition matrix for each power band
 	for kA = 1:nband
 		%scramble the phases
-		d = phaseran2(raw(:,:,kA));
+		d = FT.tools.phaseran2(raw(:,:,kA));
 
 		%iterate through the cell of trial start and end indicies
 		for kB = 1:numel(cKStart)

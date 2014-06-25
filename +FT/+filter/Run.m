@@ -1,13 +1,13 @@
-function me = Run(cfg)
+function me = Run(params)
 
 % FT.filter.Run
 %
 % Description: run filtering
 %
-% Syntax: me = FT.filter.Run(cfg)
+% Syntax: me = FT.filter.Run(params)
 %
 % In: 
-%       cfg - a fieldtrip configuration struct holding the filtering parameters
+%       params - a struct holding the filtering parameters from the user
 %             see 'FT.filter.gui'
 %
 % Out:
@@ -22,6 +22,16 @@ function me = Run(cfg)
 % Please report bugs to: scottiealexander11@gmail.com
 
 global FT_DATA;
+
+cfg = FT.tools.CFGDefault(params);
+cfg.continuous       = 'yes';
+cfg.lpfilttype       = 'but';     %butterworth type filter
+cfg.hpfilttype       = 'but';
+cfg.hpfiltdir        = 'twopass'; %forward+reverse filtering
+cfg.lpfiltdir        = 'twopass';
+cfg.hpfiltord        = 6;
+cfg.hpinstabilityfix = 'reduce';  %deal with filter instability
+cfg.lpinstabilityfix = 'reduce';
 
 %NOTE we are doing this in series to avoid errors thrown by ft_preprocessing
 %when both hpfilter and lpfilter are specified and hpfreq < ~1Hz
@@ -61,5 +71,5 @@ end
 FT_DATA.saved = false;
 
 %update the history
-FT.tools.AddHistory('filter',cfg);
+FT.tools.AddHistory('filter',params);
 FT_DATA.done.filter = FT.tools.Ternary(isempty(me),true,false);

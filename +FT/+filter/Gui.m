@@ -24,21 +24,11 @@ if ~FT.CheckStage('filter')
     return;
 end
 
-cfg = FT.tools.CFGDefault;
-cfg.continuous       = 'yes';
-cfg.channel          = 'all';
-cfg.lpfilttype       = 'but';     %butterworth type filter
-cfg.hpfilttype       = 'but';
-cfg.hpfiltdir        = 'twopass'; %forward+reverse filtering
-cfg.lpfiltdir        = 'twopass';
-cfg.hpfiltord        = 6;
-cfg.hpinstabilityfix = 'reduce';  %deal with filter instability
-cfg.lpinstabilityfix = 'reduce';
-
 fnyq = FT_DATA.data.fsample/2;
+params = struct('channel','all');
 
 c = {...
-    {'text','String','Select Channels to filter: (default: all)'},...
+    {'text','String',['Select Channels to filter:' char(10) '(default: all)']},...
     {'pushbutton','String','Select','Callback',@SelectChannels};...
     {'text','String','Highpass Filter Frequency [Hz]:'},...
     {'edit','size',5,'tag','hp','valfun',{'inrange',.01,fnyq,false}};...
@@ -56,21 +46,21 @@ uiwait(win.h);
 if strcmpi(win.res.btn,'cancel')
     return;
 else
-    cfg.hpfilter = FT.tools.Ternary(isempty(win.res.hp),'no','yes');
-    cfg.lpfilter = FT.tools.Ternary(isempty(win.res.lp),'no','yes');
-    cfg.hpfreq   = win.res.hp;
-    cfg.lpfreq   = win.res.lp;
+    params.hpfilter = FT.tools.Ternary(isempty(win.res.hp),'no','yes');
+    params.lpfilter = FT.tools.Ternary(isempty(win.res.lp),'no','yes');
+    params.hpfreq   = win.res.hp;
+    params.lpfreq   = win.res.lp;
     if ~isempty(win.res.notch)
-        cfg.dftfilter = 'yes';
-        cfg.dftfreq = win.res.notch;
+        params.dftfilter = 'yes';
+        params.dftfreq = win.res.notch;
     else
-        cfg.dftfilter = 'no';
+        params.dftfilter = 'no';
     end
 end
 
 hMsg = FT.UserInput('Filtering data...',1);
 
-me = FT.filter.Run(cfg);
+me = FT.filter.Run(params);
 
 if ishandle(hMsg)
     close(hMsg);
@@ -97,7 +87,7 @@ function SelectChannels(obj,evt)
        'ListString',FT_DATA.data.label,'ListSize',[wFig,hFig]);
     
    if b && ~isempty(kChan)
-        cfg.channel = FT_DATA.data.label(kChan);
+        params.channel = FT_DATA.data.label(kChan);
         set(obj,'String','Done');        
    end
 end

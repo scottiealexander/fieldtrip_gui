@@ -24,14 +24,11 @@ if ~FT.CheckStage('rereference')
     return;
 end
 
-cfg = FT.tools.CFGDefault;
-cfg.reref       = 'yes'; %we want to rereference
-cfg.channel     = 'all'; %channels to reref, all of course
-cfg.implicitref = [];    %the implicit (non-recorded) reference channel is added to the data representation (we'll have to figure out what this is if any)
-cfg.refchannel = 'all';  %by default reference to the average of all channels
+%by default reference to the average of all channels
+params = struct('refchannel','all');
 
 c = {...
-    {'text','String','Select channels to use as reference: (default: all)'},...
+    {'text','String',['Select channels to use as reference:' char(10) '(default: all)']},...
     {'pushbutton','String','Select','CallBack',@SelectChannels};...
     {'pushbutton','String','Run'},...
     {'pushbutton','String','Cancel'};...
@@ -46,7 +43,7 @@ end
 
 hMsg = FT.UserInput('Rereferencing data...',1);
 
-me = FT.rereference.Run(cfg);
+me = FT.rereference.Run(params);
     
 if ishandle(hMsg)
     close(hMsg);
@@ -73,7 +70,7 @@ function SelectChannels(obj,evt)
        'ListString',FT_DATA.data.label,'ListSize',[wFig,hFig]);
    
     if b && ~isempty(kChan)
-        cfg.refchannel = FT_DATA.data.label(kChan);
+        params.refchannel = FT_DATA.data.label(kChan);
         set(obj,'String','Done');
     end
 end
