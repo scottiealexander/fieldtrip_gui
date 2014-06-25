@@ -116,6 +116,16 @@ methods
         end
     end
     %-------------------------------------------------------------------------%
+    function val = GetProp(self,field)
+        if isprop(self.h,field)
+            val = get(self.h,field);
+        elseif isprop(self,field)
+            val = self.(field);
+        else
+            val = [];
+        end
+    end
+    %-------------------------------------------------------------------------%
     function [w,h] = GetSize(self,varargin)
         w = self.pos(3);
         h = self.pos(4);

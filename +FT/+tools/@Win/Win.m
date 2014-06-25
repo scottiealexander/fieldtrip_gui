@@ -122,6 +122,18 @@ methods
             end
         end
     end
+    %-------------------------------------------------------------------------%
+    function val = GetElementProp(self,tag,field)
+        val = [];
+        for k = 1:numel(self.el)
+            if ~isempty(self.el{k})
+                if strcmpi(tag,self.el{k}.tag)
+                    val = self.el{k}.GetProp(field);
+                    return;
+                end
+            end
+        end
+    end
     %-------------------------------------------------------------------------%    
     function delete(self)
         if isvalid(self) && ishandle(self.h)
