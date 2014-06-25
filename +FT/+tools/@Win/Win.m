@@ -46,6 +46,7 @@ methods
     function self = Win(c,varargin)
         self.opt = self.ParseOptions(varargin,...
             'title'    , 'Win'  ,...
+            'grid'     , false  ,...
             'position' ,  [0,0]  ...
             );
 
@@ -186,24 +187,21 @@ methods (Access=private)
         btm_cur = pFig(4);
         for kR = 1:self.nrow
             btm_cur = btm_cur - (mx_height(kR) + self.pad);            
-            % if self.ncol(kR) < max(self.ncol)
-            %     fprintf('centering row...\n');
-                % align = 'auto';
+            if ~self.opt.grid
                 row_width = sum(width(kR,:)) + (self.pad * (self.ncol(kR)-1));
                 left_cur = (pFig(3)/2) - (row_width/2);
-            % else                
-            %     left_cur = self.pad;
-            % end
+            else                
+                left_cur = self.pad;
+            end
             for kC = 1:max(self.ncol)                
                 if ~isempty(self.el{kR,kC})
-                    % if strcmpi(align,'auto')
+                    if ~self.opt.grid
                         halign = self.GetHAlignment(kC,self.ncol(kR));
                         width_use = width(kR,kC);
-                    % else
-                    %     halign = align;
-                    %     width_use = mx_width(kC);
-                    % end
-                    fprintf('ALIGNMENT: %s\n',halign);
+                    else
+                        halign = self.el{kR,kC}.opt.halign;
+                        width_use = mx_width(kC);
+                    end                    
                     rect = [left_cur, btm_cur, width_use, mx_height(kR)];
                     self.el{kR,kC}.SetOuterRect(rect,'halign',halign);
                     left_cur = left_cur + width_use + self.pad;
@@ -226,9 +224,9 @@ methods (Access=private)
     %-------------------------------------------------------------------------%
     function algn = GetHAlignment(self,kC,nC)
         if kC == 1
-            algn = 'left';
-        elseif kC == nC
             algn = 'right';
+        elseif kC == nC
+            algn = 'left';
         else
             algn = 'center';
         end

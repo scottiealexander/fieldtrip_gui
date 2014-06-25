@@ -25,7 +25,7 @@ c = {{'text','string',['Enter some value here' 10 'please if you may:']},...
 	 {'pushbutton','string','Cancel','validate',false}	 ...
 	};
 
-w = FT.tools.Win(c,'position',[0 0]);
+w = FT.tools.Win(c,'position',[0 0],'grid',false);
 
 %-----------------------------------------------------------------------------%
 function checkbox_cb(varargin)
