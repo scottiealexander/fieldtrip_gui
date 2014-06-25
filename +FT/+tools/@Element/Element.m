@@ -10,14 +10,10 @@ classdef Element < handle
 %
 % Out:
 %
-% Updated: 2014-05-01
+% Updated: 2014-06-23
 % Scottie Alexander
 %
 % Please send bug reports to: scottiealexander11@gmail.com
-
-%TODO:
-%   1) given the position of our GUI rect, figure out how large the element
-%      should be, and then center the element within the rect
 
 %PROPERTIES-------------------------------------------------------------------%
 properties
@@ -48,7 +44,7 @@ methods
 
         self.fig = win.h;
         self.pos = p;
-        self.type = s.type;
+        self.type = lower(s.type);
         
         if isfield(s,'size')
             self.len = s.size;
@@ -84,12 +80,12 @@ methods
         end
         c = self.AddDefaultValues(rmfield(s,'type'));
 
-        switch lower(self.type)
+        self.h = uicontrol('Style',self.type,c{:});
+
+        switch self.type
         case 'text'
-            self.h = uicontrol('Style',self.type,c{:});
             self.InitTextPosition;
-        case {'pushbutton','edit','checkbox'}
-            self.h = uicontrol('Style',self.type,c{:});
+        case {'pushbutton','edit','checkbox'}            
             self.InitUIPosition;
             if strcmpi(self.type,'pushbutton') && isempty(get(self.h,'Callback'))
                 set(self.h,'Callback',@(x,varargin) win.BtnPush(x,validate));
@@ -99,21 +95,20 @@ methods
         end
     end
     %-------------------------------------------------------------------------%
-    function Move(self,dir,amt)
+    function SetOuterRect(self,rect)
         pos = self.pos;
-        switch lower(dir)
-        case 'left'
-            pos(1) = pos(1) - amt;
-        case 'down'
-            pos(2) = pos(2) - amt;
-        otherwise
-            error('%s is not a valid direction');
-        end
+        pos(1) = self.GetLeft(rect(1),rect(3));
+        pos(2) = self.GetBottom(rect(2),rect(4));
         self.SetPosition(pos);
     end
     %-------------------------------------------------------------------------%
+    function [w,h] = size(self,varargin)
+        w = self.pos(3);
+        h = self.pos(4);
+    end
+    %-------------------------------------------------------------------------%
     function out = Response(self)
-        switch lower(self.type)
+        switch self.type
         case 'edit'
             out = get(self.h,'String');
         case 'checkbox'
@@ -156,24 +151,11 @@ methods (Access=private)
     end
     %-------------------------------------------------------------------------%
     function SetPosition(self,pos)
-        switch lower(self.type)
-        % case 'text'
-        %     tmp = self.Fig2Axes(pos);
-        %     set(self.h,'Position',[tmp(1:2) 0]);
-        otherwise
-            set(self.h,'Position',pos);
-        end
+        set(self.h,'Position',pos);
         self.pos = pos;
     end
     %-------------------------------------------------------------------------%
     function InitTextPosition(self)
-        % yLim = get(self.ax,'YLim');       
-        % xLim = get(self.ax,'XLim');
-        % p = self.Axes2Fig(get(self.h,'Extent'));
-        % left   = self.GetLeft(p(3));
-        % bottom = self.GetBottom(p(4));
-        % pos = self.Fig2Axes([left,bottom]);
-        % self.SetPosition([left,bottom,p(3:4)]);
         ext = get(self.h,'Extent');
         p = get(self.h,'Position');
         p(3:4) = ext(3:4);
@@ -184,49 +166,61 @@ methods (Access=private)
         set(self.h,'Units','characters');
         p = get(self.h,'Position');
         p(3) = self.GetWidth(self.len);
+        p(4) = self.GetHeight(p(4));
         set(self.h,'Position',p);
         set(self.h,'Units','pixels');
         p = get(self.h,'Position');
-        p(1) = self.GetLeft(p(3));
-        p(2) = self.GetBottom(p(4));
+        p(1) = self.GetLeft(p(1),p(3));
+        p(2) = self.GetBottom(p(2),p(4));
         self.SetPosition(p);
     end
     %-------------------------------------------------------------------------%
-    function l = GetLeft(self,w)
+    function l = GetLeft(self,l,w)
+        r = l+w;        
         switch lower(self.opt.halign)
         case 'left'
-            l = self.pos(1);
+            l = l;
         case 'center'
-            l = self.pos(1) + ((self.pos(3)/2) - (w/2));
+            l = (l + w/2) - (self.pos(3)/2); %((self.pos(3)/2) - (w/2));
         case 'right'
-            l = (self.pos(1) + self.pos(3)) - w;
+            l = r - self.pos(3); %(l + self.pos(3)) - w;
         otherwise
             error('Invalid alignment specified');
         end
     end
     %-------------------------------------------------------------------------%
-    function b = GetBottom(self,h)
+    function b = GetBottom(self,b,h)
+        t = b+h;        
         switch lower(self.opt.valign)
         case 'top'
-            b = self.pos(2);
+            b = t - self.pos(4);
         case 'center'
-            b = self.pos(2) + ((self.pos(4)/2) - (h/2));
+            b = (b + h/2) - (self.pos(4)/2);
         case 'bottom'
-            b = (self.pos(2) + self.pos(4)) - h;
+            b = b;
         otherwise
             error('Invalid alignment specified');
         end
     end
     %-------------------------------------------------------------------------%
     function w = GetWidth(self,nchar)
-        switch lower(self.type)
+        switch self.type
         case {'pushbutton','edit'}
             fsiz = get(self.h,'FontSize');
             w = (nchar * (fsiz/8)) + 2.5;
         case 'checkbox'
-            w = 4;
+            w = 3.5;
         otherwise
             error('Das ist foul...');
+        end
+    end
+    %-------------------------------------------------------------------------%
+    function h = GetHeight(self,nchar)
+        switch self.type
+        case 'checkbox'            
+            h = 1.5;
+        otherwise
+            h = nchar;
         end
     end
     %-------------------------------------------------------------------------%
@@ -258,11 +252,11 @@ methods (Access=private)
                 'Position' , self.pos     ,...
                 'Parent'   , self.fig      ...
               };
-        switch lower(self.type)
+        switch self.type
             case {'edit','checkbox'}
                 def = [def {'BackgroundColor',[1 1 1]}];
             case 'text'
-                def = [def {'BackgroundColor',get(self.fig,'Color')}];
+                def = [def {'BackgroundColor',get(self.fig,'Color')}]; %get(self.fig,'Color')
         end
         def = self.pvpair2struct(def);
         fields = fieldnames(s);

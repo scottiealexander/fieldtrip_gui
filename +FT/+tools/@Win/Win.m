@@ -10,7 +10,7 @@ classdef Win < handle
 %
 % Out:
 %
-% Updated: 2014-04-30
+% Updated: 2014-06-25
 % Scottie Alexander
 %
 % Please send bug reports to: scottiealexander11@gmail.com
@@ -21,16 +21,6 @@ classdef Win < handle
 %      *OR* if we use only fixed width fonts maybe we can revert to uicontrol text objects...?
 %   2) column resizing (increase only of course)
 %   3) button resizing based on string (USE FIXED WIDTH FONT)
-%
-% c = {{'text','string','this is some text'},...
-%     {'edit','size',[10 10]};               ...
-%     {'text','string','Another label'},     ...
-%     {'checkbox','size',[10 10]};           ...
-%     {'pushbutton','string','Run'},         ...
-%     {'pushbutton','string','Cancle'};      ...
-%   };
-%
-% g = Win(c,'title','Define Trial');
 
 
 %PROPERTIES-------------------------------------------------------------------%
@@ -82,6 +72,9 @@ methods
         end
         
         self.id = [datestr(now,'yyyymmddHHMMSSFFF') '_win'];
+
+        %convert padding to pixels
+        self.pad = self.inch2px(self.pad);
 
         self.InitFigure;
 
@@ -165,7 +158,9 @@ methods (Access=private)
     function AddElements(self)
         left  = Inf;
         right = -Inf;
-        height = 0;        
+        height = 0;
+        [width,height] = deal(zeros(self.nrow,max(self.ncol)));
+
         for kR = 1:self.nrow
             row_height = 0;
             for kC = 1:max(self.ncol)
@@ -179,33 +174,32 @@ methods (Access=private)
                 if ~isempty(self.content{kR,kC})                    
                     pos = self.GetElementPosition(kR,kC);                    
                     self.el{kR,kC} = FT.tools.Element(self,pos,self.content{kR,kC},'halign',align);
-                    if self.el{kR,kC}.pos(1) < left
-                        left = self.el{kR,kC}.pos(1);
-                    end
 
-                    if self.el{kR,kC}.pos(1) + self.el{kR,kC}.pos(3) > right
-                        right = self.el{kR,kC}.pos(1) + self.el{kR,kC}.pos(3);
-                    end
-
-                    if self.el{kR,kC}.pos(4) > row_height
-                        row_height = self.el{kR,kC}.pos(4) + (self.inch2px(self.pad)*2);
-                    end
+                    [width(kR,kC),height(kR,kC)] = size(self.el{kR,kC});                    
                 else
                     self.el{kR,kC} = {};
                 end
-            end
-            height = height + row_height;
+            end            
         end
-        left  = left - self.inch2px(self.pad);
-        right = right + self.inch2px(self.pad);
-        width = right - left;
-        p = get(self.h,'Position');
-        p = self.GetFigPosition(width,height,...
+
+        width  = max(width,[],1);
+        height = max(height,[],2);
+        fig_width = sum(width) + (self.pad * (max(self.ncol)+1));
+        fig_height = sum(height) + (self.pad * (self.nrow+1));
+        pFig = self.GetFigPosition(fig_width,fig_height,...
               'xoffset',self.opt.position(1),'yoffset',self.opt.position(2));
-        set(self.h,'Position',p);
-        for k = 1:numel(self.el)
-            if ~isempty(self.el{k})
-                self.el{k}.Move('left',left);
+        
+        set(self.h,'Position',pFig);
+
+        %width for each column and height for each row
+        btm_cur = pFig(4);
+        for kR = 1:self.nrow
+            btm_cur = btm_cur - (height(kR) + self.pad);
+            left_cur = self.pad;
+            for kC = 1:max(self.ncol)
+                rect = [left_cur, btm_cur, width(kC), height(kR)];
+                self.el{kR,kC}.SetOuterRect(rect);                
+                left_cur = left_cur + width(kC) + self.pad;
             end
         end
     end
@@ -213,14 +207,14 @@ methods (Access=private)
     function ep = GetElementPosition(self,kR,kC)
         fp = get(self.h,'OuterPosition');
         nC = self.ncol(kR);
-        sum_pad = self.inch2px(self.pad)/self.nrow;
-        height = (fp(4)/self.nrow) - (self.inch2px(self.pad) + sum_pad);
+        sum_pad = self.pad/self.nrow;
+        height = (fp(4)/self.nrow) - (self.pad + sum_pad);
         ep = zeros(1,4);        
-        ep(1) = ((fp(3)/nC) * (kC-1)) + self.inch2px(self.pad);
-        ep(2) = fp(4) - (kR * (height + self.inch2px(self.pad)));
-        ep(3) = (fp(3)/nC) - (self.inch2px(self.pad));
+        ep(1) = ((fp(3)/nC) * (kC-1)) + self.pad;
+        ep(2) = fp(4) - (kR * (height + self.pad));
+        ep(3) = (fp(3)/nC) - (self.pad);
         ep(4) = height;
-    end    
+    end
     %-------------------------------------------------------------------------%
     function KeyPress(self,obj,evt)
         switch lower(evt.Key)
