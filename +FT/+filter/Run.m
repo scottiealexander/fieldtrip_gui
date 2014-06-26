@@ -25,8 +25,6 @@ global FT_DATA;
 
 cfg = FT.tools.CFGDefault(params);
 cfg.continuous       = 'yes';
-cfg.lpfilttype       = 'but';     %butterworth type filter
-cfg.hpfilttype       = 'but';
 cfg.hpfiltdir        = 'twopass'; %forward+reverse filtering
 cfg.lpfiltdir        = 'twopass';
 cfg.hpfiltord        = 6;

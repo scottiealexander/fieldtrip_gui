@@ -1,8 +1,9 @@
-#FIELDTRIP_GUI master TODO list 06/23/2014
+#FIELDTRIP_GUI master TODO list
 
 #GRAPHICAL
-	* fix PlotPSD y-axis labels
+	* fix PlotPSD y-axis labels	
 	* continue adding functionality to Win/Element classes
+	* consider re-working remove channel utility
 
 #ORGANIZATIONAL
 	* sepearte all Gui and Run functionalities

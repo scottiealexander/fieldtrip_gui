@@ -10,7 +10,7 @@ function Gui(varargin)
 %
 % Out: 
 %
-% Updated: 2014-06-20
+% Updated: 2014-06-26
 % Scottie Alexander
 %
 % See also: FT.filter.Run
@@ -24,10 +24,14 @@ if ~FT.CheckStage('filter')
     return;
 end
 
+ftypes = {'Butterworth','FIR','FIRLS'};
+
 fnyq = FT_DATA.data.fsample/2;
 params = struct('channel','all');
 
 c = {...
+    {'text','String','Select Filter Type:'},...
+    {'listbox','String',ftypes,'tag','type'};...
     {'text','String',['Select Channels to filter:' char(10) '(default: all)']},...
     {'pushbutton','String','Select','Callback',@SelectChannels};...
     {'text','String','Highpass Filter Frequency [Hz]:'},...
@@ -40,16 +44,20 @@ c = {...
     {'pushbutton','String','Cancel','validate',false};...
     };
 
-win = FT.tools.Win(c,'title','Filtering Parameters');
+win = FT.tools.Win(c,'title','Filtering Parameters','grid',true);
+uicontrol(win.GetElementProp('type','h'));
 uiwait(win.h);
 
 if strcmpi(win.res.btn,'cancel')
     return;
 else
-    params.hpfilter = FT.tools.Ternary(isempty(win.res.hp),'no','yes');
-    params.lpfilter = FT.tools.Ternary(isempty(win.res.lp),'no','yes');
-    params.hpfreq   = win.res.hp;
-    params.lpfreq   = win.res.lp;
+    type = lower(ftypes{win.res.type});
+    params.lpfilttype  = FT.tools.Ternary(strcmp(type,'butterworth'),'but',type);
+    params.hpfilttype  = params.lpfilttype;
+    params.hpfilter    = FT.tools.Ternary(isempty(win.res.hp),'no','yes');
+    params.lpfilter    = FT.tools.Ternary(isempty(win.res.lp),'no','yes');
+    params.hpfreq      = win.res.hp;
+    params.lpfreq      = win.res.lp;
     if ~isempty(win.res.notch)
         params.dftfilter = 'yes';
         params.dftfreq = win.res.notch;
