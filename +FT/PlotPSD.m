@@ -32,7 +32,7 @@ if isfield(FT_DATA.power,'surrogate')
 		return;
 	end
 else
-	NORM_TYPE = 'baseline';	
+	NORM_TYPE = 'baseline';
 end
 
 if strcmpi(NORM_TYPE,'baseline') && isempty(BASELINE)
@@ -49,7 +49,9 @@ end
 cLabel = FT_DATA.power.label;
 data = cellfun(@(x) mean(x,4),FT_DATA.power.data,'uni',false);
 
-pFig = GetFigPosition(1200,500);
+wFig = numel(FT_DATA.power.data)*FT.tools.Inch2Px(5);
+hFig = FT.tools.Inch2Px(6);
+pFig = GetFigPosition(wFig,hFig,'xoffset',FT.tools.Inch2Px(1));
 h = figure('Units','pixels','Position',pFig,'Name','Spectrogram',...
 		   ...'Menubar','none',...
            'NumberTitle','off');
@@ -63,8 +65,6 @@ FT.PlotCtrl(h,cLabel,@PlotOne);
 function PlotOne(strChan)	
 	bChan = strcmpi(strChan,cLabel);
 
-	%FIXME FINISH TODO
-	% this is terrible, please do something at least halfway intelligent here....
 	if strcmpi(NORM_TYPE,'z-score')
 		kChan = find(bChan);
         d = cell(size(data));
@@ -82,28 +82,21 @@ function PlotOne(strChan)
 	%position for each axes
 	axPos = GetAxPosition(h,numel(d),'pad',75,'v_pad',30);
 
-	for k = 1:numel(d)        
-		%get the labels for the x and y axes
-		[xT,xTL] = GetAxLabels(time,7,'round',-1);
-        strSpace = FT.tools.Ternary(FT_DATA.history.tfd.log,'log','linear');
-        nCenter = FT.tools.Ternary(numel(FT_DATA.power.centers)<10,numel(FT_DATA.power.centers),10);
-		[yT,yTL] = GetAxLabels(FT_DATA.power.centers,nCenter,'space',strSpace,'round',0);
-
-		%convert ticks to indicies
-		yT = arrayfun(@(x) find(FT_DATA.power.centers>=x,1,'first'),yT);
-		xT = arrayfun(@(x) find(time>=x,1,'first'),xT);
-
+	for k = 1:numel(d)		
+        
 		%init the axes
-		hAx = axes('Units','normalized','Position',axPos{k},'Parent',h);
+		hAx = axes('Units','normalized','Position',axPos{k},'Parent',h);		
 
-		%add the image (flipud so that higher frequencies are up)
+		%init the spectogram image (flipud so higher frequencies are up)
 		image(flipud(d{k}),'CDataMapping','scaled','Parent',hAx);
 
-		%add ticks and labels (flip y-labels to again, higher frequencies are up)
+		%set x and y labels
+		[xT,xTL] = GetAxLabels(FT_DATA.power.time,7,'round',-1);
+		[yT,yTL] = GetAxLabels(FT_DATA.power.centers,10,'round',0);
 		set(hAx,'CLim',[cMin cMax],'XTick',xT,'XTickLabel',xTL,'YTick',yT,'YTickLabel',yTL(end:-1:1));
-		
+
 		%add the name of each condition
-		set(get(hAx,'Title'),'String',FT_DATA.epoch{k}.name);        
+		set(get(hAx,'Title'),'String',FT_DATA.epoch{k}.name);		
 	end
 
 	%colorbar
@@ -116,7 +109,13 @@ end
 %-----------------------------------------------------------------------------%
 function d = BaselineCorr(d)
 	m = repmat(mean(d(:,BASELINE(1):BASELINE(2)),2),1,size(d,2));
-	d = (d - m) ./ m;
+	s = std(d(:,BASELINE(1):BASELINE(2)),[],2);
+
+	%avoid dividing by 0
+	s(s==0) = 1;
+	s = repmat(s,1,size(d,2));
+	
+	d = (d - m) ./ s;
 	d = imfilter(d,f,'replicate');
 end
 %-----------------------------------------------------------------------------%

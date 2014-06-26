@@ -108,7 +108,9 @@ end
 function LoadBtn(obj,evt)
 %read event codes from file
     strDir = pwd;
-    cd(FT_DATA.path.base_directory);
+    if isdir(FT_DATA.path.base_directory)
+        cd(FT_DATA.path.base_directory);
+    end
     [strName,strPath] = uigetfile({'*.txt;*.asc;*.cfg;*.evt','Event code files (*.txt *.asc *.cfg *.evt)'},...
                                    'Load Event Code File');
     cd(strDir);

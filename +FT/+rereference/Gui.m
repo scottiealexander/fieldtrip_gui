@@ -34,7 +34,7 @@ c = {...
     {'pushbutton','String','Cancel'};...
     };
 
-win = FT.tools.Win(c,'title','Rereferencing Parameters');
+win = FT.tools.Win(c,'title','Rereferencing Parameters','grid',false);
 uiwait(win.h)
 
 if strcmpi(win.res.btn,'cancel')

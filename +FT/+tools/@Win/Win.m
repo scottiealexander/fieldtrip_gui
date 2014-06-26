@@ -140,6 +140,8 @@ end
 %PRIVATE METHODS--------------------------------------------------------------%
 methods (Access=private)
     %-------------------------------------------------------------------------%
+    pos = GetFigPosition(w,h,varargin);
+    %-------------------------------------------------------------------------%
     function sDef = ParseOptions(self,cOpt,varargin)
         if mod(numel(cOpt),2) || mod(numel(varargin),2)
             error('Invalid input format!');
@@ -169,7 +171,6 @@ methods (Access=private)
                     'KeyPressFcn',@self.KeyPress);
        
         self.AddElements;
-        
     end
     %-------------------------------------------------------------------------%
     function AddElements(self)

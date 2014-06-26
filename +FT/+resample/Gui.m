@@ -33,7 +33,8 @@ c = {...
     {'pushbutton','String','Cancel','validate',false};...
     };
 
-win = FT.tools.Win(c,'title','Resampling Parameters');
+win = FT.tools.Win(c,'title','Resampling Parameters','grid',false);
+uicontrol(win.GetElementProp('fr','h'));
 uiwait(win.h);
 
 if strcmpi(win.res.btn,'cancel')
