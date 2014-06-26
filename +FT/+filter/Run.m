@@ -8,13 +8,13 @@ function me = Run(params)
 %
 % In: 
 %       params - a struct holding the filtering parameters from the user
-%             see 'FT.filter.gui'
+%             see 'FT.filter.Gui'
 %
 % Out:
 %       me - an empty matrix if filtering finished with out error, otherwise a
 %            MException object caught from the error
 %
-% Updated: 2014-03-31
+% Updated: 2014-06-26
 % Scottie Alexander
 %
 % See also: FT.filter.Gui
