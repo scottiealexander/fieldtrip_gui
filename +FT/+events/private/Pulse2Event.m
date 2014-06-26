@@ -68,7 +68,7 @@ for k = 1:numel(kP)
         kEnd = kP(k)+kEnd;
     end
     
-    r = FT.processevents.FitPulse(data(kStart:kEnd),'max_width',max_width,'neg_thresh',thresh,'pos_thresh',thresh2,'plot',false);
+    r = FitPulse(data(kStart:kEnd),'max_width',max_width,'neg_thresh',thresh,'pos_thresh',thresh2,'plot',false);
     
     if r > .8 && kP(k) > kLast
         if  kP(k)+chunk_size > nData

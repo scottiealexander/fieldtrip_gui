@@ -1,14 +1,14 @@
 function me = Run(params)
 
-% FT.processevents.Run
+% FT.events.Run
 %
 % Description: read events or translate them from pulses
 %
-% Syntax: me = FT.processevents.Run(params)
+% Syntax: me = FT.events.Run(params)
 %
 % In: 
 %       params - a struct holding parameters from the user for processing events
-%             see 'FT.processevents.Gui'
+%             see 'FT.events.Gui'
 %
 % Out:
 %       me - an empty matrix if processing finished with out error, otherwise a
@@ -17,7 +17,7 @@ function me = Run(params)
 % Updated: 2014-06-23
 % Peter Horak
 %
-% See also: FT.processevents.Gui
+% See also: FT.events.Gui
 %
 % Please report bugs to: scottiealexander11@gmail.com
 
@@ -33,7 +33,7 @@ try
             %the stim channel needs to be filtered to detect events
             cfg.hpfilter 	= 'yes';
             cfg.lpfilter    = 'yes';
-            cfg.hpfreq      = 2;%.5;
+            cfg.hpfreq      = 2;
             cfg.lpfreq      = 15;
             cfg.lpfilttype  = 'but'; %butterworth type filter
             cfg.hpfilttype  = 'but';
@@ -51,7 +51,7 @@ try
             FT_DATA.pulse_evts.max_pulse = cfg.max_pulse;
             FT_DATA.pulse_evts.fs = FT_DATA.data.fsample;                
             %detect and translate events
-            FT_DATA.event = FT.processevents.Pulse2Event(datChan.trial{1}(1,:),FT_DATA.data.fsample,...
+            FT_DATA.event = Pulse2Event(datChan.trial{1}(1,:),FT_DATA.data.fsample,...
                             'width'     , cfg.width     ,...
                             'interval'  , cfg.interval  ,...
                             'max_pulse' , cfg.max_pulse  ...

@@ -1,11 +1,11 @@
 function Gui(varargin)
 
-% FT.processevents.Gui
+% FT.events.Gui
 %
 % Description: get parameters if necessary for translating pulses to
 % events
 %
-% Syntax: FT.processevents.Gui
+% Syntax: FT.events.Gui
 %
 % In: 
 %
@@ -14,7 +14,7 @@ function Gui(varargin)
 % Updated: 2014-06-23
 % Peter Horak
 %
-% See also: FT.processevents.Run
+% See also: FT.events.Run
 %
 % Please report bugs to: scottiealexander11@gmail.com
 
@@ -82,7 +82,7 @@ end
 
 hMsg = FT.UserInput('Reading events...',1);
 
-me = FT.processevents.Run(params);
+me = FT.events.Run(params);
 
 if ishandle(hMsg)
     close(hMsg);

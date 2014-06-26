@@ -40,6 +40,7 @@ methods
         self.opt = self.ParseOptions(varargin,...
             'title'    , 'Win'  ,...
             'grid'     , false  ,...
+            'focus'    , ''     ,...
             'position' , [0,0]   ...
             );
 
@@ -72,7 +73,18 @@ methods
 
         self.InitFigure;
 
-        %uiwait(self.h);
+        self.SetFocus(self.opt.focus);
+    end
+    %-------------------------------------------------------------------------%
+    function Wait(self)
+        uiwait(self.h);
+    end
+    %-------------------------------------------------------------------------%
+    function SetFocus(self,tag)
+        k = self.Tag2Index(tag);
+        if ~isempty(k)
+            uicontrol(self.el{k}.GetProp('h'));
+        end
     end
     %-------------------------------------------------------------------------%
     function FetchResult(self,varargin)
@@ -83,7 +95,10 @@ methods
                     [b,val] = self.el{k}.Validate;
                     if ~b
                         self.validate = false;  
-                        uiwait(errordlg(val,'Invalid Input'));
+                        hErr = warndlg(val,'Invalid Input');
+                        hMsg = findobj(hErr,'Type','text');
+                        set(hMsg,'FontSize',12,'Interpreter','tex');
+                        uiwait(hErr);
                         uicontrol(self.el{k}.h);
                         break;
                     else
@@ -105,26 +120,18 @@ methods
         self.FetchResult;
     end
     %-------------------------------------------------------------------------%
-    function SetElementProp(self,tag,field,val)
-        for k = 1:numel(self.el)
-            if ~isempty(self.el{k})
-                if strcmpi(tag,self.el{k}.tag)
-                    self.el{k}.SetProp(field,val);
-                    return;
-                end
-            end
+    function SetElementProp(self,tag,field,val)        
+        k = self.Tag2Index(tag);
+        if ~isempty(k)
+            self.el{k}.SetProp(field,val);
         end
     end
     %-------------------------------------------------------------------------%
     function val = GetElementProp(self,tag,field)
         val = [];
-        for k = 1:numel(self.el)
-            if ~isempty(self.el{k})
-                if strcmpi(tag,self.el{k}.tag)
-                    val = self.el{k}.GetProp(field);
-                    return;
-                end
-            end
+        k = self.Tag2Index(tag);
+        if ~isempty(k)
+            val = self.el{k}.GetProp(field);
         end
     end
     %-------------------------------------------------------------------------%    
@@ -141,6 +148,17 @@ end
 methods (Access=private)
     %-------------------------------------------------------------------------%
     pos = GetFigPosition(w,h,varargin);
+    %-------------------------------------------------------------------------%
+    function k = Tag2Index(self,tag)
+        for k = 1:numel(self.el)
+            if ~isempty(self.el{k})
+                if strcmpi(tag,self.el{k}.tag)                    
+                    return;
+                end
+            end
+        end
+        k = [];
+    end
     %-------------------------------------------------------------------------%
     function sDef = ParseOptions(self,cOpt,varargin)
         if mod(numel(cOpt),2) || mod(numel(varargin),2)

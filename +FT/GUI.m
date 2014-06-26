@@ -99,7 +99,7 @@ FT.UpdateGUI;
     
 %segmentation
     hSegMenu  = uimenu(h,'Label','Segmentation');
-    hFndEvt   = uimenu(hSegMenu,'Label','Process Events','Callback',@(varargin) FT.RunFunction(@FT.processevents.Gui));
+    hFndEvt   = uimenu(hSegMenu,'Label','Process Events','Callback',@(varargin) FT.RunFunction(@FT.events.Gui));
     hRecodeEvt= uimenu(hSegMenu,'Label','Re-label Events','Callback',@(varargin) FT.RunFunction(@FT.RecodeEvents));
     hChkEvt   = uimenu(hSegMenu,'Label','Manual Event Checking','Callback',@(varargin) FT.RunFunction(@FT.CheckEvents));
     hDefTrial = uimenu(hSegMenu,'Label','Segment Trials','Callback',@(varargin) FT.RunFunction(@FT.SegmentTrials));

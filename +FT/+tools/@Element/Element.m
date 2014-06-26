@@ -251,11 +251,8 @@ methods (Access=private)
     function h = GetHeight(self)
         switch self.type
         case 'checkbox'            
-            h = 1.5;
-        case 'listbox'
-            h = get(self.h,'Extent');
-            h = numel(self.string)*h(4);
-        case 'edit'
+            h = 1.5;        
+        case {'edit','listbox'}
             fsiz = get(self.h,'FontSize');
             h = (self.len(1) * (fsiz/16)) + 2;            
         otherwise
@@ -293,7 +290,7 @@ methods (Access=private)
                 'Parent'   , self.fig      ...
               };
         switch self.type
-            case {'edit','checkbox'}
+            case {'edit','checkbox','listbox'}
                 def = [def {'BackgroundColor',[1 1 1]}];
                 if iscell(self.string)
                     def = [def {'Min',0,'Max',2}];
