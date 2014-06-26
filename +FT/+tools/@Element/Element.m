@@ -22,7 +22,7 @@ properties
     fig;
     ax; 
     string = '';
-    len = 5;
+    len = [1 5];
     pos = zeros(1,4);   
     opt;
     tag = '';
@@ -47,18 +47,16 @@ methods
         self.type = lower(s.type);
         
         if isfield(s,'size')
+            if numel(s.size) == 1
+                s.size = [1 s.size];
+            end
             self.len = s.size;
             s = rmfield(s,'size');
         end
 
         if isfield(s,'string')
-            if strcmp(self.type,'edit')
-                if numel(s.string) > self.len
-                    self.len = numel(s.string);
-                end
-                if strcmpi(s.string,'default')
-                    s.string = ['\' s.string];
-                end
+            if ischar(s.string) && strcmpi(s.string,'default')                
+                s.string = ['\' s.string];
             end
             self.string = s.string;
         end     
@@ -189,8 +187,8 @@ methods (Access=private)
     function InitUIPosition(self)
         set(self.h,'Units','characters');
         p = get(self.h,'Position');
-        p(3) = self.GetWidth(self.len);
-        p(4) = self.GetHeight(p(4));
+        p(3) = self.GetWidth;
+        p(4) = self.GetHeight;
         set(self.h,'Position',p);
         set(self.h,'Units','pixels');
         p = get(self.h,'Position');
@@ -205,9 +203,9 @@ methods (Access=private)
         case 'left'
             % do nothing
         case 'center'
-            l = (l + w/2) - (self.pos(3)/2); %((self.pos(3)/2) - (w/2));
+            l = (l + w/2) - (self.pos(3)/2);
         case 'right'
-            l = r - self.pos(3); %(l + self.pos(3)) - w;
+            l = r - self.pos(3);
         otherwise
             error('Invalid alignment specified');
         end
@@ -227,11 +225,16 @@ methods (Access=private)
         end
     end
     %-------------------------------------------------------------------------%
-    function w = GetWidth(self,nchar)
+    function w = GetWidth(self)
         switch self.type
         case 'edit'
             fsiz = get(self.h,'FontSize');
-            w = (nchar * (fsiz/8)) + 2.5;
+            if isempty(self.string)                
+                w = (5 * (fsiz/8)) + 2.5;                
+            else                
+                ext = get(self.h,'Extent');
+                w = ext(3) + (fsiz/3);           
+            end
         case 'pushbutton'
             w = get(self.h,'Extent');
             w = w(3)+2;
@@ -245,15 +248,19 @@ methods (Access=private)
         end
     end
     %-------------------------------------------------------------------------%
-    function h = GetHeight(self,nchar)
+    function h = GetHeight(self)
         switch self.type
         case 'checkbox'            
             h = 1.5;
         case 'listbox'
             h = get(self.h,'Extent');
             h = numel(self.string)*h(4);
+        case 'edit'
+            fsiz = get(self.h,'FontSize');
+            h = (self.len(1) * (fsiz/16)) + 2;            
         otherwise
-            h = nchar;
+            h = get(self.h,'Position');
+            h = h(4);
         end
     end
     %-------------------------------------------------------------------------%
@@ -288,6 +295,12 @@ methods (Access=private)
         switch self.type
             case {'edit','checkbox'}
                 def = [def {'BackgroundColor',[1 1 1]}];
+                if iscell(self.string)
+                    def = [def {'Min',0,'Max',2}];
+                    self.len = [numel(self.string) max(cellfun(@numel,self.string))];
+                elseif ~isempty(self.string)
+                    self.len = [1 numel(self.string)];                
+                end
             case 'text'
                 def = [def {'BackgroundColor',get(self.fig,'Color')}]; %get(self.fig,'Color')
         end

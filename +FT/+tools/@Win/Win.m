@@ -15,13 +15,6 @@ classdef Win < handle
 %
 % Please send bug reports to: scottiealexander11@gmail.com
 
-% TODO:
-%   1) implement 'row-wise' construction so that rows can have a different number of columns
-%      BUT, what should we do with the axes...? Only acutally make axes for text objects?
-%      *OR* if we use only fixed width fonts maybe we can revert to uicontrol text objects...?
-%   2) column resizing (increase only of course)
-%   3) button resizing based on string (USE FIXED WIDTH FONT)
-
 
 %PROPERTIES-------------------------------------------------------------------%
 properties
