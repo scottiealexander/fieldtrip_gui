@@ -29,7 +29,7 @@ fEnd = (params.hi/(1+params.w))-1; %last bin center should be param.w% less than
 if params.log
     centers = logspace(log10(params.lo),log10(fEnd),params.n);
 else
-    centers = linspace(params.lo,params.hi,params.n);
+    centers = linspace(params.lo,fEnd,params.n);
 end
 
 %frequency band edges

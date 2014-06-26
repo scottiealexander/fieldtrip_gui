@@ -35,14 +35,16 @@ else
 	NORM_TYPE = 'baseline';
 end
 
-if strcmpi(NORM_TYPE,'baseline') && isempty(BASELINE)
+if strcmpi(NORM_TYPE,'baseline')% && isempty(BASELINE)
 	NORM_TYPE = 'baseline';	
 	cfg = FT.BaselineCorrect;
-	if ~isfield(cfg,'baselinewindow')
-		return;
-	end
-	BASELINE = cfg.baselinewindow;
-	BASELINE = [find(time>=BASELINE(1),1,'first') find(time>=BASELINE(2),1,'first')];
+    if ~isfield(cfg,'baselinewindow')
+        NORM_TYPE = 'none';
+% 		return;
+    else
+        BASELINE = cfg.baselinewindow;
+        BASELINE = [find(time>=BASELINE(1),1,'first') find(time>=BASELINE(2),1,'first')];
+    end
 end
 
 
@@ -71,8 +73,10 @@ function PlotOne(strChan)
         for k = 1:numel(data)
             d{k} = surrogate_norm(data{k}(:,:,kChan),k,kChan);
         end
-	else		
+    elseif strcmpi(NORM_TYPE,'baseline')
 		d = cellfun(@(x) BaselineCorr(x(:,:,bChan)),data,'uni',false);
+    else
+        d = cellfun(@(x) x(:,:,bChan),data,'uni',false);
 	end
 	
 	%get min and max across all conditions
