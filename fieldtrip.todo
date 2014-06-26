@@ -1,12 +1,16 @@
 #FIELDTRIP_GUI master TODO list
 
-#GRAPHICAL
-	* fix PlotPSD y-axis labels	
+#GRAPHICAL	
 	* continue adding functionality to Win/Element classes
 	* consider re-working remove channel utility
 
 #ORGANIZATIONAL
 	* sepearte all Gui and Run functionalities
+		- segment trials / define trials
+		- relabel events
+		- manual event checking
+		- create new channels
+
 
 #PROCEDURAL
 	* add tests for each operation
@@ -15,12 +19,14 @@
 			i.e. to test if data was actually filtered
 	* templating system
 	* seperate trial definition from trial segmentations...
+	* all preprocessing operations should error or work on segmented data
+		- none of this 'No data is loaded' malarkey...
 
 #GENERAL
 	* Validate/compare surrogate z-score methods
 	* Implement wavelets
 	* Add nlx to processevents
-
+	* allow events to be combined in DefineTrials
 	* enable colon operator in NewChannels (e.g. mean(ch23:34))
 	* add label editor to PlotCtrl
 	* enable figure saving in multiple formats

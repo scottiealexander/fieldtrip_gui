@@ -17,6 +17,8 @@ function SegmentTrials(varargin)
 
 global FT_DATA;
 
+me = [];
+
 %make sure we have events
 if ~FT_DATA.done.read_events || ~isfield(FT_DATA,'event') || isempty(FT_DATA.event)
     FT.UserInput(['\color{red}Event have not been processed for this dataset!\n\color{black}'...
@@ -31,7 +33,7 @@ bRun = FT.DefineTrial;
 if bRun && ~isempty(FT_DATA.epoch)
     
     %get baseline correction parameters
-    b_cfg = FT.BaselineCorrect;
+    b_cfg = FT.baseline.Gui;
 
     hMsg = FT.UserInput('Segmenting data into trials',1);
 
@@ -44,27 +46,27 @@ if bRun && ~isempty(FT_DATA.epoch)
         cfg = CFGDefault;
         cfg.trl = FT_DATA.epoch{k}.trl;
         EPOCH{k,1} = ft_redefinetrial(cfg,FT_DATA.data);
+    end
+    
+    FT_DATA.data = EPOCH;
 
-        %baseline correct
-        if ~isempty(b_cfg)
-            EPOCH{k,1} = ft_preprocessing(b_cfg,EPOCH{k,1});
-        end
+    if ~isempty(b_cfg)
+        me = FT.baseline.Run(b_cfg);
     end
 
     if ishandle(hMsg)
         close(hMsg);
     end
 
-    FT_DATA.data = EPOCH;
+    if isa(me,'MException')
+        FT.ProcessError(me);
+        return;
+    end
 
     %update history
     FT_DATA.done.segmentation = true;    
     FT_DATA.saved = false;
     FT_DATA.gui.display_mode = 'segment';    
-    
-    %update checklist
-    FT_DATA.done.baseline_correction = true;
-    FT_DATA.history.baseline_correction = cfg;    
 
     %update display
     FT.UpdateGUI;

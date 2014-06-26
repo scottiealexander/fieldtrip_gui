@@ -10,7 +10,7 @@ function me = Run(cfg)
 %		cfg - a struct of baseline correction parameters
 %
 % Out:
-%		me - an mexception if one was thrown, otherwise an empty matrix
+%		me - an mexception if one was thrown, an empty matrix if successful
 %
 % Updated: 2014-06-26
 % Scottie Alexander
@@ -20,7 +20,7 @@ function me = Run(cfg)
 % Please report bugs to: scottiealexander11@gmail.com
 
 global FT_DATA
-fprintf('Running!\n');
+
 me = [];
 try
 	for k = 1:numel(FT_DATA.data)
@@ -32,4 +32,4 @@ end
 FT.tools.AddHistory('baseline_correction',cfg);
 
 FT_DATA.saved = false;
-FT_DATA.done.filter = FT.tools.Ternary(isempty(me),true,false);
+FT_DATA.done.baseline_correction = FT.tools.Ternary(isempty(me),true,false);

@@ -103,7 +103,7 @@ FT.UpdateGUI;
     hRecodeEvt= uimenu(hSegMenu,'Label','Re-label Events','Callback',@(varargin) FT.RunFunction(@FT.RecodeEvents));
     hChkEvt   = uimenu(hSegMenu,'Label','Manual Event Checking','Callback',@(varargin) FT.RunFunction(@FT.CheckEvents));
     hDefTrial = uimenu(hSegMenu,'Label','Segment Trials','Callback',@(varargin) FT.RunFunction(@FT.SegmentTrials));
-    hBaseCor  = uimenu(hSegMenu,'Label','Baseline Correct','Callback',@(varargin) FT.RunFunction(@FT.BaselineCorrect));
+    hBaseCor  = uimenu(hSegMenu,'Label','Baseline Correct','Callback',@(varargin) FT.RunFunction(@FT.baseline.Gui));
     hArtRej   = uimenu(hSegMenu,'Label','Reject Trials','Callback',@(varargin) FT.RunFunction(@FT.RejectTrials));
 
 %analysis
