@@ -55,8 +55,8 @@ FT.UpdateGUI;
 
     %read in raw files
     hRead = uimenu(hFileMenu,'Label','Load Data');
-    uimenu(hRead,'Label','EEG File / Dataset','Callback',@FileOps,'Accelerator','L');
-    uimenu(hRead,'Label','Neuralynx Dataset','Callback',@FileOps);    
+    uimenu(hRead,'Label','EEG File / Dataset','Callback',@FT.io.Gui,'Accelerator','L');
+    uimenu(hRead,'Label','Neuralynx Dataset','Callback',@FT.io.Gui);
     
     %save
     uimenu(hFileMenu,'Label','Save Dataset','Callback',@SaveDataset);

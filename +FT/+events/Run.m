@@ -62,14 +62,33 @@ try
                 FT_DATA.event = FT.ReStruct(FT_DATA.event);
             end
             FT_DATA.data.cfg.event = FT_DATA.event;
+
         case 'nlx'
-            me = MException('FT:NotImplemented','Try again later...');
-            throw(me);
+            ReadNLXEvents;
+
         otherwise
+            %just let fieldtrip handle the events...
             cfg.trialdef.triallength = Inf;
             cfg.dataset = FT_DATA.path.raw_file;
             cfg = ft_definetrial(cfg);
-            FT_DATA.event = cfg.event;
+            
+            %format the event values to be a user friendly as possible
+            evt = FT.ReStruct(cfg.event);
+            if iscell(evt.value)
+                bEmpty = cellfun(@isempty,evt.value);
+                evt    = structfieldfun(@(x) x(~bEmpty),evt);
+                bNum   = cellfun(@isnumeric,evt.value);
+                if ~any(bNum)
+                    evt.value(cellfun(@isempty,evt.value)) = {''};
+                    evt.value = cellfun(@(x) regexprep(x,'\s+',''),evt.value,'uni',false);
+                elseif all(bNum)
+                    evt.value(cellfun(@isempty,evt.value)) = {NaN};
+                    evt.value = cat(1,evt.value{:});
+                else
+                   error('Poorly formated event code values. Please contact the developer with the circumstances of this error'); 
+                end
+                FT_DATA.event = FT.ReStruct(evt);
+            end            
     end
 catch me
 end
