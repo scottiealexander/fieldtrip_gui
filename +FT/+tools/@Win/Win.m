@@ -28,7 +28,7 @@ properties
     el = {};
     ui;
     tx = [];
-    res = struct('btn',[]);
+    res = struct('btn','');
     validate = false;
 end
 %PROPERTIES-------------------------------------------------------------------%
