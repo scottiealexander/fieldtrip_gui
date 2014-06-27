@@ -22,7 +22,7 @@ if isa(in,'MException')
     fprintf(2,'[ERROR]: line %d of %s\n --> %s\n',s(end).line,file,in.message);
 elseif ~in
     s = dbstack('-completenames');
-    file = regexprep(regexp(s(end).file,['FT' filesep '.*'],'match','once'),[filesep '\+|' filesep],'.');
-    fprintf('Test failed on line %d of %s\n',s(end).line,file);
+    file = regexprep(regexp(s(end-1).file,['FT' filesep '.*'],'match','once'),[filesep '\+|' filesep],'.');
+    fprintf('Test failed on line %d of %s\n',s(end-1).line,file);
 end
 end

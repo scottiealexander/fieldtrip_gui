@@ -102,7 +102,12 @@ function SegmentData(freq_data,kFreq)
     
     %assign our hilbert XFM-ed data matrix by its corresponding frequency
     for k = 1:numel(data)
-        data{k}(kFreq,:,:,:) = epochs{k};
+        if size(epochs{k},4) == 1
+            % if there's only one trial, epochs{k} is a 3D array (not 4D)
+            data{k}(kFreq,:,:) = epochs{k};
+        else
+            data{k}(kFreq,:,:,:) = epochs{k};
+        end
     end
     
     FT.Progress2;
