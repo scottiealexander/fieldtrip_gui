@@ -10,7 +10,7 @@ function GUI()
 %
 % Out: 
 %
-% Updated: 2014-05-09
+% Updated: 2014-06-27
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com

@@ -328,7 +328,7 @@ function BtnPress(obj,evt)
     end
         
     if ishandle(h)
-        close(h);
+        delete(h);
     end
 end
 %-------------------------------------------------------------------------%

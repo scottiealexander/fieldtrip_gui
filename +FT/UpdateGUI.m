@@ -10,13 +10,15 @@ function UpdateGUI()
 %
 % Out: 
 %
-% Updated: 2013-08-07
+% Updated: 2014-06-27
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
 
 global FT_DATA
 gui = FT_DATA.gui;
+
+FT_DATA.size = sprintf('%.1f MB',getfield(whos('FT_DATA'),'bytes')/1e6);
 
 for kT = 1:numel(gui.hText)
     if ishandle(gui.hText(kT))
@@ -41,10 +43,15 @@ for kF = 1:numel(cFieldDisp)
     strField = regexprep(strField,'(\<[a-z])','${upper($1)}');
 
     %get the contents of the field from the FT_DATA struct
-    strContent = ExtractField(cFieldDisp{kF});
+    % strContent = ExtractField(cFieldDisp{kF});
+    if iscell(cFieldDisp{kF})
+        strContent = getfield(FT_DATA,cFieldDisp{kF}{:});
+    elseif ischar(cFieldDisp{kF})
+        strContent = FT_DATA.(cFieldDisp{kF});
+    end
 
     %format it pretty
-    strContent = strrep(strContent,'_','\_');
+    strContent = strrep(tostring(strContent),'_','\_');
     strAdd = ['\bf' strField '\rm' ': ' strContent];
 
     %add to the display
@@ -55,36 +62,15 @@ end
 drawnow;
 
 %-------------------------------------------------------------------------%
-function s = ExtractField(c)
-%extract a field from the FT_DATA struct given a field path as a cell of
-%field names
-    if ~iscell(c)
-        c = {c};
-    end
-    if numel(c) > 0
-        s = FT_DATA;
-        for k = 1:numel(c)
-            if isfield(s,c{k})
-                s = s.(c{k});
-            else
-                s = '';
-                return;
-            end
-        end
-    else
-        s = '';
-    end
+function s = tostring(s)
     if isnumeric(s)
         s = num2str(s);
     elseif islogical(s)
-        if s
-            s = 'YES';
-        else
-            s = 'NO';
-        end
+        s = FT.tools.Ternary(s,'yes','no');
     elseif ~ischar(s)
         s = '';
     end
+            
 end
 %-------------------------------------------------------------------------%
 end

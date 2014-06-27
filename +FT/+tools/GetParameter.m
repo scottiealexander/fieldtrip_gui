@@ -43,13 +43,19 @@ function val = SearchCell(c)
 	end
 end
 %-----------------------------------------------------------------------------%
-function val = SearchStruct(s)
+function val = SearchStruct(s)        
     if isfield(s,field)
         val = s.(field);
     elseif numel(s) > 1
         val = SearchArray;
     else
         val = SearchScalar;
+    end    
+    %-------------------------------------------------------------------------%
+    function x = FindField(x,f)
+        if isfield(x,f)
+            x = x.(f);
+        end
     end
     %-------------------------------------------------------------------------%
     function val = SearchScalar
