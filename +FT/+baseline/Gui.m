@@ -12,7 +12,7 @@ function varargout = Gui(varargin)
 %
 % See also: FT.baseline.Run
 %
-% Updated: 2014-06-26
+% Updated: 2014-06-27
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
@@ -42,14 +42,14 @@ c = {...
 win = FT.tools.Win(c,'title','Baseline Correction','grid',true,'focus','wstart');
 win.Wait;
 
-if strcmpi(win.res.btn,'cancel')
-    varargout{1} = [];
-else
+if strcmpi(win.res.btn,'run')
     if ~nargout
         FT.baseline.Run(cfg);
     else
         varargout{1} = cfg;
-    end
+    end    
+else
+    varargout{1} = []; 
 end
 
 %-----------------------------------------------------------------------------%

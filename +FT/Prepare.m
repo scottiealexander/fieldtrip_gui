@@ -18,7 +18,7 @@ function varargout = Prepare(varargin)
 %
 % Out: 
 %
-% Updated: 2014-05-09
+% Updated: 2014-06-27
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
@@ -32,7 +32,8 @@ global FT_DATA;
 if any(strcmpi(opt.type,{'all','data'}))
 %------------------------------------------------------------------------------%
 %initialize the FT_DATA struct    
-    FT_DATA = struct('current_dataset','','analysis_name', '',...         
+    FT_DATA = struct('current_dataset','','analysis_name', '',...
+         'size'     , []     ,...         
          'data'     , []     ,...
          'event'    , []     ,...
          'epoch'    , []     ,...
@@ -63,7 +64,7 @@ if any(strcmpi(opt.type,{'all','data'}))
     FT_DATA.gui.display_mode = 'init';
 
     %initial display fields
-    cInit = {'analysis_name','current_dataset'};
+    cInit = {'analysis_name','current_dataset','size'};
     FT_DATA.gui.display_fields.init = cInit;
 
     %preproc display fields

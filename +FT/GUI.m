@@ -10,7 +10,7 @@ function GUI()
 %
 % Out: 
 %
-% Updated: 2014-05-09
+% Updated: 2014-06-27
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
@@ -55,8 +55,8 @@ FT.UpdateGUI;
 
     %read in raw files
     hRead = uimenu(hFileMenu,'Label','Load Data');
-    uimenu(hRead,'Label','EEG File / Dataset','Callback',@FileOps,'Accelerator','L');
-    uimenu(hRead,'Label','Neuralynx Dataset','Callback',@FileOps);    
+    uimenu(hRead,'Label','EEG File / Dataset','Callback',@FT.io.Gui,'Accelerator','L');
+    uimenu(hRead,'Label','Neuralynx Dataset','Callback',@FT.io.Gui);
     
     %save
     uimenu(hFileMenu,'Label','Save Dataset','Callback',@SaveDataset);

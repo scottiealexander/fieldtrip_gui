@@ -10,7 +10,7 @@ function ReadDataset(strPath)
 %
 % Out: 
 %
-% Updated: 2013-08-14
+% Updated: 2014-06-27
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
@@ -39,6 +39,7 @@ if any(strcmpi(ext,{'mat','set'}))
     FT_DATA.gui.hText = tmp_gui.hText;
     FT_DATA.gui.sizText = tmp_gui.sizText;
     FT_DATA.gui.screen_size = tmp_gui.screen_size;
+    FT_DATA.gui.display_fields = tmp_gui.display_fields;
     
     clear('sTmp','tmp_gui'); %clean up
 
