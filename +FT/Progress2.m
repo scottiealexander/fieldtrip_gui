@@ -31,7 +31,8 @@ else
 end
 
 switch lower(ACTION)
-    case 'start'
+    case 'start'        
+        CleanUp;
         if isempty(varargin) || ~isnumeric(varargin{1}) || isempty(varargin{1})
             error('Invalid input, should be the number of processes');
         else
@@ -60,7 +61,11 @@ switch lower(ACTION)
 
         TIC_ID = tic;
         WriteIfo(process,0,TIC_ID);
-        start(tmr);
+        try
+            start(tmr);
+        catch me
+            keyboard;
+        end
 
     case 'update'
 
@@ -80,7 +85,7 @@ end
 function CleanUp(varargin)
 %clean up on figure close or when the process is done    
     H_PROGRESS = findobj(allchild(0),'flat','Tag','TMWWaitbar');
-    if ~isempty(H_PROGRESS)
+    if ~isempty(H_PROGRESS)        
         delete(H_PROGRESS);
     end
     tmr = timerfind('Tag','FT_PROGRESS_TIMER');
@@ -103,7 +108,10 @@ end
 function UpdateWaitbar(varargin)
 	%get info on the current process
     ifo = ReadIfo;
-
+    if isempty(ifo)
+        CleanUp;
+        return;
+    end
     %get new done count
     N_DONE = getfield(dir(strPathProc),'bytes');        
     
@@ -112,8 +120,13 @@ function UpdateWaitbar(varargin)
     tRem = (total_time/N_DONE) * (ifo.process-N_DONE);
 
     %update the waitbar
-    strRem = sprintf('%02.0f%% done | %s remaining',(N_DONE/ifo.process)*100,FmtTime(tRem));        
-    waitbar(N_DONE/ifo.process,H_PROGRESS,strRem);
+    strRem = sprintf('%02.0f%% done | %s remaining',(N_DONE/ifo.process)*100,FmtTime(tRem));
+    if ishandle(H_PROGRESS)
+        waitbar(N_DONE/ifo.process,H_PROGRESS,strRem);
+    else
+        CleanUp;
+        return;
+    end
     drawnow;
 
     if N_DONE == ifo.process
@@ -155,10 +168,14 @@ end
 %-------------------------------------------------------------------------%
 function ifo = ReadIfo
     fid = fopen(strPathIfo,'r');
-    str = transpose(char(fread(fid,'char')));
-    fclose(fid);
-    c = regexp(str,'\s+','split');
-    ifo = cell2struct(num2cell(str2double(c(2:2:end))),c(1:2:end-1),2);
+    if fid > 0    
+        str = transpose(fread(fid,'*char'));
+        fclose(fid);
+        c = regexp(str,'\s+','split');
+        ifo = cell2struct(num2cell(str2double(c(2:2:end))),c(1:2:end-1),2);
+    else
+        ifo = [];
+    end
 end
 %-------------------------------------------------------------------------%
 function x = FmtTime(x)

@@ -15,20 +15,24 @@ function Test
 %
 % Please report bugs to: scottiealexander11@gmail.com
 
-global FT_DATA
+global FT_DATA;
+if isempty(FT_DATA)
+    FT.Prepare;
+end
 
 data_file = mfilename('fullpath');
 data_file = [regexp(data_file,'.*/\+FT/','match','once') 'sample_data/TEST.set'];
 
-% fprintf('[TEST]: Running the resample, filter, and rereference series of tests.\n');
+fprintf('%% RESAMPLE, FILTER, REREFERENCE -------------------------- %%\n')
 FT_DATA = load(data_file,'-mat');
 FT.resample.Test
 FT.filter.Test
 FT.rereference.Test
 
+fprintf('%% HILBERT PSD -------------------------------------------- %%\n')
 FT_DATA = load(data_file,'-mat');
 FT.tfd.Test('Hilbert');
 
-% timeer progres error in FouerierPSD???
+fprintf('%% FOURIER PSD -------------------------------------------- %%\n')
 FT_DATA = load(data_file,'-mat');
 FT.tfd.Test('STFT');

@@ -18,10 +18,10 @@ function Test(method)
 
 global FT_DATA;
 FS = FT_DATA.data.fsample;
-TOLERANCE = 5; % 10 Hz range (+/-5Hz)
+TOLERANCE = 10; % +/-10Hz
 
 fnyq = floor(FS/2);
-params = struct('lo',10,'hi',fnyq,'n',42,'w',10,'log',true,'surrogate',false,'nsurrogate',10);
+params = struct('lo',5,'hi',fnyq,'n',42,'w',10,'log',true,'surrogate',false,'nsurrogate',10);
 params.method = method;
 
 % check for errors running the frequency decomposition
@@ -33,7 +33,11 @@ freq = FT_DATA.power.centers;
 
 % start & end freq within 10Hz of target and right number of freq bins
 FT.tools.Log(abs(freq(1)-params.lo) < TOLERANCE);
-FT.tools.Log(abs(freq(end)-params.hi) < TOLERANCE);
+if strcmpi('Hilbert',method)
+    FT.tools.Log(abs(freq(end)-(params.hi-1)/(1+params.w/100)) < TOLERANCE);
+else
+    FT.tools.Log(abs(freq(end)-params.hi) < TOLERANCE);
+end
 FT.tools.Log(size(FT_DATA.power.data{1},1) == params.n);
 
 % % did generate surrogate data

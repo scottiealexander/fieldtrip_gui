@@ -28,21 +28,10 @@ overlap = round(window/2);%64
 %convert to percent
 params.w = params.w/100;
 
-% %caclulate frequency bin centers
-% fEnd = (params.hi/(1+params.w))-1; %last bin center should be param.w% less than param.hi
-% if params.log
-%     centers = logspace(log10(params.lo),log10(fEnd),params.n);
-% else
-%     centers = linspace(params.lo,params.hi,params.n);
-% end
-
-%frequency band edges
-% cBands = arrayfun(@(x) [x*(1-params.w) x*(1+params.w)],centers,'uni',false);
-
 %n-condition length cell to hold all the data
 data = cell(numel(FT_DATA.epoch),1);
 
-FT.Progress2(nChan+params.n+1,'Computing spectrogram');
+FT.Progress2(nChan+params.n+1,'Computing spectrogram: Fourier');
 
 %indices for cropping frequency range
 fStart = ceil(params.n*params.lo/(params.hi-params.lo));%find(freq>=lo,1,'first');
@@ -78,10 +67,10 @@ FT.Progress2;
 cellfun(@SegmentData,data_raw,num2cell(1:params.n)','uni',false);
 
 %add to the data struct
-fprintf('Creating ROA instance\n');
-id = tic;
+% fprintf('Creating ROA instance\n');
+% id = tic;
 FT_DATA.power.raw     = FT.ROA(cat(3,data_raw{:}));
-fprintf('Done | %.3f\n',toc(id));
+% fprintf('Done | %.3f\n',toc(id));
 FT_DATA.power.data    = data;
 FT_DATA.power.centers = freq;
 FT_DATA.power.bands   = cBands;

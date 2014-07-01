@@ -18,11 +18,14 @@ function Log(in)
 
 if isa(in,'MException')
     s  = in.stack;
-    file = regexprep(regexp(s(end).file,['FT' filesep '.*'],'match','once'),[filesep '\+|' filesep],'.');
-    fprintf(2,'[ERROR]: line %d of %s\n --> %s\n',s(end).line,file,in.message);
+    file = regexprep(regexp(s(1).file,['FT' filesep '.*'],'match','once'),[filesep '\+|' filesep],'.');
+    fprintf(2,'[ERROR]: line %d of %s\n --> %s\n\n',s(1).line,file,in.message);
 elseif ~in
-    s = dbstack('-completenames');
-    file = regexprep(regexp(s(end-1).file,['FT' filesep '.*'],'match','once'),[filesep '\+|' filesep],'.');
-    fprintf('Test failed on line %d of %s\n',s(end-1).line,file);
+    [s,k] = dbstack('-completenames');
+    if k > 1
+        k = k-1;
+    end
+    file = regexprep(regexp(s(k).file,['FT' filesep '.*'],'match','once'),[filesep '\+|' filesep],'.');
+    fprintf('Test failed on line %d of %s\n',s(k).line,file);
 end
 end
