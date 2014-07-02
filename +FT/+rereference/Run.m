@@ -28,7 +28,6 @@ cfg = FT.tools.CFGDefault(params);
 cfg.reref       = 'yes'; %we want to rereference
 cfg.channel     = 'all'; %channels to reref, all of course
 cfg.implicitref = [];    %the implicit (non-recorded) reference channel is added to the data representation (we'll have to figure out what this is if any)
-cfg.refchannel = 'all';  
 
 try
     FT_DATA.data = ft_preprocessing(cfg, FT_DATA.data);

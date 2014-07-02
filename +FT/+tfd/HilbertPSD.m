@@ -25,11 +25,19 @@ FS = FT_DATA.data.fsample;
 params.w = params.w/100;
 
 %caclulate frequency bin centers
-fEnd = (params.hi/(1+params.w))-1; %last bin center should be param.w% less than param.hi
+% fEnd = (params.hi/(1+params.w))-1; %last bin center should be param.w% less than param.hi
+% if params.log
+%     centers = logspace(log10(params.lo),log10(fEnd),params.n);
+% else
+%     centers = linspace(params.lo,fEnd,params.n);
+% end
+
+fEnd = ((params.hi-1)/(1+params.w)); %last bin center should be param.w% less than param.hi
+fBeg = ((params.lo+1)/(1-params.w)); %last bin center should be param.w% more than param.lo
 if params.log
-    centers = logspace(log10(params.lo),log10(fEnd),params.n);
+    centers = logspace(log10(fBeg),log10(fEnd),params.n);
 else
-    centers = linspace(params.lo,fEnd,params.n);
+    centers = linspace(fBeg,fEnd,params.n);
 end
 
 %frequency band edges
@@ -47,7 +55,7 @@ cfg.bpinstabilityfix = 'reduce'; %deal with filter instability
 %n-condition length cell to hold all the data
 data = cell(numel(FT_DATA.epoch),1);
 
-FT.Progress2((params.n*2)+1,'Computing spectrogram');
+FT.Progress2((params.n*2)+1,'Computing spectrogram: Hilbert');
 
 %bandpass filter and hilbert transform for each frequency band
 % yields a cfg.n x 1 cell of channel x time power values
@@ -64,10 +72,10 @@ FT.Progress2;
 cellfun(@SegmentData,data_raw,num2cell(1:params.n),'uni',false);
 
 %add to the data struct
-fprintf('Creating ROA instance\n');
-id = tic;
+% fprintf('Creating ROA instance\n');
+% id = tic;
 FT_DATA.power.raw     = FT.ROA(cat(3,data_raw{:}));
-fprintf('Done | %.3f\n',toc(id));
+% fprintf('Done | %.3f\n',toc(id));
 FT_DATA.power.data    = data;
 FT_DATA.power.centers = centers;
 FT_DATA.power.bands   = cBands;
@@ -102,7 +110,12 @@ function SegmentData(freq_data,kFreq)
     
     %assign our hilbert XFM-ed data matrix by its corresponding frequency
     for k = 1:numel(data)
-        data{k}(kFreq,:,:,:) = epochs{k};
+        if size(epochs{k},4) == 1
+            % if there's only one trial, epochs{k} is a 3D array (not 4D)
+            data{k}(kFreq,:,:) = epochs{k};
+        else
+            data{k}(kFreq,:,:,:) = epochs{k};
+        end
     end
     
     FT.Progress2;

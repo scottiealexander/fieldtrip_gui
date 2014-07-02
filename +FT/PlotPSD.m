@@ -112,14 +112,13 @@ function PlotOne(strChan)
 end
 %-----------------------------------------------------------------------------%
 function d = BaselineCorr(d)
-	m = repmat(mean(d(:,BASELINE(1):BASELINE(2)),2),1,size(d,2));
-	s = std(d(:,BASELINE(1):BASELINE(2)),[],2);
+	m = mean(d(:,BASELINE(1):BASELINE(2)),2);
 
 	%avoid dividing by 0
-	s(s==0) = 1;
-	s = repmat(s,1,size(d,2));
+	m(m==0) = 1;
+	m = repmat(m,1,size(d,2));
 	
-	d = (d - m) ./ s;
+	d = (d - m) ./ abs(m);
 	d = imfilter(d,f,'replicate');
 end
 %-----------------------------------------------------------------------------%

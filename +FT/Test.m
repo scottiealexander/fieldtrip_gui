@@ -1,8 +1,8 @@
-function freq = Test()
+function Test
 
 % Test
 %
-% Description: 
+% Description: run unit tests on the various operation packages
 %
 % Syntax: Test
 %
@@ -10,16 +10,29 @@ function freq = Test()
 %
 % Out: 
 %
-% Updated: 2013-10-29
-% Scottie Alexander
+% Updated: 2014-06-27
+% Peter Horak
 %
 % Please report bugs to: scottiealexander11@gmail.com
 
 global FT_DATA;
+if isempty(FT_DATA)
+    FT.Prepare;
+end
 
-cfg = [];
-cfg.method = 'mtmfft';
-cfg.taper  = 'hanning';
-cfg.output = 'pow';
-cfg.foilim = [0 FT_DATA.data{1}.fsample/2];
-freq 	   = cellfun(@(x) ft_freqanalysis(cfg,x),FT_DATA.data,'uni',false);
+data_file = mfilename('fullpath');
+data_file = [regexp(data_file,'.*/\+FT/','match','once') 'sample_data/TEST.set'];
+
+fprintf('%% RESAMPLE, FILTER, REREFERENCE -------------------------- %%\n')
+FT_DATA = load(data_file,'-mat');
+FT.resample.Test
+FT.filter.Test
+FT.rereference.Test
+
+fprintf('%% HILBERT PSD -------------------------------------------- %%\n')
+FT_DATA = load(data_file,'-mat');
+FT.tfd.Test('Hilbert');
+
+fprintf('%% FOURIER PSD -------------------------------------------- %%\n')
+FT_DATA = load(data_file,'-mat');
+FT.tfd.Test('STFT');

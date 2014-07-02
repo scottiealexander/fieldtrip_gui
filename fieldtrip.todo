@@ -3,6 +3,7 @@
 #GRAPHICAL	
 	* continue adding functionality to Win/Element classes
 	* consider re-working remove channel utility
+	* rewrite Progress2 to stop having errors probabilistically
 
 #ORGANIZATIONAL
 	* sepearte all Gui and Run functionalities
