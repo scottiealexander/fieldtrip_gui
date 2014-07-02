@@ -4,6 +4,7 @@
 	* continue adding functionality to Win/Element classes
 	* consider re-working remove channel utility
 	* rewrite Progress2 to stop having errors probabilistically
+	* FT.CheckEvents miss-displays the data if it's been resampled...
 
 #ORGANIZATIONAL
 	* sepearte all Gui and Run functionalities
@@ -12,13 +13,13 @@
 		- manual event checking
 		- create new channels
 
-
 #PROCEDURAL
 	* add tests for each operation
 		- basic test for errors
 		- full test (possibly with visual feedback when needed) for actual operations
 			i.e. to test if data was actually filtered
 	* templating system
+		- auto select stim channel for event processing for .edf files
 	* seperate trial definition from trial segmentations...
 	* all preprocessing operations should error or work on segmented data
 		- none of this 'No data is loaded' malarkey...
@@ -38,3 +39,6 @@
 		- fix keyborad controls for FT.CheckEvents
 		- 2 modes, one for moving the new event marker, one for moving b/t event segments
 		- need a tool to scroll through stim channel (maybe place markers???)
+#TESTING
+	* io for all types
+		- brainvision, edf, neuralynx, .set etc.

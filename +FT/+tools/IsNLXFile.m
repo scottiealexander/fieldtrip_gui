@@ -22,10 +22,15 @@ global FT_DATA;
 b = false;
 
 if ~isempty(varargin)
-
-%temporary dumb method... this will have to be improved...
-if isfield(FT_DATA.path,'raw_file') && ~isempty(FT_DATA.path.raw_file)
-	if isdir(FT_DATA.path.raw_file)
-		b = true;
+	if ischar(varargin{1})
+		strPath = varargin{1};
+	else
+		error('Input should be a directory path, see "help FT.tools.IsNLXFile" for more info');
 	end
+elseif isfield(FT_DATA.path,'raw_file') && ~isempty(FT_DATA.path.raw_file)
+	strPath = FT_DATA.path.raw_file;
+else
+	error('No data has been loaded and no file/directory path was provided as input');
 end
+
+b = isdir(strPath);

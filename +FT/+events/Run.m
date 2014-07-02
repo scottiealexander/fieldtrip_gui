@@ -60,6 +60,7 @@ try
 
         otherwise
             %just let fieldtrip read the events...
+            cfg.continuous = 'yes';
             cfg.trialdef.triallength = Inf;
             cfg.dataset = FT_DATA.path.raw_file;
             cfg = ft_definetrial(cfg);

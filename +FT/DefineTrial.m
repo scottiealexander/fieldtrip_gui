@@ -14,7 +14,7 @@ function bRun = DefineTrial()
 % Out:
 %       bRun - true if segmentation should be performed, false otherwise
 %
-% Updated: 2013-08-19
+% Updated: 2014-07-02
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
@@ -22,6 +22,13 @@ function bRun = DefineTrial()
 global FT_DATA;
 bRun = false;
 EPOCH = {};
+
+if ~FT_DATA.done.read_events
+    FT.UserInput(['\color{red}Events have not been processed for this dataset!\n\color{black}'...
+        'Please use:\n      \bfSegmentation->Process Events\rm\nbefore recoding.'],...
+        0,'title','No Events Found','button','OK');
+    return;
+end
 
 %main figure
 pFig = GetFigPosition(700,500);

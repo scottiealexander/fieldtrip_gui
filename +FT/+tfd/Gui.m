@@ -18,9 +18,11 @@ function Gui(varargin)
 % Please report bugs to: scottiealexander11@gmail.com
 
 global FT_DATA;
+
 if ~FT.CheckStage('tfd')
     return;
 end
+
 %make sure there is trial info
 if ~isfield(FT_DATA,'epoch') || isempty(FT_DATA.epoch)
     if ~FT.DefineTrial

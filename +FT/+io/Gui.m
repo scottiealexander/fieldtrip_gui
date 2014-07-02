@@ -24,7 +24,16 @@ if isdir(FT_DATA.path.base_directory)
 end
 
 %figure out what the user is trying to load
-str = get(obj,'Label');
+if ishandle(obj)
+    str = get(obj,'Label');
+elseif ischar(obj)
+    str = obj;
+else
+    me = MException('FT:InvalidFormat','Invalid call to FT.io.Gui, first input should be a handle or a string');
+    FT.ProcessError(me);
+    cd(strDirCur);
+    return;    
+end
 
 switch lower(str)
     case 'load existing analysis'
@@ -40,7 +49,10 @@ switch lower(str)
     case 'neuralynx dataset'
         strPath = uigetdir(pwd,'Load Neuralynx Dataset');
     otherwise
-        %this should never happen
+        me = MException('FT:InvalidFormat','Invalid call to FT.io.Gui, first input should be a handle or a string');
+        FT.ProcessError(me);
+        cd(strDirCur);
+        return;
 end
 
 %move back to the original directory
