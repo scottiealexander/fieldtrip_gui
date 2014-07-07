@@ -73,11 +73,10 @@ if strcmpi(ext,'edf')
     params.interval = win.res.interval;
     params.max_pulse = win.res.max_pulse;
     
-elseif ~isfield(FT_DATA,'event') || isempty(FT_DATA.event)  
-    params.type = '';
+elseif FT.tools.IsNLXFile
+    params.type = 'nlx';
 else
-    %nothing to do
-    return;
+    params.type = '';
 end
 
 hMsg = FT.UserInput('Reading events...',1);

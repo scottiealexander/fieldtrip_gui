@@ -25,9 +25,12 @@
 		- none of this 'No data is loaded' malarkey...
 
 #GENERAL
+	* Allow spectral decomposition after segmentation (w/o full surrogates)
+		- deal with how FT_DATA.data goes from struct to cell of structs
+	* When loading a new dataset force user to clear old one first?
 	* Validate/compare surrogate z-score methods
 	* Implement wavelets
-	* Add nlx to processevents
+	* Test loading and processing events for nlx files
 	* allow events to be combined in DefineTrials
 	* enable colon operator in NewChannels (e.g. mean(ch23:34))
 	* add label editor to PlotCtrl

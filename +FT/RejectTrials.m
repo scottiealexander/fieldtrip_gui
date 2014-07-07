@@ -51,7 +51,7 @@ switch lower(btn)
         %prepare cfg struct
         cfg.continuous  = 'no';
         cfg.trl         = trl;
-        cfg.channel		= FT_DATA.data{1}.label(1:9);
+        cfg.channel		= FT_DATA.data{1}.label(1:min(9,numel(FT_DATA.data{1}.label)));
         cfg.viewmode	= 'vertical';
         cfg.plotlabels  = 'yes';
         cfg.ylim		= [-100 100];

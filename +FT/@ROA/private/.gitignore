@@ -1,0 +1,2 @@
+# Don't accidentally add the temporary ROA files to the git repository
+roa_*dat

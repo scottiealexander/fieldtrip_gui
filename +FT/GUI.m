@@ -125,60 +125,6 @@ FT.UpdateGUI;
 %     hLoadTemplate = uimenu(hTempMenu,'Label','Load Existing Template','Callback','disp(''load existing template'')');
 
 %-------------------------------------------------------------------------%
-function FileOps(obj,evt)
-    
-    %move to the analysis base dir
-    strDirCur = pwd;
-    if isdir(FT_DATA.path.base_directory)        
-        cd(FT_DATA.path.base_directory);       
-    end
-    
-    %figure out what the user is trying to load
-    str = get(obj,'Label');
-    
-    switch lower(str)
-        case 'load existing analysis'
-            strPath = uigetdir(pwd,'Load Existing Analysis');
-            if isequal(strPath,0)
-                cd(strDirCur);
-                return; %user selected cancel
-            end
-        case 'eeg file / dataset'
-            [strName,strPath] = uigetfile('*','Load File');
-            if ~isequal(strName,0) && ~isequal(strPath,0)
-                strPath = fullfile(strPath,strName);
-            else
-                cd(strDirCur);
-                return; %user selected cancel
-            end
-        case 'neuralynx dataset'
-            strPath = uigetdir(pwd,'Load Neuralynx Dataset');
-            if isequal(strPath,0)
-                cd(strDirCur);
-                return; %user selected cancel
-            end
-        otherwise
-            %this should never happen
-    end
-     
-    [~,strName] = fileparts(RmSlash(strPath));
-    FT_DATA.current_dataset = strName;
-    FT_DATA.path.raw_file = strPath;
-    
-    %move back to the original directory
-    cd(strDirCur);        
-    
-    %read the data    
-    ReadDataset(strPath);
-    
-    if strcmpi(FT_DATA.gui.display_mode,'init')
-        FT_DATA.gui.display_mode = 'preproc';
-    end
-    
-    %update the display
-    FT.UpdateGUI;
-end
-%-------------------------------------------------------------------------%
 function InitAnalysis(obj,evt)
     
     %make sure the user understands what we want
