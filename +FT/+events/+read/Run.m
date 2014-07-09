@@ -1,10 +1,10 @@
 function me = Run(params)
 
-% FT.events.Run
+% FT.events.read.Run
 %
 % Description: read events or translate them from pulses
 %
-% Syntax: me = FT.events.Run(params)
+% Syntax: me = FT.events.read.Run(params)
 %
 % In: 
 %       params - a struct holding parameters from the user for processing events
@@ -14,10 +14,10 @@ function me = Run(params)
 %       me - an empty matrix if processing finished with out error, otherwise a
 %            MException object caught from the error
 %
-% Updated: 2014-06-23
-% Peter Horak
+% Updated: 2014-07-08
+% Scottie Alexander
 %
-% See also: FT.events.Gui
+% See also: FT.events.read.Gui
 %
 % Please report bugs to: scottiealexander11@gmail.com
 

@@ -42,5 +42,5 @@ else
     resp = FT.UserInput('Process events?',1,'button',{'Yes','No'},'title','MESSAGE');
 end
 if strcmpi(resp,'yes')
-    FT.events.Gui;
+    FT.events.read.Gui;
 end
