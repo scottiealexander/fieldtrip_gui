@@ -95,12 +95,12 @@ FT.UpdateGUI;
     hReFilt   = uimenu(hProcMenu,'Label','Filter Data','Callback',@(varargin) FT.RunFunction(@FT.filter.Gui));
     hReRef    = uimenu(hProcMenu,'Label','Rereference Data','Callback',@(varargin) FT.RunFunction(@FT.rereference.Gui));
     hNewChan  = uimenu(hProcMenu,'Label','Create New Channel','Callback',@(varargin) FT.RunFunction(@FT.NewChannel));
-    hBPFilt   = uimenu(hProcMenu,'Label','Bandpass Filter','Callback',@(varargin) FT.RunFunction(@FT.BandPass));
+    % hBPFilt   = uimenu(hProcMenu,'Label','Bandpass Filter','Callback',@(varargin) FT.RunFunction(@FT.BandPass));
     
 %segmentation
     hSegMenu  = uimenu(h,'Label','Segmentation');
     hFndEvt   = uimenu(hSegMenu,'Label','Process Events','Callback',@(varargin) FT.RunFunction(@FT.events.read.Gui));
-    hRecodeEvt= uimenu(hSegMenu,'Label','Re-label Events','Callback',@(varargin) FT.RunFunction(@FT.RecodeEvents));
+    hRecodeEvt= uimenu(hSegMenu,'Label','Re-label Events','Callback',@(varargin) FT.RunFunction(@FT.events.relabel.Gui));
     hChkEvt   = uimenu(hSegMenu,'Label','Manual Event Checking','Callback',@(varargin) FT.RunFunction(@FT.CheckEvents));
     hDefTrial = uimenu(hSegMenu,'Label','Segment Trials','Callback',@(varargin) FT.RunFunction(@FT.SegmentTrials));
     hBaseCor  = uimenu(hSegMenu,'Label','Baseline Correct','Callback',@(varargin) FT.RunFunction(@FT.baseline.Gui));

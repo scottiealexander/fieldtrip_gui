@@ -12,7 +12,7 @@ function ParseEventFile(str)
 %
 % Out: 
 %
-% Updated: 2013-08-16
+% Updated: 2014-07-15
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
@@ -61,6 +61,7 @@ for k = 1:numel(cName)
 end
 
 FT_DATA.event = FT.ReStruct(evt);
+[~,FT_DATA.data.cfg] = FT.EditCfg(FT_DATA.data.cfg,'set','event',FT_DATA.event);
 
 %------------------------------------------------------------------------------%
 function rhs = ParseRHS(str)

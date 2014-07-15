@@ -14,7 +14,10 @@ function ParseNLXEvents(varargin)
 %
 % Out:
 %
-% Updated: 2014-06-18
+% Updated: 2014-07-15
+% Scottie Alexander
+%
+% Please send bu reports to: scottiealexander11@gmail.com
 
 global FT_DATA;
 
@@ -31,7 +34,7 @@ end
 
 bKeep = evt.value>0;
 
-evt = structfieldfun(@(x) x(bKeep),evt);
+evt = FT.tools.structfieldfun(@(x) x(bKeep),evt);
 
 %maximum time between pulses of the same pulse series (convert times to
 %microseconds and add the error (*2 for pre and post))
@@ -60,7 +63,7 @@ kStart = [evt.sample(1);evt.sample(find(b)+1)];
 %each pulse series (i.e. the code represented by the pulse series)
 nPulse = arrayfun(@(x,y) sum(evt.sample >= x & evt.sample <= y),kStart,kOnset);
 
-evt = structfieldfun(@(x) [x(b);x(end)],evt);
+evt = FT.tools.structfieldfun(@(x) [x(b);x(end)],evt);
 evt.value = nPulse;
 FT_DATA.event = FT.ReStruct(evt);
 FT_DATA.data.cfg.event = FT.ReStruct(evt);
