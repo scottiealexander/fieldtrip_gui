@@ -44,79 +44,75 @@ FT_DATA.gui.hText = text(.05,.90,'\bfAnalysis Name\rm:','Units','normalized','Fo
 FT_DATA.gui.sizText = get(FT_DATA.gui.hText,'Extent');
 FT.UpdateGUI;
 
-%file operations
-    hFileMenu = uimenu(h,'Label','File');
+% File operations
+hFileMenu = uimenu(h,'Label','File');
 
-    %initialize or load a dataset for processing
-    hInit = uimenu(hFileMenu,'Label','Initialize Analysis','Callback',@InitAnalysis,...
-        'Accelerator','N');
-    hLoad = uimenu(hFileMenu,'Label','Load Existing Analysis','Callback',@LoadAnalysis,...
-        'Accelerator','I');
+%initialize or load a dataset for processing
+uimenu(hFileMenu,'Label','Initialize Analysis','Callback',@InitAnalysis,...
+    'Accelerator','N');
+uimenu(hFileMenu,'Label','Load Existing Analysis','Callback',@LoadAnalysis,...
+    'Accelerator','I');
 
-    %read in raw files
-    hRead = uimenu(hFileMenu,'Label','Load Data');
-    uimenu(hRead,'Label','EEG File / Dataset','Callback',@FT.io.Gui,'Accelerator','L');
-    uimenu(hRead,'Label','Neuralynx Dataset','Callback',@FT.io.Gui);
-    
-    %save
-    uimenu(hFileMenu,'Label','Save Dataset','Callback',@SaveDataset);
-    
-    %save as
-    uimenu(hFileMenu,'Label','Save Dataset As...',...
-        'Callback',@(x,y) SaveDataset(x,y,'as'),'Accelerator','S');
-    
-    %save ERP
-    uimenu(hFileMenu,'Label','Save Average Dataset',...
-        'Callback',@(x,y) SaveDataset(x,y,'avg'));
+%read in raw files
+hRead = uimenu(hFileMenu,'Label','Load Data');
+uimenu(hRead,'Label','EEG File / Dataset','Callback',@FT.io.Gui,'Accelerator','L');
+uimenu(hRead,'Label','Neuralynx Dataset','Callback',@FT.io.Gui);
 
-    %clear 
-    uimenu(hFileMenu,'Label','Clear Dataset','Callback',@ClearDataset);
-    
-    %quit
-    uimenu(hFileMenu,'Label','Quit','Callback',@QuitGUI);
-    
-%view operations
-    hViewMenu = uimenu(h,'Label','View');
-    hViewIfo  = uimenu(hViewMenu,'Label','Data Info','Callback',@(varargin) FT.RunFunction(@FT.DataSummery));
-    hViewData = uimenu(hViewMenu,'Label','Channel Data','Callback',@(varargin) FT.RunFunction(@FT.PlotData));
-    hViewERP  = uimenu(hViewMenu,'Label','Average ERP','Callback',@(varargin) FT.RunFunction(@FT.PlotERP));
-    hViewERPim= uimenu(hViewMenu,'Label','ERP Image','Callback',@(varargin) FT.RunFunction(@FT.ERPImage));
-    hViewHilb = uimenu(hViewMenu,'Label','Hilbert PSD','Callback',@(varargin) FT.RunFunction(@FT.PlotPSD));
-    hViewCorr = uimenu(hViewMenu,'Label','Channel Correlations','Callback',@(varargin) FT.RunFunction(@FT.ChannelCorr));
-    hViewCoh  = uimenu(hViewMenu,'Label','Channel Coherence','Callback',@(varargin) FT.RunFunction(@FT.Coherence));    
-    %hViewPow  = uimenu(hViewMenu,'Label','Average Power Spectra','Callback',@(varargin) FT.RunFunction(@() FT.PlotPower('spectra')));
-    % hViewSpec = uimenu(hViewMenu,'Label','Average Spectrogram','Callback',@(varargin) FT.RunFunction(@() FT.PlotPower('spectrogram')));
-    hReDraw   = uimenu(hViewMenu,'Label','Redraw GUI Display','Callback',@(varargin) FT.RunFunction(@FT.RedrawGUI));
-    
-%preprocessing
-    hProcMenu = uimenu(h,'Label','Preprocessing');
-    hChanVeiw = uimenu(hProcMenu,'Label','Remove Channels','Callback',@(varargin) FT.RunFunction(@FT.RemoveChannels));
-    hReSamp   = uimenu(hProcMenu,'Label','Resample Data','Callback',@(varargin) FT.RunFunction(@FT.resample.Gui));
-    hReFilt   = uimenu(hProcMenu,'Label','Filter Data','Callback',@(varargin) FT.RunFunction(@FT.filter.Gui));
-    hReRef    = uimenu(hProcMenu,'Label','Rereference Data','Callback',@(varargin) FT.RunFunction(@FT.rereference.Gui));
-    hNewChan  = uimenu(hProcMenu,'Label','Create New Channel','Callback',@(varargin) FT.RunFunction(@FT.NewChannel));
-    % hBPFilt   = uimenu(hProcMenu,'Label','Bandpass Filter','Callback',@(varargin) FT.RunFunction(@FT.BandPass));
-    
-%segmentation
-    hSegMenu  = uimenu(h,'Label','Segmentation');
-    hFndEvt   = uimenu(hSegMenu,'Label','Process Events','Callback',@(varargin) FT.RunFunction(@FT.events.read.Gui));
-    hRecodeEvt= uimenu(hSegMenu,'Label','Re-label Events','Callback',@(varargin) FT.RunFunction(@FT.events.relabel.Gui));
-    hChkEvt   = uimenu(hSegMenu,'Label','Manual Event Checking','Callback',@(varargin) FT.RunFunction(@FT.CheckEvents));
-    hDefTrial = uimenu(hSegMenu,'Label','Segment Trials','Callback',@(varargin) FT.RunFunction(@FT.SegmentTrials));
-    hBaseCor  = uimenu(hSegMenu,'Label','Baseline Correct','Callback',@(varargin) FT.RunFunction(@FT.baseline.Gui));
-    hArtRej   = uimenu(hSegMenu,'Label','Reject Trials','Callback',@(varargin) FT.RunFunction(@FT.RejectTrials));
+%save
+uimenu(hFileMenu,'Label','Save Dataset','Callback',@SaveDataset);
 
-%analysis
-    hAnaMenu  = uimenu(h,'Label','Analysis');
-    hAvgERP   = uimenu(hAnaMenu,'Label','Average ERPs','Callback',@(varargin) FT.RunFunction(@FT.AverageERP));
-    hHilbert  = uimenu(hAnaMenu,'Label','Hilbert Decomposition','Callback',@(varargin) FT.RunFunction(@FT.tfd.Gui));
-    hGrandERP = uimenu(hAnaMenu,'Label','ERP Grand Average','Callback',@(varargin) FT.RunFunction(@FT.GrandAverage));
-    hPeak     = uimenu(hAnaMenu,'Label','Find Peaks & Valleys','Callback',@(varargin) FT.RunFunction(@FT.PeakFinder));
-    % hPower    = uimenu(hAnaMenu,'Label','Power Spectrum','Callback',@(varargin) FT.RunFunction(@FT.PowerSpec));
-    % hSpec     = uimenu(hAnaMenu,'Label','Spectrogram','Callback','disp(''@(x,y) FT.RunFunction(@FT.Spectrogram)'')');
-%update
-    hUpdMenu  = uimenu(h,'Label','Update');
-    hUpdate   = uimenu(hUpdMenu,'Label','Update Toolbox','Callback',@(varargin) FT.Update(false));
+%save as
+uimenu(hFileMenu,'Label','Save Dataset As...',...
+    'Callback',@(x,y) SaveDataset(x,y,'as'),'Accelerator','S');
+
+%save ERP
+uimenu(hFileMenu,'Label','Save Average Dataset',...
+    'Callback',@(x,y) SaveDataset(x,y,'avg'));
+
+%clear 
+uimenu(hFileMenu,'Label','Clear Dataset','Callback',@ClearDataset);
+
+%quit
+uimenu(hFileMenu,'Label','Quit','Callback',@QuitGUI);
+
+% View operations
+hViewMenu = uimenu(h,'Label','View');
+uimenu(hViewMenu,'Label','Data Info','Callback',@(varargin) FT.RunFunction(@FT.DataSummery));
+uimenu(hViewMenu,'Label','Channel Data','Callback',@(varargin) FT.RunFunction(@FT.PlotData));
+uimenu(hViewMenu,'Label','Average ERP','Callback',@(varargin) FT.RunFunction(@FT.PlotERP));
+uimenu(hViewMenu,'Label','ERP Image','Callback',@(varargin) FT.RunFunction(@FT.ERPImage));
+uimenu(hViewMenu,'Label','Hilbert PSD','Callback',@(varargin) FT.RunFunction(@FT.PlotPSD));
+uimenu(hViewMenu,'Label','Channel Correlations','Callback',@(varargin) FT.RunFunction(@FT.ChannelCorr));
+uimenu(hViewMenu,'Label','Channel Coherence','Callback',@(varargin) FT.RunFunction(@FT.Coherence));    
+uimenu(hViewMenu,'Label','Redraw GUI Display','Callback',@(varargin) FT.RunFunction(@FT.RedrawGUI));
+
+% Preprocessing
+hProcMenu = uimenu(h,'Label','Preprocessing');
+uimenu(hProcMenu,'Label','Remove Channels','Callback',@(varargin) FT.RunFunction(@FT.remove.Gui));
+uimenu(hProcMenu,'Label','Resample Data','Callback',@(varargin) FT.RunFunction(@FT.resample.Gui));
+uimenu(hProcMenu,'Label','Filter Data','Callback',@(varargin) FT.RunFunction(@FT.filter.Gui));
+uimenu(hProcMenu,'Label','Rereference Data','Callback',@(varargin) FT.RunFunction(@FT.rereference.Gui));
+    uimenu(hProcMenu,'Label','Create New Channel','Callback',@(varargin) FT.RunFunction(@FT.NewChannel));
+
+% Segmentation
+hSegMenu  = uimenu(h,'Label','Segmentation');
+uimenu(hSegMenu,'Label','Process Events','Callback',@(varargin) FT.RunFunction(@FT.events.read.Gui));
+uimenu(hSegMenu,'Label','Re-label Events','Callback',@(varargin) FT.RunFunction(@FT.events.relabel.Gui));
+    uimenu(hSegMenu,'Label','Manual Event Checking','Callback',@(varargin) FT.RunFunction(@FT.CheckEvents));
+    uimenu(hSegMenu,'Label','Segment Trials','Callback',@(varargin) FT.RunFunction(@FT.SegmentTrials));
+uimenu(hSegMenu,'Label','Baseline Correct','Callback',@(varargin) FT.RunFunction(@FT.baseline.Gui));
+uimenu(hSegMenu,'Label','Reject Trials','Callback',@(varargin) FT.RunFunction(@FT.reject.Gui));
+
+% Analysis
+hAnaMenu  = uimenu(h,'Label','Analysis');
+uimenu(hAnaMenu,'Label','Average ERPs','Callback',@(varargin) FT.RunFunction(@FT.AverageERP));
+uimenu(hAnaMenu,'Label','Hilbert Decomposition','Callback',@(varargin) FT.RunFunction(@FT.tfd.Gui));
+uimenu(hAnaMenu,'Label','ERP Grand Average','Callback',@(varargin) FT.RunFunction(@FT.GrandAverage));
+uimenu(hAnaMenu,'Label','Find Peaks & Valleys','Callback',@(varargin) FT.RunFunction(@FT.PeakFinder));
+
+% Update
+hUpdMenu = uimenu(h,'Label','Update');
+uimenu(hUpdMenu,'Label','Update Toolbox','Callback',@(varargin) FT.Update(false));
 
 % %template operations
 %     hTempMenu = uimenu(h,'Label','Template');
@@ -125,7 +121,7 @@ FT.UpdateGUI;
 %     hLoadTemplate = uimenu(hTempMenu,'Label','Load Existing Template','Callback','disp(''load existing template'')');
 
 %-------------------------------------------------------------------------%
-function InitAnalysis(obj,evt)
+function InitAnalysis(~,~)
     
     %make sure the user understands what we want
     strQ = '\fontsize{14}\bfPlease select a base diretcory for this analysis.';
@@ -154,7 +150,7 @@ function InitAnalysis(obj,evt)
     FT.UpdateGUI;
 end
 %-------------------------------------------------------------------------%
-function LoadAnalysis(obj,evt)
+function LoadAnalysis(~,~)
     %get the base directory
     strPath = uigetdir(pwd,'Select Analysis Directory');
     if isequal(strPath,0)
@@ -202,7 +198,7 @@ function SaveAnalysisCfg
     fclose(fid);
 end
 %-------------------------------------------------------------------------%
-function SaveDataset(obj,evt,varargin)
+function SaveDataset(~,~,varargin)
 %save the current state of the analysis
     [action,type] = deal('');
     if ~isempty(varargin) && ~isempty(varargin{1}) && ischar(varargin{1})
@@ -299,7 +295,7 @@ function SaveDataset(obj,evt,varargin)
     FT.UpdateGUI;
 end
 %-------------------------------------------------------------------------%
-function ClearDataset(obj,evt)
+function ClearDataset(~,~)
     resp = FT.UserInput('Are you sure you want to clear the current dataset?',...
                         0,'button',{'Yes','Cancel'},'title','Clear Dataset?');
     if strcmpi(resp,'yes')
@@ -376,13 +372,6 @@ function s = AssignField(s,c,val)
         s.(c) = val;
     else
         %pass        
-    end
-end
-%-------------------------------------------------------------------------%
-function str = RmSlash(str)
-%remove the trailing slash from a path if need be
-    if str(end) == '/'
-        str = str(1:end-1);
     end
 end
 %-------------------------------------------------------------------------%

@@ -2,7 +2,7 @@ function PlotData(varargin)
 
 % FT.PlotData
 %
-% Description: plot data using ft_databrowser
+% Description: plot data using FT.tools.DataBrowser
 %
 % Syntax: FT.PlotData
 %
@@ -10,10 +10,8 @@ function PlotData(varargin)
 %
 % Out: 
 %
-% Updated: 2013-08-20
-% Scottie Alexander
-%
-% Please report bugs to: scottiealexander11@gmail.com
+% Updated: 2014-07-28
+% Peter Horak
 
 global FT_DATA;
 
@@ -22,57 +20,23 @@ if ~FT.CheckStage('plot')
     return;
 end
 
-if ~iscell(FT_DATA.data) && ~isfield(FT_DATA.data,'trial')
-    if isfield(FT_DATA.data,'avg')
-        strMsg = ['\bf[\color{red}OOPS\color{black}]: Sorry, this data viewer does not work for averaged data.',...
-                  'Try:\n\n                    View->Plot ERP\ninstead.'];
-        FT.UserInput(strMsg,0,'title','Oops','button','OK');
-        return;
-    else
-        strMsg = ['\bf[\color{red}ERROR\color{black}]: No data could be found to plot.\n',...
-                  'Please load data before viewing.'];
-        FT.UserInput(strMsg,0,'title','ERROR','button','OK');
-        return;
-    end
-end
-
-%set up configuration for 'ft_databrowser'
-cfg = CFGDefault;
-
-if iscell(FT_DATA.data)
-    if numel(FT_DATA.data) > 1
-        data = ft_appenddata(cfg,FT_DATA.data{:});
-    else
-        data = FT_DATA.data{1};
-    end
-    if iscell(data.cfg.previous)
-        data.cfg.previous = data.cfg.previous{1};
-    end
-    trl = cellfun(@(x) x.trl,FT_DATA.epoch,'uni',false);
+if ~iscell(FT_DATA.data)
+    FT.tools.DataBrowser(FT_DATA.data.time{1},FT_DATA.data.trial{1},'channel',4,FT_DATA.data.label);
+else
+    condition_names = cellfun(@(x) x.name,FT_DATA.epoch,'uni',false);
+    c = {{'text','string','Condition #:'},...
+         {'listbox','String',condition_names,'tag','condition'};...
+         {'pushbutton','string','View'},...
+         {'pushbutton','string','Cancel'}...
+        };
+    win = FT.tools.Win(c,'title','Condition Selection');
+    uicontrol(win.GetElementProp('condition','h'));
+    uiwait(win.h);
     
-    cfg.trl = cat(1,trl{:});
-    cfg.continuous = 'no';    
-else
-    data = FT_DATA.data;
-    cfg.continuous  = 'yes';        
-    cfg.blocksize   = 30; 
+    if strcmpi(win.res.btn,'view')
+        i = win.res.condition;
+        FT.tools.DataBrowser(FT_DATA.data{i}.time{1},cat(3,FT_DATA.data{i}.trial{:}),'channel',4,FT_DATA.data{i}.label);
+    end
 end
 
-if numel(data.label) > 9
-    nChan = 9;
-else
-    nChan = numel(data.label);
 end
-
-cfg.channel     = data.label(1:nChan);  %channels (and number of channels) to display initially
-cfg.viewmode    = 'vertical';
-cfg.plotlabels  = 'yes';
-cfg.ylim        = [-100 100];
-
-%hide resampling so that fieldtrip will show us the events
-if FT_DATA.done.resample    
-    [origfs,data.cfg] = FT.EditCfg(data.cfg,'set','origfs',[]);    
-end
-
-%plot
-ft_databrowser(cfg,data);

@@ -30,7 +30,6 @@
 	* When loading a new dataset force user to clear old one first?
 	* Validate/compare surrogate z-score methods
 	* Implement wavelets
-	* Test loading and processing events for nlx files
 	* allow events to be combined in DefineTrials
 	* enable colon operator in NewChannels (e.g. mean(ch23:34))
 	* add label editor to PlotCtrl
