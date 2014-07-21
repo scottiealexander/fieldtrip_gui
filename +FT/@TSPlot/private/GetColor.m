@@ -43,14 +43,9 @@ elseif iscellstr(x)
     y = cellfun(@GetCol,x,'uni',false);
     y = cat(1,y{:});
 elseif isnumeric(x)
-    if x <= size(COL_MAP,1)
-    	y = zeros(x,3);
-        for k = 1:x
-            y(k,:) = GetCol(COL_MAP{k});
-        end
-    else
-        y = cellfun(@GetCol,COL_MAP(randi(size(COL_MAP,1),[x,1]),1),'uni',false);
-        y = cat(1,y{:});
+    y = zeros(x,3);
+    for k = 1:x
+        y(k,:) = GetCol(COL_MAP{1+mod(k,size(COL_MAP,1))});
     end
 else
     y = NaN;
