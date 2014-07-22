@@ -2,7 +2,8 @@ function bGood = CheckStage(strStage)
 
 % FT.CheckStage
 %
-% Description: check that data exists and the stage has not been done already 
+% Description: check that the stage has not been done already (if it is one
+% of the stages that is known to cause issues when run multiple times)
 %
 % Syntax: bGood = FT.CheckStage(strStage)
 %
@@ -18,13 +19,6 @@ function bGood = CheckStage(strStage)
 % Please report bugs to: scottiealexander11@gmail.com
 
 global FT_DATA;
-
-%make sure data has been loaded
-if ~isfield(FT_DATA,'data') || isempty(FT_DATA.data)
-    FT.UserInput('No data has been loaded, please load data before proceeding',0,'button','OK','title','Warning');
-    bGood = false;
-    return;
-end
 
 if isfield(FT_DATA.done,strStage)
     %check to see if the stage has already been done

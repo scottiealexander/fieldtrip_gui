@@ -21,7 +21,7 @@ global FT_DATA;
 varargout{1} = [];
 
 %make sure we are ready to run
-if ~FT.tools.Validate('baseline_trials')%,'done',{'segment_trials'})
+if ~FT.tools.Validate('baseline_trials','todo',{'average'})%,'done',{'segment_trials'})
     return;
 end
 
@@ -81,6 +81,7 @@ function [b,val] = Validate(obj,varargin)
         b = false;
         val = ['\bf[\color{yellow}WARNING\color{black}]: Invalid value given.\n',...
                 'Start and End times MUST be numeric,\nand Start must come before End.'];
+% *** TODO: Fix or will crash ***
     elseif strncmpi(ref,'trial',5) && strcmpi(FT_DATA.epoch{1}.ifo.format,'timelock')
         %baseline is given relative to trial start but segments are
         %defined relative to an event           

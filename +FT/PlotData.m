@@ -16,7 +16,7 @@ function PlotData(varargin)
 global FT_DATA;
 
 %make sure we are ready to run
-if ~FT.tools.Validate('plot')
+if ~FT.tools.Validate('plot','todo',{'average'})
     return;
 end
 
