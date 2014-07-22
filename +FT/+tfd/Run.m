@@ -39,6 +39,7 @@ try
     end
     %remove the data field to save memory
 %     FT_DATA = rmfield(FT_DATA,'data');
+    FT.segment.Run(FT_DATA.epoch);
 
     if params.surrogate && (params.nsurrogate > 0)
         FT.tfd.Surrogate(params.nsurrogate);
@@ -51,6 +52,6 @@ FT_DATA.saved = false;
 
 %update the history
 FT.tools.AddHistory('tfd',params);
-FT_DATA.done.tfd = FT.tools.Ternary(isempty(me),true,false);
+FT_DATA.done.tfd = isempty(me);
 
 end

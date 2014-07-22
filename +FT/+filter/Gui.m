@@ -20,7 +20,7 @@ function Gui(varargin)
 global FT_DATA;
 
 %make sure we are ready to run
-if ~FT.CheckStage('filter')
+if ~FT.tools.Validate('filter','todo',{'segment_trials'},'warn',{'read_events'})
     return;
 end
 

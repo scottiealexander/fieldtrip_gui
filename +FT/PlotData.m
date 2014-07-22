@@ -16,11 +16,11 @@ function PlotData(varargin)
 global FT_DATA;
 
 %make sure we are ready to run
-if ~FT.CheckStage('plot')
+if ~FT.tools.Validate('plot')
     return;
 end
 
-if ~iscell(FT_DATA.data)
+if ~FT_DATA.done.segment_trials
     FT.tools.DataBrowser(FT_DATA.data.time{1},FT_DATA.data.trial{1},'channel',4,FT_DATA.data.label);
 else
     condition_names = cellfun(@(x) x.name,FT_DATA.epoch,'uni',false);

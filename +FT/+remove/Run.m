@@ -39,7 +39,7 @@ end
 FT_DATA.saved = false;
 
 %update the history
-FT.tools.AddHistory('rm_channel',params);
-FT_DATA.done.rm_channel = isempty(me);
+FT.tools.AddHistory('remove_channel',params);
+FT_DATA.done.remove_channel = isempty(me);
 
 end

@@ -1,37 +1,31 @@
-function bRun = DefineTrial()
+function varargout = Gui(varargin)
 
-% FT.DefineTrial
+% FT.segment.Gui
 %
-% Description: define trials in 'timelock' or 'endpoint' format:
-%                   timelock - trials are defined realtive to an event (with pre 
-%                              and post durations)
-%                   endpoint - trials are defined between start and end events
+% Description: define trials for segmentation
 %
-% Syntax: bRun = FT.DefineTrial
+% Syntax: FT.segment.Gui
 %
 % In: 
 %
-% Out:
-%       bRun - true if segmentation should be performed, false otherwise
+% Out:  epoch
 %
-% Updated: 2014-07-02
-% Scottie Alexander
+% Updated: 2014-07-22
+% Peter Horak
 %
-% Please report bugs to: scottiealexander11@gmail.com
+% See also: FT.segment.Run
 
 global FT_DATA;
-bRun = false;
 EPOCH = {};
+num_output = nargout;
 
-if ~FT_DATA.done.read_events
-    FT.UserInput(['\color{red}Events have not been processed for this dataset!\n\color{black}'...
-        'Please use:\n      \bfSegmentation->Process Events\rm\nbefore recoding.'],...
-        0,'title','No Events Found','button','OK');
+%make sure we are ready to run
+if ~FT.tools.Validate('segment_trials','done',{'read_events'},'todo',{'segment_trials'})
     return;
 end
 
 %main figure
-pFig = GetFigPosition(700,500);
+pFig = FT.tools.GetFigPosition(700,500);
 h = figure('Units','pixels','OuterPosition',pFig,...
            'Name','Define Trial','NumberTitle','off','MenuBar','none',...
            'KeyPressFcn',@KeyPress);
@@ -63,7 +57,7 @@ if nAdd > 0
 end
 
 %get the string
-strCodeCur = FT.WriteStruct(s,'headers',{strHD1,'code','# of occurances'},'delim',9);       
+strCodeCur = FT.io.WriteStruct(s,'headers',{strHD1,'code','# of occurances'},'delim',9);       
 
 % --- current event codes --- %
 pPanel = [.42 .15 .56 .83];
@@ -166,7 +160,7 @@ uicontrol(hTL);
 uiwait(h);
 
 %------------------------------------------------------------------------------%
-function BtnCtrl(obj,evt)
+function BtnCtrl(obj,~)
 %process the users input (quit or make the trial definition)
     strBtn = regexp(get(obj,'String'),'[^\s]*','match','once');
     bError = false;
@@ -247,13 +241,12 @@ function BtnCtrl(obj,evt)
 
             if ~bError
                 % --- MAKE TRIAL DEFINITION --- %
-                trl = FT.MakeTRL(fmt,sOpt,field1);
+                trl = FT.segment.MakeTRL(fmt,sOpt,field1);
                 
                 %save the info
                 sOpt.field = field1;
                 sOpt.format = fmt;
-                FT_DATA.history.segmentation = sOpt;
-                
+%                 FT_DATA.history.segmentation = sOpt;
                 EPOCH{end+1,1}.name = strName;
                 EPOCH{end,1}.trl = trl;
                 EPOCH{end,1}.ifo = sOpt;
@@ -263,8 +256,28 @@ function BtnCtrl(obj,evt)
             end
 
             if strcmpi(strBtn,'run')
-                bRun = true;
-                FT_DATA.epoch = EPOCH;
+                if ~num_output;
+                    %get baseline correction parameters
+                    b_cfg = FT.baseline.Gui;
+                    
+                    %run segmentation with trial definitions
+                    hMsg = FT.UserInput('Segmenting data into trials',1);
+                    me = FT.segment.Run(EPOCH);
+                    if ishandle(hMsg)
+                        close(hMsg);
+                    end
+                    
+                    %baseline correct if selected and no errors occured
+                    if ~isempty(b_cfg) && ~isa(me,'MException')
+                        me = FT.baseline.Run(b_cfg);
+                    end
+                    
+                    FT.ProcessError(me);
+                    FT.UpdateGUI;
+                else
+                    %return trial definitions
+                    varargout{1} = EPOCH;
+                end    
                 if ishandle(h)
                     close(h);
                 end
@@ -280,6 +293,7 @@ function BtnCtrl(obj,evt)
             end
 
         case 'cancel'
+            varargout{1} = []; 
             if ishandle(h)
                 close(h);
             end            
@@ -288,7 +302,7 @@ function BtnCtrl(obj,evt)
     end
 end
 %------------------------------------------------------------------------------%
-function CheckCtrl(obj,evt)
+function CheckCtrl(obj,~)
 %toggle endpoint and timelock trial definition formats so that user can give us
 %*EITHER* endpoints (start and end events) *OR* an event and pre and post
 %durations but not both

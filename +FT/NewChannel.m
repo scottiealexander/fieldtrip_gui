@@ -18,14 +18,14 @@ function str = NewChannel(varargin)
 global FT_DATA
 
 %make sure we are ready to run
-if ~FT.CheckStage('new_channel')
+if ~FT.tools.Validate('add_channel','todo',{'segment_trials'})
     return;
 end
 
-%make sure data is continuous (i.e. only 1 trial)
-if numel(FT_DATA.data.trial) > 1
-    FT.UserInput('\bf\color{red}ERROR: \color{black}New channels can only be added to continuous data!',0,'button','OK');
-end
+% %make sure data is continuous (i.e. only 1 trial)
+% if numel(FT_DATA.data.trial) > 1
+%     FT.UserInput('\bf\color{red}ERROR: \color{black}New channels can only be added to continuous data!',0,'button','OK');
+% end
 
 %max number of characters (digits) in a label index 
 nMax = floor(log10(numel(FT_DATA.data.label)))+1;

@@ -19,10 +19,7 @@ function Gui(varargin)
 
 global FT_DATA;
 
-if ~FT_DATA.done.read_events
-    FT.UserInput(['\color{red}Events have not been processed for this dataset!\n\color{black}'...
-        'Please use:\n      \bfSegmentation->Process Events\rm\nbefore recoding.'],...
-        0,'title','No Events Found','button','OK');
+if ~FT.tools.Validate('relabel_events','done',{'read_events'},'todo',{'segment_trials'})
     return;
 end
 
@@ -39,7 +36,7 @@ else
     s.freq = arrayfun(@(x) sum(strcmpi(x,evt.value)),s.vals);
 end
 
-strCodeCur = FT.WriteStruct(s,'headers',{'code','# of occurances'},'delim',9);
+strCodeCur = FT.io.WriteStruct(s,'headers',{'code','# of occurances'},'delim',9);
 
 strInst = ['#any line begining with a ''#'' is a comment' 10,...
            '#format: new_code = old_code' 10,...

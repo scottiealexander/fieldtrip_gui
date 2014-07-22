@@ -100,7 +100,7 @@ end
 FT_DATA.saved = false;
 
 %update the history
-FT.tools.AddHistory('detect_events',params);
-FT_DATA.done.read_events = FT.tools.Ternary(isempty(me),true,false);
+FT.tools.AddHistory('read_events',params);
+FT_DATA.done.read_events = isempty(me);
 
 end

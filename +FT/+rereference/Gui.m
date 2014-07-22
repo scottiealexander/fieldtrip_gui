@@ -20,7 +20,7 @@ function Gui(varargin)
 global FT_DATA;
 
 %make sure we are ready to run
-if ~FT.CheckStage('rereference')
+if ~FT.tools.Validate('rereference','todo',{'segment_trials'},'warn',{'read_events'})
     return;
 end
 

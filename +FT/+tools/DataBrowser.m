@@ -28,7 +28,7 @@ function [marks] = DataBrowser(time,data,group_by,n,lChan,lTrial)
 %       Marked [] - mark the current channel (or trial)
 %       Mark All - toggle all markers between on and off
 %       Plot - plot the channel and trial specified in the input boxes
-%       Exit - close the data browser
+%       Exit - close the data browser and return the marks
 %
 % Updated: 2014-07-18
 % Peter Horak

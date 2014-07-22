@@ -18,11 +18,7 @@ function Gui(varargin)
 
 global FT_DATA;
 
-if ~FT.CheckStage('reject_trials')
-    return;
-end
-
-if ~FT_DATA.done.segmentation
+if ~FT.tools.Validate('reject_trials','done',{'segment_trials'})
     return;
 end
 

@@ -17,10 +17,7 @@ function CheckEvents(varargin)
 
 global FT_DATA;
 
-if ~FT_DATA.done.read_events
-    FT.UserInput(['\color{red}Events have not been processed for this dataset!\n\color{black}'...
-        'Please use:\n      \bfSegmentation->Process Events\rm\nbefore checking.'],...
-        0,'title','No Events Found','button','OK');
+if ~FT.tools.Validate('check_events','done',{'read_events'},'todo',{'segment_trials'})
     return;
 end
 

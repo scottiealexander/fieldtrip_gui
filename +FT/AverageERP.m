@@ -18,17 +18,10 @@ function AverageERP(varargin)
 global FT_DATA;
 
 %check if averaging has already been preformed
-if ~FT.CheckStage('average')
+if ~FT.tools.Validate('average','done',{'segment_trials'})
     return;
 end
 
-%make sure segmentation has been done
-if ~FT_DATA.done.segmentation
-    FT.UserInput(['\color{red}This dataset has not been segmented!\n\color{black}'...
-        'Please use:\n      \bfSegmentation->Segment Trials\rm\nbefore averaging.'],...
-        0,'title','Segmentation Not Yet Performed','button','OK');
-    return;
-end
 hMsg = FT.UserInput('Making average ERPs',1);
 
 for k = 1:numel(FT_DATA.data)

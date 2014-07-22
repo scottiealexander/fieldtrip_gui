@@ -18,10 +18,9 @@ function DataSummery(varargin)
 global FT_DATA;
 
 %make sure we are ready to run
-if ~FT.CheckStage('summery')
+if ~FT.tools.Validate('summery')
     return;
 end
-
 
 if isstruct(FT_DATA.data) && isfield(FT_DATA.data,'trial')
     time = FT_DATA.data.time{1};
@@ -62,17 +61,17 @@ str = [str 'Time Range [sec]: ' num2str(min(time)) ' - ' num2str(max(time)) 10 1
 
 %preprocessing stages
 str = [str '\bf% ---- Preprocessing ---- %\rm' 10];
-str = [str 'Remove Channels: ' Bool2Str(FT_DATA.done.rm_channel) 10];
+str = [str 'Remove Channels: ' Bool2Str(FT_DATA.done.remove_channel) 10];
 str = [str 'Resample: ' Bool2Str(FT_DATA.done.resample) 10];
 str = [str 'Filter: ' Bool2Str(FT_DATA.done.filter) 10];
 str = [str 'Rereference: ' Bool2Str(FT_DATA.done.rereference) 10];
-str = [str FmtNewChan 10];
+% str = [str FmtNewChan 10];
 
 %segmentation
 str = [str '\bf% ---- Segmentation ---- %\rm' 10];
-str = [str 'Segment Trials: ' Bool2Str(FT_DATA.done.segmentation) 10];
-str = [str 'Baseline Correction: ' Bool2Str(FT_DATA.done.baseline_correction) 10];
-str = [str 'Trial Rejection: ' Bool2Str(FT_DATA.done.trial_rejection) 10];
+str = [str 'Segment Trials: ' Bool2Str(FT_DATA.done.segment_trials) 10];
+str = [str 'Baseline Correction: ' Bool2Str(FT_DATA.done.baseline_trials) 10];
+str = [str 'Trial Rejection: ' Bool2Str(FT_DATA.done.reject_trials) 10];
 
 %more to come
 
@@ -109,19 +108,19 @@ function strFmt = GetFormat
     end
 end
 %------------------------------------------------------------------------------%
-function s = FmtNewChan
-    if isfield(FT_DATA.history,'add_channel')
-        chan = FT_DATA.history.add_channel;
-        if ~isempty(chan)
-            cFields = fieldnames(chan);
-            cFields = cellfun(@(x) [x ' = ' chan.(x)],cFields,'uni',false);
-            s = ['Add Channels: ' 10 '        ' FT.Join(cFields,[10 '        ']) 10];
-        else
-            s = '';
-        end
-    else
-        s = '';
-    end
-end
+% function s = FmtNewChan
+%     if isfield(FT_DATA.history,'add_channel')
+%         chan = FT_DATA.history.add_channel;
+%         if ~isempty(chan)
+%             cFields = fieldnames(chan);
+%             cFields = cellfun(@(x) [x ' = ' chan.(x)],cFields,'uni',false);
+%             s = ['Add Channels: ' 10 '        ' FT.Join(cFields,[10 '        ']) 10];
+%         else
+%             s = '';
+%         end
+%     else
+%         s = '';
+%     end
+% end
 %------------------------------------------------------------------------------%
 end

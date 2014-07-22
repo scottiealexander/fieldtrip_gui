@@ -18,15 +18,7 @@ dbstop if error
 global FT_DATA;
 
 %make sure we have data...
-if ~FT.CheckStage('peak_finder')
-    return;
-end
-
-%make sure segmentation has been done
-if ~FT_DATA.done.segmentation
-    FT.UserInput(['\color{red}This dataset has not been segmented!\n\color{black}'...
-        'Please use:\n      \bfSegmentation->Segment Trials\rm\nbefore finding peaks and valleys.'],...
-        0,'title','Segmentation Not Yet Performed','button','OK');
+if ~FT.tools.Validate('peak_finder','done',{'segment_trials'})
     return;
 end
 
@@ -137,7 +129,7 @@ if ~any(isnan(WINDOW))
         if bSingle
             %single file
             fprintf('[INFO]: Writing file: %s\n',strPathOut);
-            if ~FT.WriteStruct(STAT,'output',strPathOut)
+            if ~FT.io.WriteStruct(STAT,'output',strPathOut)
                 me = MException('WriteStruct:WriteError',['Failed to write file ' strPathOut]);
                 FT.ProcessError(me);
             end
@@ -145,7 +137,7 @@ if ~any(isnan(WINDOW))
             %multiple files
             cPathOut = cellfun(@(x) fullfile(strDirOut,[x '-' FT_DATA.epoch{1}.name '-' FT_DATA.current_dataset '.csv']),fieldnames(STAT),'uni',false);
             fprintf('[INFO]: Writing files:\n%s\n',FT.Join(cPathOut,10));
-            b = cellfun(@(x,y) FT.WriteStruct(STAT.(x),'output',y),fieldnames(STAT),cPathOut);
+            b = cellfun(@(x,y) FT.io.WriteStruct(STAT.(x),'output',y),fieldnames(STAT),cPathOut);
             if ~all(b)
                 me = MException('WriteStruct:WriteError',['Failed to write file(s) :' 10 FT.Join(cPathOut(~b),10)]);
                 FT.ProcessError(me);

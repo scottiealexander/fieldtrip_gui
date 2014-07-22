@@ -2,14 +2,12 @@ function bGood = CheckStage(strStage)
 
 % FT.CheckStage
 %
-% Description: check that data is ready for the specified stage and that the 
-%              stage has not be done already 
+% Description: check that data exists and the stage has not been done already 
 %
 % Syntax: bGood = FT.CheckStage(strStage)
 %
 % In:
-%       strStage - the stage to check, one of:
-%                  'rm_channel','filter','resample','rereference'
+%       strStage - the stage to check
 %
 % Out: 
 %       bGood - true if processing should continue, false otherwise
@@ -33,7 +31,7 @@ if isfield(FT_DATA.done,strStage)
     if FT_DATA.done.(strStage)    
         %make the stage name more comprehendable
         switch lower(strStage)
-            case 'rm_channel'
+            case 'remove_channel'
                 strStage = 'Channel Removal';
             case 'resample'
                 strStage = 'Resampling';
@@ -43,8 +41,12 @@ if isfield(FT_DATA.done,strStage)
                 strStage = 'Rereferencing';
             case 'read_events'
                 strStage = 'Processing Events';
-            case 'baseline_correction';
+            case 'segment'
+                strStage = 'Segmentation';
+            case 'baseline';
                 strStage = 'Baseline Correction';
+            case 'tfd';
+                strStage = 'Time-Frequency Decomposition';
             case 'average'
                 strStage = 'ERP Averaging';
             otherwise

@@ -58,4 +58,4 @@ for k = 1:numel(cFields)
    end
 end
 
-b = FT.WriteStruct(sTmp,'output',strPathStat,'headers',cLabel);
+b = FT.io.WriteStruct(sTmp,'output',strPathStat,'headers',cLabel);

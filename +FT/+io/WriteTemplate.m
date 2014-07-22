@@ -18,6 +18,8 @@ function WriteTemplate()
 
 global FT_DATA;
 
+
+% *** TODO: Handle new history organization ***
 sHist = FT_DATA.history;
 
 cFields = fieldnames(sHist);

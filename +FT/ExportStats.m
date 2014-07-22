@@ -42,7 +42,7 @@ if isfield(FT_DATA,'STATS')
                         cLabel{k+1,1} = FT_DATA.STATS{kC}.power{k}.label;
                     end
 
-                    if ~FT.WriteStruct(s,'output',strPathOut,'headers',cLabel)
+                    if ~FT.io.WriteStruct(s,'output',strPathOut,'headers',cLabel)
                         me = MException('WriteStruct:WriteError',['Failed to write file ' strPathOut]);
                         FT.ProcessError(me);
                     else

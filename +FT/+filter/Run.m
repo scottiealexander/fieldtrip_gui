@@ -70,4 +70,4 @@ FT_DATA.saved = false;
 
 %update the history
 FT.tools.AddHistory('filter',params);
-FT_DATA.done.filter = FT.tools.Ternary(isempty(me),true,false);
+FT_DATA.done.filter = isempty(me);

@@ -17,15 +17,7 @@
 
 global FT_DATA;
 
-if ~FT_DATA.done.segmentation
-   FT.UserInput(['\color{red}This dataset has not been segmented!\n\color{black}'...
-        'Please use:\n      \bfSegmentation->Segment Trials\rm\nbefore viewing an ERP image.'],...
-        0,'title','Segmentation Not Yet Performed','button','OK');
-    return; 
-elseif FT_DATA.done.average
-    FT.UserInput(['\color{red}This dataset has already been averaged!\n\color{black}'...
-        'ERP images can not be shown for average data.'],...
-        0,'title','Invalid Data Format','button','OK');
+if ~FT.tools.Validate('ERPImage','done',{'segment_trials'},'todo',{'average'})
     return;
 end
 

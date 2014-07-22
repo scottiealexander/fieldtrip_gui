@@ -39,4 +39,4 @@ FT_DATA.saved = false;
 
 %update the history
 FT.tools.AddHistory('rereference',params);
-FT_DATA.done.rereference = FT.tools.Ternary(isempty(me),true,false);
+FT_DATA.done.rereference = isempty(me);

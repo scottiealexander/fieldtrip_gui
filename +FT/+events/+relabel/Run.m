@@ -65,4 +65,8 @@ end
 FT_DATA.event = FT.ReStruct(evt);
 [~,FT_DATA.data.cfg] = FT.EditCfg(FT_DATA.data.cfg,'set','event',FT_DATA.event);
 
+
+%*** TODO: Add history ***
+FT_DATA.done.relabel_events = true;
+
 end

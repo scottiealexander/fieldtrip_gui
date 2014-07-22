@@ -18,11 +18,11 @@ function Gui(varargin)
 global FT_DATA;
 
 %make sure we are ready to run
-if ~FT.CheckStage('rm_channel')
+if ~FT.tools.Validate('remove_channel','todo',{'tfd'})
     return;
 end
 
-if ~FT_DATA.done.segmentation %~iscell(FT_DATA.data)
+if ~FT_DATA.done.segment_trials %~iscell(FT_DATA.data)
     params.segmented = false;
     params.ch_rem = FT.tools.DataBrowser(FT_DATA.data.time{1},FT_DATA.data.trial{1},'trial',4,FT_DATA.data.label);
 else

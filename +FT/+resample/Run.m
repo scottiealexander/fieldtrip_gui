@@ -47,7 +47,7 @@ FT_DATA.saved = false;
 
 %update the history
 FT.tools.AddHistory('resample',params);
-FT_DATA.done.resample = FT.tools.Ternary(isempty(me),true,false);
+FT_DATA.done.resample = isempty(me);
 
 %------------------------------------------------------------------------------%
 function ResampleEvents

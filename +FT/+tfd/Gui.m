@@ -19,15 +19,16 @@ function Gui(varargin)
 
 global FT_DATA;
 
-if ~FT.CheckStage('tfd')
+if ~FT.tools.Validate('tfd','done',{'read_events'},'todo',{'segment_trials'})
     return;
 end
 
-%make sure there is trial info
-if ~isfield(FT_DATA,'epoch') || isempty(FT_DATA.epoch)
-    if ~FT.DefineTrial
-        return;
-    end
+%get trial info
+epoch = FT.segment.Gui;
+if isempty(epoch)
+    return;
+else
+    FT_DATA.epoch = epoch;
 end
 
 availableMethods = {'Hilbert','Wavelet','STFT'};

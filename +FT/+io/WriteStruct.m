@@ -3,7 +3,7 @@ function out = WriteStruct(s,varargin)
 %
 % Description: convert a struct to an ascii table
 %
-% Syntax: out = FT.WriteTemplate(s,<options>)
+% Syntax: out = FT.WriteStruct(s,<options>)
 %
 % In: 
 %       s          - a struct

@@ -18,9 +18,10 @@ function varargout = Gui(varargin)
 % Please report bugs to: scottiealexander11@gmail.com
 
 global FT_DATA;
+varargout{1} = [];
 
 %make sure we are ready to run
-if ~FT.CheckStage('baseline')
+if ~FT.tools.Validate('baseline_trials')%,'done',{'segment_trials'})
     return;
 end
 
@@ -44,7 +45,17 @@ win.Wait;
 
 if strcmpi(win.res.btn,'run')
     if ~nargout
-        FT.baseline.Run(cfg);
+        
+        hMsg = FT.UserInput('Running baseline correction...',1);
+
+        me = FT.baseline.Run(cfg);
+        
+        if ishandle(hMsg)
+            close(hMsg);
+        end
+        
+        FT.ProcessError(me);
+        FT.UpdateGUI;
     else
         varargout{1} = cfg;
     end    
@@ -70,10 +81,10 @@ function [b,val] = Validate(obj,varargin)
         b = false;
         val = ['\bf[\color{yellow}WARNING\color{black}]: Invalid value given.\n',...
                 'Start and End times MUST be numeric,\nand Start must come before End.'];
-    elseif strncmpi(ref,'trial',5) && strcmpi(FT_DATA.history.segmentation.format,'timelock')       
+    elseif strncmpi(ref,'trial',5) && strcmpi(FT_DATA.epoch{1}.ifo.format,'timelock')
         %baseline is given relative to trial start but segments are
         %defined relative to an event           
-        cfg.baselinewindow = cfg.baselinewindow - FT_DATA.history.segmentation.pre;     
+        cfg.baselinewindow = cfg.baselinewindow - cfg.baselinewindow(1);     
     end
 
     %segments are defined relative to a timelocking event
