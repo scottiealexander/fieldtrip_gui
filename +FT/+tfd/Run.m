@@ -30,7 +30,7 @@ try
         case 'hilbert'
             FT.tfd.HilbertPSD(params);
         case 'wavelet'
-            % Wavelet
+            FT.tfd.WaveletPSD(params);
         case 'stft'
             FT.tfd.FourierPSD(params);
         otherwise
