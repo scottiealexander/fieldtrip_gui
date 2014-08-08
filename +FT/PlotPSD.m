@@ -97,7 +97,13 @@ function PlotOne(strChan)
 		%set x and y labels
 		[xT,xTL] = GetAxLabels(FT_DATA.power.time,7,'round',-1);
 		[yT,yTL] = GetAxLabels(FT_DATA.power.centers,10,'round',0);
-		set(hAx,'CLim',[cMin cMax],'XTick',xT,'XTickLabel',xTL,'YTick',yT,'YTickLabel',yTL(end:-1:1));
+        
+        %in case the data is NaN
+        if isnan(cMin) || isnan(cMax)
+            set(hAx,'XTick',xT,'XTickLabel',xTL,'YTick',yT,'YTickLabel',yTL(end:-1:1));
+        else
+            set(hAx,'CLim',[cMin cMax],'XTick',xT,'XTickLabel',xTL,'YTick',yT,'YTickLabel',yTL(end:-1:1));
+        end
 
 		%add the name of each condition
 		set(get(hAx,'Title'),'String',FT_DATA.epoch{k}.name);		

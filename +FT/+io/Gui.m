@@ -17,6 +17,8 @@ function Gui(obj,varargin)
 
 global FT_DATA;
 
+try
+
 %move to the analysis base dir
 strDirCur = pwd;
 if isdir(FT_DATA.path.base_directory)        
@@ -82,7 +84,7 @@ if ishandle(hMsg)
 end
 
 if isa(me,'MException')
-	FT.ProcessError(me);
+    rethrow(me);
 else
 	if strcmpi(FT_DATA.gui.display_mode,'init')
 	    FT_DATA.gui.display_mode = 'preproc';
@@ -91,3 +93,23 @@ end
 
 %update the display
 FT.UpdateGUI;
+
+%failed to load data somehow, clear everything
+catch me
+    FT.ProcessError(me);
+    
+    %grab the fields that we will still need
+    gui  = FT_DATA.gui;
+
+    %renew the FT_DATA struct
+    FT_DATA = [];
+    FT.Prepare('type','data');
+
+    %add the fields back in 
+    gui.display_mode = 'init'; %set display mode back to initial
+    FT_DATA.gui = gui;
+
+    %update the GUI
+    FT.UpdateGUI;
+end
+

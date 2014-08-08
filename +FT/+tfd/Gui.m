@@ -101,7 +101,8 @@ end
 %-------------------------------------------------------------------------%
 function [b,val] = CheckLo(str)
     loShared = str2double(str);
-    [b,val] = FT.tools.Element.inrange(str,0,fnyq,true);
+    tlen = FT_DATA.epoch{1}.ifo.pre + FT_DATA.epoch{1}.ifo.post;
+    [b,val] = FT.tools.Element.inrange(str,ceil(1/tlen),fnyq,true);
 end
 %-------------------------------------------------------------------------%
 function [b,val] = CheckHi(str)

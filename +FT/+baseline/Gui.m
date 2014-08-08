@@ -43,7 +43,7 @@ c = {...
 win = FT.tools.Win(c,'title','Baseline Correction','grid',true,'focus','wstart');
 win.Wait;
 
-if strcmpi(win.res.btn,'run')
+if strcmpi(win.res.btn,'run') && ~any(isnan(cfg.baselinewindow))
     if ~nargout
         
         hMsg = FT.UserInput('Running baseline correction...',1);
@@ -71,30 +71,38 @@ function [b,val] = Validate(obj,varargin)
     b = true;
     val = '';
     cfg.baselinewindow = [tstart tend];
-
+    
     time = FT.tools.GetParameter('data','time');
     if iscell(time)
         time = time{1};
     end
-
+    validwin = [min(time),max(time)];
+    
     if isnan(tstart) || isnan(tend) || tstart >= tend
         b = false;
-        val = ['\bf[\color{yellow}WARNING\color{black}]: Invalid value given.\n',...
-                'Start and End times MUST be numeric,\nand Start must come before End.'];
-% *** TODO: Fix or will crash ***
+        val = ['\bf[\color{yellow}WARNING\color{black}]: Invalid value given.\n\n',...
+                'Start and End times MUST be numeric, and Start must come before End.'];
+% *** TODO: Fix? ***
     elseif strncmpi(ref,'trial',5) && strcmpi(FT_DATA.epoch{1}.ifo.format,'timelock')
         %baseline is given relative to trial start but segments are
         %defined relative to an event           
-        cfg.baselinewindow = cfg.baselinewindow - cfg.baselinewindow(1);     
+        cfg.baselinewindow = cfg.baselinewindow - FT_DATA.epoch{1}.ifo.pre;
+        validwin = validwin + FT_DATA.epoch{1}.ifo.pre;
     end
 
     %segments are defined relative to a timelocking event
     if b && (cfg.baselinewindow(1) < min(time) || cfg.baselinewindow(2) > max(time))
         b = false;
-        val = ['\bf[\color{yellow}WARNING\color{black}]: The baseline start and/or end times that you ',...
-                  'entered fall outside the time range of the trials.\n\nPlease check your input and try again.']; 
+        val = ['\bf[\color{yellow}WARNING\color{black}]: Invalid time range.\n\n',...
+                  'The baseline start and/or end times that you ',...
+                  'entered fall outside the time range of the trials [',...
+                  num2str(validwin(1)) ',' num2str(validwin(2)) '].']; 
     end 
     
+    %make cfg invalid if fail (so will not run if user closes the window)
+    if ~b
+        cfg.baselinewindow = [NaN,NaN];
+    end
     val = strrep(val,'\n',char(10));
 end
 %-----------------------------------------------------------------------------%
