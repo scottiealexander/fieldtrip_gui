@@ -31,7 +31,12 @@ else
     FT_DATA.epoch = epoch;
 end
 
-availableMethods = {'Hilbert','Wavelet','STFT'};
+try % test if the wavelet toolbox is installed
+    centfrq('morl');
+    availableMethods = {'Hilbert','Wavelet','STFT'};
+catch % wavelet toolbox not installed
+    availableMethods = {'Hilbert','STFT'};
+end
 
 fnyq = floor(FT_DATA.data.fsample/2);
 params = struct('lo',10,'hi',fnyq,'n',42,'w',10,'log',true,'surrogate',true,'nsurrogate',10);

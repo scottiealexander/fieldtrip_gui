@@ -18,6 +18,7 @@ function WaveletPSD(params)
 
 global FT_DATA;
 FS = FT_DATA.data.fsample;
+nChan = size(FT_DATA.data.trial{1},1);
 
 %convert to percent
 params.w = params.w/100;
@@ -37,19 +38,19 @@ cBands = arrayfun(@(x) [x*(1-params.w) x*(1+params.w)],centers,'uni',false);
 data = cell(numel(FT_DATA.epoch),1);
 
 % * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * %
-FT.Progress2(nChan+params.n+1,'Computing spectrogram: Wavelet');
-
 scales = centfrq('morl')*FS./centers;
+
+FT.Progress2(nChan+params.n+1,'Computing spectrogram: Wavelet');
 data_raw = cell(params.n,1);
 for ch = 1:nChan
     cf = cwtft(FT_DATA.data.trial{1}(ch,:),'scales',scales,'wavelet','morl');
-    
+
     % freq x time
     PSD = abs(cf.cfs).^2;
-    
+
     % freq x 1 cell of 1 x time
     PSD = mat2cell(PSD,ones(1,params.n));
-    
+
     % data_raw: freq x 1 cell of channel x time
     data_raw = cellfun(@(raw,psd) cat(1,raw,psd),data_raw,PSD,'uni',false);    
     FT.Progress2;
