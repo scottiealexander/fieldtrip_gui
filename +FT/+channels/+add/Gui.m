@@ -30,7 +30,7 @@ cLabels = cellfun(@(x,y) [ 'ch' sprintf(['%' num2str(nMax) '.0f'],x) ' -  ' strr
 strLabel = FT.Join(cLabels,10);
 
 %get the size and position for the figure
-pFig = FT.tools.GetFigPosition(300,600,'xoffset',450);
+pFig = FT.tools.FT.tools.GetFigPosition(300,600,'xoffset',450);
 
 %channel label guide figure
 h = figure('Units','pixels','OuterPosition',pFig,...
@@ -54,7 +54,7 @@ strInst = ['\bfPlease enter an equation for a new channel:\rm\n'...
     '     HEOG = abs(ch58 - ch59)\n'...
     '     Amygd = mean(ch12,ch13,ch14,ch19)\n'...
     '     newChan = (ch15 * 10) + abs(mean(ch13,ch14)) - 15'];
-
+    
 %get the equation
 [params.cExp,btn] = FT.UserInput(strInst,1,'title','New Channel','input',true,'button',{'OK','Cancel'},'nline',3);
 
@@ -76,7 +76,13 @@ if ishandle(hMsg)
     close(hMsg);
 end
 
-FT.ProcessError(me);
+% So the user doesn't get confused and think there's a bug when they enter
+% an invalid expression. Eventually FT.channels.add.Gui should be made to
+% check that the input expressions are valid before calling run.
+if isa(me,'MException')
+    FT.UserInput('\bf[\color{red}ERROR\color{black}]: Could not parse the given expressions.',0,'title','Error','button',{'OK'});
+end
+% FT.ProcessError(me);
 
 FT.UpdateGUI;
 

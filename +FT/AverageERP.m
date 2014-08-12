@@ -35,7 +35,7 @@ for k = 1:numel(FT_DATA.data)
 	d = cat(3,d{:});
 
 	%perform the averaging
-	cfg = CFGDefault;
+	cfg = FT.tools.CFGDefault;
 	cfg.vartrllength = 2; %allow variable length trials, just use nans
 
 	FT_DATA.data{k} = ft_timelockanalysis(cfg,FT_DATA.data{k});
