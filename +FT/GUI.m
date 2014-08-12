@@ -88,11 +88,11 @@ uimenu(hViewMenu,'Label','Redraw GUI Display','Callback',@(varargin) FT.RunFunct
 
 % Preprocessing
 hProcMenu = uimenu(h,'Label','Preprocessing');
-uimenu(hProcMenu,'Label','Remove Channels','Callback',@(varargin) FT.RunFunction(@FT.remove.Gui));
+uimenu(hProcMenu,'Label','Remove Channels','Callback',@(varargin) FT.RunFunction(@FT.channels.remove.Gui));
+uimenu(hProcMenu,'Label','Add New Channel','Callback',@(varargin) FT.RunFunction(@FT.channels.add.Gui));
 uimenu(hProcMenu,'Label','Resample Data','Callback',@(varargin) FT.RunFunction(@FT.resample.Gui));
 uimenu(hProcMenu,'Label','Filter Data','Callback',@(varargin) FT.RunFunction(@FT.filter.Gui));
 uimenu(hProcMenu,'Label','Rereference Data','Callback',@(varargin) FT.RunFunction(@FT.rereference.Gui));
-    uimenu(hProcMenu,'Label','Create New Channel','Callback',@(varargin) FT.RunFunction(@FT.NewChannel));
 
 % Segmentation
 hSegMenu  = uimenu(h,'Label','Segmentation');

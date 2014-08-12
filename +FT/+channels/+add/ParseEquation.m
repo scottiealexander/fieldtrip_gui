@@ -1,10 +1,10 @@
 function s = ParseEquation(str)
 
-% FT.ParseEquation
+% FT.channels.add.ParseEquation
 %
 % Description: parse a new channel equation submited from the user
 %
-% Syntax: s = FT.ParseEquation(str)
+% Syntax: s = FT.channels.add.ParseEquation(str)
 %
 % In: 
 %       str - the equation as the user entered it

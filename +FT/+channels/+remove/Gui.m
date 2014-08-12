@@ -1,10 +1,10 @@
 function Gui(varargin)
 
-% FT.remove.Gui
+% FT.channels.remove.Gui
 %
 % Description: inspect channels and mark for removal
 %
-% Syntax: FT.remove.Gui
+% Syntax: FT.channels.remove.Gui
 %
 % In: 
 %
@@ -13,7 +13,7 @@ function Gui(varargin)
 % Updated: 2014-07-18
 % Peter Horak
 %
-% See also: FT.remove.Run
+% See also: FT.channels.remove.Run
 
 global FT_DATA;
 
@@ -48,7 +48,7 @@ end
 
 hMsg = FT.UserInput('Removing channels...',1);
 
-me = FT.remove.Run(params);
+me = FT.channels.remove.Run(params);
 
 if ishandle(hMsg)
     close(hMsg);

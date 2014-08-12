@@ -1,10 +1,10 @@
 function me = Run(params)
 
-% FT.remove.Run
+% FT.channels.remove.Run
 %
 % Description: remove channels
 %
-% Syntax: me = FT.remove.Run(params)
+% Syntax: me = FT.channels.remove.Run(params)
 %
 % In:   params - a struct holding parameters from the user
 %
@@ -14,7 +14,7 @@ function me = Run(params)
 % Updated: 2014-07-18
 % Peter Horak
 %
-% See also: FT.remove.Gui
+% See also: FT.channels.remove.Gui
 
 global FT_DATA;
 me = [];
