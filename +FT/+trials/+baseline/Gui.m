@@ -1,16 +1,16 @@
 function varargout = Gui(varargin)
 
-% FT.baseline.Gui
+% FT.trials.baseline.Gui
 %
 % Description: get parameters for baseline correction
 %
-% Syntax: FT.baseline.Gui
+% Syntax: FT.trials.baseline.Gui
 %
 % In: 
 %
 % Out:
 %
-% See also: FT.baseline.Run
+% See also: FT.trials.baseline.Run
 %
 % Updated: 2014-06-27
 % Scottie Alexander
@@ -48,7 +48,7 @@ if strcmpi(win.res.btn,'run') && ~any(isnan(cfg.baselinewindow))
         
         hMsg = FT.UserInput('Running baseline correction...',1);
 
-        me = FT.baseline.Run(cfg);
+        me = FT.trials.baseline.Run(cfg);
         
         if ishandle(hMsg)
             close(hMsg);

@@ -39,7 +39,7 @@ try
     end
     %remove the data field to save memory
 %     FT_DATA = rmfield(FT_DATA,'data');
-    FT.segment.Run(FT_DATA.epoch);
+    FT.trials.segment.Run(FT_DATA.epoch);
 
     if params.surrogate && (params.nsurrogate > 0)
         FT.tfd.Surrogate(params.nsurrogate);

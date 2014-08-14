@@ -61,7 +61,7 @@ str = [str 'Time Range [sec]: ' num2str(min(time)) ' - ' num2str(max(time)) 10 1
 
 %preprocessing stages
 str = [str '\bf% ---- Preprocessing ---- %\rm' 10];
-str = [str 'Remove Channels: ' Bool2Str(FT_DATA.done.remove_channel) 10];
+str = [str 'Remove Channels: ' Bool2Str(FT_DATA.done.remove_channels) 10];
 str = [str 'Resample: ' Bool2Str(FT_DATA.done.resample) 10];
 str = [str 'Filter: ' Bool2Str(FT_DATA.done.filter) 10];
 str = [str 'Rereference: ' Bool2Str(FT_DATA.done.rereference) 10];
@@ -109,8 +109,8 @@ function strFmt = GetFormat
 end
 %------------------------------------------------------------------------------%
 % function s = FmtNewChan
-%     if isfield(FT_DATA.history,'add_channel')
-%         chan = FT_DATA.history.add_channel;
+%     if isfield(FT_DATA.history,'add_channels')
+%         chan = FT_DATA.history.add_channels;
 %         if ~isempty(chan)
 %             cFields = fieldnames(chan);
 %             cFields = cellfun(@(x) [x ' = ' chan.(x)],cFields,'uni',false);

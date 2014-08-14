@@ -1,10 +1,10 @@
 function me = Run(cfg)
 
-% FT.baseline.Run
+% FT.trials.baseline.Run
 %
 % Description: perform baseline correctionon on segmented data
 %
-% Syntax: me = FT.baseline.Run(cfg)
+% Syntax: me = FT.trials.baseline.Run(cfg)
 %
 % In: 
 %		cfg - a struct of baseline correction parameters
@@ -15,7 +15,7 @@ function me = Run(cfg)
 % Updated: 2014-06-26
 % Scottie Alexander
 %
-% See also: FT.baseline.Gui
+% See also: FT.trials.baseline.Gui
 %
 % Please report bugs to: scottiealexander11@gmail.com
 

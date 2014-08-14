@@ -37,7 +37,7 @@ end
 
 if strcmpi(NORM_TYPE,'baseline')% && isempty(BASELINE)
 	NORM_TYPE = 'baseline';	
-	cfg = FT.baseline.Gui;
+	cfg = FT.trials.baseline.Gui;
     if ~isfield(cfg,'baselinewindow')
         NORM_TYPE = 'none';
 % 		return;

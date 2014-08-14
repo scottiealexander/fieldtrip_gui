@@ -76,7 +76,7 @@ if strcmpi(ext,'edf')
 elseif FT.tools.IsNLXFile
     params.type = 'nlx';
 else
-    params.type = '';
+    params.type = ext;
 end
 
 hMsg = FT.UserInput('Reading events...',1);

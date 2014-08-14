@@ -25,8 +25,6 @@ if isfield(FT_DATA.done,strStage)
     if FT_DATA.done.(strStage)    
         %make the stage name more comprehendable
         switch lower(strStage)
-            case 'remove_channel'
-                strStage = 'Channel Removal';
             case 'resample'
                 strStage = 'Resampling';
             case 'filter'
@@ -44,7 +42,7 @@ if isfield(FT_DATA.done,strStage)
             case 'average'
                 strStage = 'ERP Averaging';
             otherwise
-                %this should never happen
+                %isn't a problem to run the stage multiple times
         end
 
         %ask user if we want to re-run

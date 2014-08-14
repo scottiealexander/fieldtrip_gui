@@ -1,10 +1,10 @@
 function varargout = Gui(varargin)
 
-% FT.segment.Gui
+% FT.trials.segment.Gui
 %
 % Description: define trials for segmentation
 %
-% Syntax: FT.segment.Gui
+% Syntax: FT.trials.segment.Gui
 %
 % In: 
 %
@@ -13,7 +13,7 @@ function varargout = Gui(varargin)
 % Updated: 2014-07-22
 % Peter Horak
 %
-% See also: FT.segment.Run
+% See also: FT.trials.segment.Run
 
 global FT_DATA;
 EPOCH = {};
@@ -241,7 +241,7 @@ function BtnCtrl(obj,~)
 
             if ~bError
                 % --- MAKE TRIAL DEFINITION --- %
-                trl = FT.segment.MakeTRL(fmt,sOpt,field1);
+                trl = FT.trials.segment.MakeTRL(fmt,sOpt,field1);
                 
                 %save the info
                 sOpt.field = field1;
@@ -258,18 +258,18 @@ function BtnCtrl(obj,~)
             if strcmpi(strBtn,'run')
                 if ~num_output;
                     %get baseline correction parameters
-                    b_cfg = FT.baseline.Gui;
+                    b_cfg = FT.trials.baseline.Gui;
                     
                     %run segmentation with trial definitions
                     hMsg = FT.UserInput('Segmenting data into trials',1);
-                    me = FT.segment.Run(EPOCH);
+                    me = FT.trials.segment.Run(EPOCH);
                     if ishandle(hMsg)
                         close(hMsg);
                     end
                     
                     %baseline correct if selected and no errors occured
                     if ~isempty(b_cfg) && ~isa(me,'MException')
-                        me = FT.baseline.Run(b_cfg);
+                        me = FT.trials.baseline.Run(b_cfg);
                     end
                     
                     FT.ProcessError(me);

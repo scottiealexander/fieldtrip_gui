@@ -20,11 +20,13 @@ function AddHistory(field,cfg)
 
 global FT_DATA;
 
-if ~isfield(FT_DATA.history,field) || isempty(FT_DATA.history.(field))
-	FT_DATA.history.(field) = cfg;
-elseif iscell(FT_DATA.history.(field))
-	FT_DATA.history.(field) = reshape(FT_DATA.history.(field),[],1);
-	FT_DATA.history.(field){end+1,1} = cfg;
-else %if its a struct or some other type of array...???
-	FT_DATA.history.(field) = {FT_DATA.history.(field);cfg};
+FT_DATA.history{end+1} = struct('operation',field,'params',cfg);
+
+% if ~isfield(FT_DATA.history,field) || isempty(FT_DATA.history.(field))
+% 	FT_DATA.history.(field) = cfg;
+% elseif iscell(FT_DATA.history.(field))
+% 	FT_DATA.history.(field) = reshape(FT_DATA.history.(field),[],1);
+% 	FT_DATA.history.(field){end+1,1} = cfg;
+% else %if its a struct or some other type of array...???
+% 	FT_DATA.history.(field) = {FT_DATA.history.(field);cfg};
 end

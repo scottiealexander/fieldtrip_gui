@@ -47,7 +47,7 @@ end
 FT_DATA.saved = false;
 
 %update the history
-FT.tools.AddHistory('add_channel',params);
-FT_DATA.done.add_channel = isempty(me);
+FT.tools.AddHistory('add_channels',params);
+FT_DATA.done.add_channels = isempty(me);
 
 end

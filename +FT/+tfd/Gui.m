@@ -24,7 +24,7 @@ if ~FT.tools.Validate('tfd','done',{'read_events'},'todo',{'segment_trials'})
 end
 
 %get trial info
-epoch = FT.segment.Gui;
+epoch = FT.trials.segment.Gui;
 if isempty(epoch)
     return;
 else

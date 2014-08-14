@@ -1,10 +1,10 @@
 function me = Run(params)
 
-% FT.segment.Run
+% FT.trials.segment.Run
 %
 % Description: segment trials
 %
-% Syntax: me = FT.segment.Run(params)
+% Syntax: me = FT.trials.segment.Run(params)
 %
 % In:   params - a struct holding parameters from the user
 %
@@ -14,7 +14,7 @@ function me = Run(params)
 % Updated: 2014-07-22
 % Peter Horak
 %
-% See also: FT.segment.Gui
+% See also: FT.trials.segment.Gui
 
 global FT_DATA
 me = [];

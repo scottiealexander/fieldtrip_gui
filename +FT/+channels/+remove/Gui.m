@@ -19,7 +19,7 @@ global FT_DATA;
 
 %make sure we are ready to run
 % *** could potentially remove channels even after averaging
-if ~FT.tools.Validate('remove_channel','todo',{'tfd','average'})
+if ~FT.tools.Validate('remove_channels','todo',{'tfd','average'})
     return;
 end
 

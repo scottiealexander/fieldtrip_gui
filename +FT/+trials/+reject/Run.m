@@ -1,10 +1,10 @@
 function me = Run(params)
 
-% FT.reject.Run
+% FT.trials.reject.Run
 %
 % Description: remove trials
 %
-% Syntax: me = FT.reject.Run(params)
+% Syntax: me = FT.trials.reject.Run(params)
 %
 % In:   params - a struct holding parameters from the user
 %
@@ -14,7 +14,7 @@ function me = Run(params)
 % Updated: 2014-07-18
 % Peter Horak
 %
-% See also: FT.reject.Gui
+% See also: FT.trials.reject.Gui
 
 global FT_DATA;
 me = [];

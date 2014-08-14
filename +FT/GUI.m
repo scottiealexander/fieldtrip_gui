@@ -75,6 +75,14 @@ uimenu(hFileMenu,'Label','Clear Dataset','Callback',@ClearDataset);
 %quit
 uimenu(hFileMenu,'Label','Quit','Callback',@QuitGUI);
 
+% Template operations
+hTempMenu = uimenu(h,'Label','Template');
+uimenu(hTempMenu,'Label','Create Template','Callback',@(varargin) FT.RunFunction(@FT.template.Create));
+uimenu(hTempMenu,'Label','Edit Current Template','Callback',@(varargin) FT.RunFunction(@FT.template.Edit));
+uimenu(hTempMenu,'Label','Save Current Template','Callback',@(varargin) FT.RunFunction(@FT.template.Save));
+uimenu(hTempMenu,'Label','Load Existing Template','Callback',@(varargin) FT.RunFunction(@FT.template.Load));
+uimenu(hTempMenu,'Label','Run Current Template','Callback',@(varargin) FT.RunFunction(@FT.template.Run));
+
 % View operations
 hViewMenu = uimenu(h,'Label','View');
 uimenu(hViewMenu,'Label','Data Info','Callback',@(varargin) FT.RunFunction(@FT.DataSummery));
@@ -99,9 +107,9 @@ hSegMenu  = uimenu(h,'Label','Segmentation');
 uimenu(hSegMenu,'Label','Process Events','Callback',@(varargin) FT.RunFunction(@FT.events.read.Gui));
 uimenu(hSegMenu,'Label','Re-label Events','Callback',@(varargin) FT.RunFunction(@FT.events.relabel.Gui));
 uimenu(hSegMenu,'Label','Manual Event Checking','Callback',@(varargin) FT.RunFunction(@FT.events.check.Gui));
-    uimenu(hSegMenu,'Label','Segment Trials','Callback',@(varargin) FT.RunFunction(@FT.segment.Gui));
-uimenu(hSegMenu,'Label','Baseline Correct','Callback',@(varargin) FT.RunFunction(@FT.baseline.Gui));
-uimenu(hSegMenu,'Label','Reject Trials','Callback',@(varargin) FT.RunFunction(@FT.reject.Gui));
+uimenu(hSegMenu,'Label','Segment Trials','Callback',@(varargin) FT.RunFunction(@FT.trials.segment.Gui));
+uimenu(hSegMenu,'Label','Baseline Correct','Callback',@(varargin) FT.RunFunction(@FT.trials.baseline.Gui));
+uimenu(hSegMenu,'Label','Reject Trials','Callback',@(varargin) FT.RunFunction(@FT.trials.reject.Gui));
 
 % Analysis
 hAnaMenu  = uimenu(h,'Label','Analysis');
@@ -113,12 +121,6 @@ uimenu(hAnaMenu,'Label','Find Peaks & Valleys','Callback',@(varargin) FT.RunFunc
 % Update
 hUpdMenu = uimenu(h,'Label','Update');
 uimenu(hUpdMenu,'Label','Update Toolbox','Callback',@(varargin) FT.Update(false));
-
-% %template operations
-%     hTempMenu = uimenu(h,'Label','Template');
-%     hSaveTemplate = uimenu(hTempMenu,'Label','Save Current Template','Callback','disp(''save current template'')');
-%     hEditTemplate = uimenu(hTempMenu,'Label','Edit Current Template','Callback','disp(''edit current template'')');
-%     hLoadTemplate = uimenu(hTempMenu,'Label','Load Existing Template','Callback','disp(''load existing template'')');
 
 %-------------------------------------------------------------------------%
 function InitAnalysis(~,~)
@@ -276,7 +278,7 @@ function SaveDataset(~,~,varargin)
         FT_DATA.gui = rmfield(FT_DATA.gui,{'hAx','hText','sizText'});
         
         %save
-        WriteDataset(strPathOut);
+        FT.io.WriteDataset(strPathOut);
 
         %averaged erp?
         if strcmpi(action,'avg') && FT_DATA.done.average

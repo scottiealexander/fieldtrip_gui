@@ -18,7 +18,7 @@ function Gui(varargin)
 global FT_DATA;
 
 %make sure we are ready to run
-if ~FT.tools.Validate('add_channel','todo',{'segment_trials'})
+if ~FT.tools.Validate('add_channels','todo',{'segment_trials'})
     return;
 end
 
@@ -30,7 +30,7 @@ cLabels = cellfun(@(x,y) [ 'ch' sprintf(['%' num2str(nMax) '.0f'],x) ' -  ' strr
 strLabel = FT.Join(cLabels,10);
 
 %get the size and position for the figure
-pFig = FT.tools.FT.tools.GetFigPosition(300,600,'xoffset',450);
+pFig = FT.tools.GetFigPosition(300,600,'xoffset',450);
 
 %channel label guide figure
 h = figure('Units','pixels','OuterPosition',pFig,...

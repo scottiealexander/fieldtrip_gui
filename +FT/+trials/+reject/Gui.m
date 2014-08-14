@@ -1,10 +1,10 @@
 function Gui(varargin)
 
-% FT.reject.Gui
+% FT.trials.reject.Gui
 %
 % Description: inspect trials and mark for removal
 %
-% Syntax: FT.reject.Gui
+% Syntax: FT.trials.reject.Gui
 %
 % In: 
 %
@@ -13,7 +13,7 @@ function Gui(varargin)
 % Updated: 2014-07-18
 % Peter Horak
 %
-% See also: FT.reject.Run
+% See also: FT.trials.reject.Run
 
 
 global FT_DATA;
@@ -42,7 +42,7 @@ params.tr_rem = FT.tools.DataBrowser(FT_DATA.data{i}.time{1},cat(3,FT_DATA.data{
 
 hMsg = FT.UserInput('Removing trials...',1);
 
-me = FT.reject.Run(params);
+me = FT.trials.reject.Run(params);
 
 if ishandle(hMsg)
     close(hMsg);
