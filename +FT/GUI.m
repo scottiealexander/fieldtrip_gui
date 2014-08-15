@@ -305,7 +305,8 @@ function ClearDataset(~,~)
         gui  = FT_DATA.gui;
         name = FT_DATA.analysis_name;
         base = FT_DATA.path.base_directory;
-        template = FT_DATA.path.template;
+        template_path = FT_DATA.path.template;
+        template = FT_DATA.template;
         
         %renew the FT_DATA struct
         FT_DATA = [];
@@ -316,7 +317,8 @@ function ClearDataset(~,~)
         FT_DATA.gui = gui;
         FT_DATA.analysis_name = name;
         FT_DATA.path.base_directory = base;
-        FT_DATA.path.template = template;
+        FT_DATA.path.template = template_path;
+        FT_DATA.template = template;
         
         %update the GUI
         FT.UpdateGUI;

@@ -73,7 +73,7 @@ if any(strcmpi(opt.type,{'all','data'}))
     FT_DATA.gui.display_mode = 'init';
 
     %initial display fields
-    cInit = {'analysis_name','current_dataset','size'};
+    cInit = {'analysis_name','current_dataset','size',{'path','template'}};
     FT_DATA.gui.display_fields.init = cInit;
 
     %preproc display fields

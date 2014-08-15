@@ -23,6 +23,8 @@ cd(strDirCur);
 
 %oad the template
 FT_DATA.path.template = strPath;
-FT_DATA.template = load(strPath,'-mat');
+vars = load(strPath,'-mat');
+FT_DATA.template = vars.template;
 
+FT.UpdateGUI;
 end

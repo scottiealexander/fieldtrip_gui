@@ -9,11 +9,15 @@ if ~isempty(FT_DATA.template) && ~isempty(FT_DATA.path.template)
     ext = '*.*'; % *** FIX ME
 
     [strNames, strPath, ind] = uigetfile(ext,'Pick a file','MultiSelect','on');
-    while ~isequal(strNames,0) && ~isequal(strPath,0)
-        if ind ~= 1
+    while (true)
+        % Check that valid files were selected
+        if isequal(strNames,0) || isequal(strPath,0)
+            return; % user selected cancel
+        elseif ind ~= 1
             FT.UserInput(['File extensions must be consistant with those in the template ('...
                 ext ')'],1,'button',{'OK'},'title','NOTICE');
         else
+            % Add all files selected
             if ~iscell(strNames)
                 files{end+1} = fullfile(strPath,strNames);
             else
@@ -22,7 +26,19 @@ if ~isempty(FT_DATA.template) && ~isempty(FT_DATA.path.template)
                 end
             end
         end
-        [strNames, strPath] = uigetfile(ext,'Pick a file','MultiSelect','on');
+        % Don't keep duplicate files
+        files = unique(files);
+        
+        % Query the user to continue adding files
+        resp = FT.UserInput(['Files to analyze:\n' strjoin(files,'\n')],1,...
+            'title','Include More Files?','button',{'Yes','No (Run)','Cancel'});
+        if strcmpi(resp,'yes')
+            [strNames, strPath] = uigetfile(ext,'Pick a file','MultiSelect','on');
+        elseif strcmpi(resp,'cancel')
+            return;
+        else % no (run)
+            break;
+        end
     end
 
     nFiles = numel(files);
@@ -30,7 +46,7 @@ if ~isempty(FT_DATA.template) && ~isempty(FT_DATA.path.template)
     
     % For each data set specified
     for i = 1:nFiles
-        fprintf(1,'Processing ''%s'' (%f of %f)\n',files{i},i,nFiles);
+        fprintf(1,'Processing ''%s'' (%i of %i)\n',files{i},i,nFiles);
         
         % Read in the data
         me = FT.io.ReadDataset(files{i});
@@ -65,5 +81,7 @@ if ~isempty(FT_DATA.template) && ~isempty(FT_DATA.path.template)
         end
     end
 end
+
+FT.UpdateGUI;
 
 end
