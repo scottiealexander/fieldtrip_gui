@@ -65,7 +65,7 @@ FT.Progress2;
 
 %segment and reshape data
 %yields a ncondition x 1 cell of freq x time x channel x trial matricies
-cellfun(@SegmentData,data_raw,num2cell(1:params.n),'uni',false);
+cellfun(@SegmentData,data_raw,num2cell(1:params.n)','uni',false);
 
 %add to the data struct
 % fprintf('Creating ROA instance\n');
