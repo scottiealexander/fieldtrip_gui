@@ -92,7 +92,8 @@ uiwait(h);
 
 if bRun
     %parse the mapping and recode the events
-    FT.events.relabel.Run(strMap);
+    params.strMap = strMap;
+    FT.events.relabel.Run(params);
 end
 
 %------------------------------------------------------------------------------%

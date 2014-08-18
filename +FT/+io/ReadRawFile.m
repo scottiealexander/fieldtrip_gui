@@ -25,11 +25,4 @@ cfg.continuous = 'yes';
 
 FT_DATA.data = ft_preprocessing(cfg);
 
-%raw data has no processing done (this is a bit of a hack, it might be
-%better to completely clear the data set before loading a new one)
-dFields = fieldnames(FT_DATA.done);
-for k = 1:numel(dFields)
-    FT_DATA.done.(dFields{k}) = false;
-end
-
 end

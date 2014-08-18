@@ -49,11 +49,11 @@ hFileMenu = uimenu(h,'Label','File');
 
 % Template operations
 hTempMenu = uimenu(hFileMenu,'Label','Template');
-uimenu(hTempMenu,'Label','Create Template','Callback',@(varargin) FT.RunFunction(@FT.template.Create));
-uimenu(hTempMenu,'Label','Edit Current Template','Callback',@(varargin) FT.RunFunction(@FT.template.Edit));
-uimenu(hTempMenu,'Label','Save Current Template','Callback',@(varargin) FT.RunFunction(@FT.template.Save));
-uimenu(hTempMenu,'Label','Load Existing Template','Callback',@(varargin) FT.RunFunction(@FT.template.Load));
-uimenu(hTempMenu,'Label','Run Current Template','Callback',@(varargin) FT.RunFunction(@FT.template.Run));
+uimenu(hTempMenu,'Label','Create New','Callback',@(varargin) FT.RunFunction(@FT.template.Create));
+uimenu(hTempMenu,'Label','Edit Current','Callback',@(varargin) FT.RunFunction(@FT.template.Edit));
+uimenu(hTempMenu,'Label','Save Current','Callback',@(varargin) FT.RunFunction(@FT.template.Save));
+uimenu(hTempMenu,'Label','Load Existing','Callback',@(varargin) FT.RunFunction(@FT.template.Load));
+uimenu(hTempMenu,'Label','Run Current','Callback',@(varargin) FT.RunFunction(@FT.template.Run));
 
 %read in data
 hRead = uimenu(hFileMenu,'Label','Load Data');
@@ -71,7 +71,7 @@ uimenu(hFileMenu,'Label','Save Dataset As...',...
 uimenu(hFileMenu,'Label','Save Average Dataset',...
     'Callback',@(x,y) SaveDataset(x,y,'avg'));
 
-%clear 
+%clear
 uimenu(hFileMenu,'Label','Clear Dataset','Callback',@ClearDataset);
 
 %quit
@@ -116,6 +116,14 @@ uimenu(hAnaMenu,'Label','Find Peaks & Valleys','Callback',@(varargin) FT.RunFunc
 hUpdMenu = uimenu(h,'Label','Update');
 uimenu(hUpdMenu,'Label','Update Toolbox','Callback',@(varargin) FT.Update(false));
 
+%-------------------------------------------------------------------------%
+function ClearDataset(~,~)
+    resp = FT.UserInput('Are you sure you want to clear the current dataset?',...
+                    0,'button',{'Yes','Cancel'},'title','Clear Dataset?');
+    if strcmpi(resp,'yes')
+        FT.io.ClearDataset;
+    end
+end
 %-------------------------------------------------------------------------%
 function SaveDataset(~,~,varargin)
 %save the current state of the analysis
@@ -205,32 +213,6 @@ function SaveDataset(~,~,varargin)
         FT_DATA.path.template = template_path;
     end
     FT.UpdateGUI;
-end
-%-------------------------------------------------------------------------%
-function ClearDataset(~,~)
-    resp = FT.UserInput('Are you sure you want to clear the current dataset?',...
-                        0,'button',{'Yes','Cancel'},'title','Clear Dataset?');
-    if strcmpi(resp,'yes')
-        %grab the fields that we will still need
-        gui  = FT_DATA.gui;
-        base = FT_DATA.path.base_directory;
-        template_path = FT_DATA.path.template;
-        template = FT_DATA.template;
-        
-        %renew the FT_DATA struct
-        FT_DATA = [];
-        FT.Prepare('type','data');
-        
-        %add the fields back in 
-        gui.display_mode = 'init'; %set display mode back to initial
-        FT_DATA.gui = gui;
-        FT_DATA.path.base_directory = base;
-        FT_DATA.path.template = template_path;
-        FT_DATA.template = template;
-        
-        %update the GUI
-        FT.UpdateGUI;
-    end
 end
 %-------------------------------------------------------------------------%
 function QuitGUI(obj,evt)

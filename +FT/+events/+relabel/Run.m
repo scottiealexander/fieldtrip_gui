@@ -1,4 +1,4 @@
-function me = Run(str)
+function me = Run(params)
 
 % FT.events.relabel.Run
 %
@@ -23,6 +23,7 @@ global FT_DATA
 me = [];
 
 try
+    str = params.strMap;
     evt = FT.ReStruct(FT_DATA.event);
 
     %check if we've been given a file, if not assume is the event code file contents
@@ -70,7 +71,7 @@ try
 catch me
 end
 
-FT.tools.AddHistory('relabel_events',str);
+FT.tools.AddHistory('relabel_events',params);
 FT_DATA.done.relabel_events = isempty(me);
 
 end

@@ -20,13 +20,18 @@ me = [];
 
 try
     FT_DATA.current_dataset = params.name;
-    FT_DATA.path.raw_file = params.full;
-    FT_DATA.path.base_directory = params.path;
     
     if ~params.raw  
         FT.io.ReadSetFile(params.full);
+        FT_DATA.path.dataset = params.full;
     else
         FT.io.ReadRawFile(params.full);
+        FT_DATA.path.raw_file = params.full;
+    end
+    
+    % There is no base dir or the .set file contained an invalid one
+    if ~isdir(FT_DATA.path.base_directory)
+        FT_DATA.path.base_directory = params.path;
     end
     
     %update gui display fields

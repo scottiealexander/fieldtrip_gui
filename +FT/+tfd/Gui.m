@@ -78,8 +78,13 @@ else
     params.method = availableMethods{win.res.method};
 end
 
+% Time-frequency decomposition
 me = FT.tfd.Run(params);
+FT.ProcessError(me);
 
+% Segmentation of time series
+seg_params.epoch = FT_DATA.epoch;
+me = FT.trials.segment.Run(seg_params);
 FT.ProcessError(me);
 
 FT.UpdateGUI;

@@ -26,7 +26,7 @@ end
 
 ftypes = {'Butterworth','FIR','FIRLS'};
 
-fnyq = FT_DATA.data.fsample/2;
+fnyq = FT_DATA.data.fsample/2-0.01;
 params = struct('channel','all');
 
 c = {...

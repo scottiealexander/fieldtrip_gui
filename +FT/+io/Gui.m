@@ -36,11 +36,6 @@ else
 end
 
 switch lower(str)
-    case 'load existing analysis'
-        % strPath = uigetdir(pwd,'Load Existing Analysis');
-        me = MException('FT:NotImplemented','This feature is not yet implemented');
-        FT.ProcessError(me);
-        return;
     case 'eeg file / dataset'
         [strName,strPath] = uigetfile('*','Load File');
         if ~isequal(strName,0) && ~isequal(strPath,0)
@@ -76,7 +71,9 @@ params.raw = ~any(strcmpi(params.ext,{'mat','set'}));
 
 hMsg = FT.UserInput('Reading data from file, plese wait...',1);
 
-%read the data    
+% clear old data
+FT.io.ClearDataset;
+% read new data    
 me = FT.io.ReadDataset(params);
 
 if ishandle(hMsg)
@@ -100,19 +97,12 @@ if ~isa(me,'MException')
         end
     end
     
-else %failed to load data somehow, clear everything
+else
+    % failed to load data somehow
     FT.ProcessError(me);
     
-    %grab the fields that we will still need
-    gui = FT_DATA.gui;
-
-    %renew the FT_DATA struct
-    FT_DATA = [];
-    FT.Prepare('type','data');
-
-    %add the fields back in 
-    gui.display_mode = 'init'; %set display mode back to initial
-    FT_DATA.gui = gui;
+    % clear everything
+    FT.io.ClearDataset;
 end
 
 %update the display
