@@ -21,7 +21,7 @@ end
 %move back to the original directory
 cd(strDirCur);
 
-%oad the template
+%load the template
 FT_DATA.path.template = strPath;
 vars = load(strPath,'-mat');
 FT_DATA.template = vars.template;

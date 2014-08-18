@@ -32,7 +32,7 @@ global FT_DATA;
 if any(strcmpi(opt.type,{'all','data'}))
 %------------------------------------------------------------------------------%
 %initialize the FT_DATA struct    
-    FT_DATA = struct('current_dataset','','analysis_name', '',...
+    FT_DATA = struct('current_dataset','',...
          'size'     , []     ,...         
          'data'     , []     ,...
          'event'    , []     ,...
@@ -73,7 +73,7 @@ if any(strcmpi(opt.type,{'all','data'}))
     FT_DATA.gui.display_mode = 'init';
 
     %initial display fields
-    cInit = {'analysis_name','current_dataset','size',{'path','template'}};
+    cInit = {{'path','template'},'current_dataset','size'};
     FT_DATA.gui.display_fields.init = cInit;
 
     %preproc display fields
@@ -87,7 +87,7 @@ if any(strcmpi(opt.type,{'all','data'}))
     FT_DATA.gui.display_fields.segment = cSegment;
     
     %analysis display fields
-    cAnalysis = [cInit {'saved',{'done','average'}}];
+    cAnalysis = [cInit {'saved',{'done','average'},{'done','tfd'}}];
     FT_DATA.gui.display_fields.analysis = cAnalysis;
 end
 

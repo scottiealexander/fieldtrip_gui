@@ -17,8 +17,6 @@ function Gui(obj,varargin)
 
 global FT_DATA;
 
-try
-
 %move to the analysis base dir
 strDirCur = pwd;
 if isdir(FT_DATA.path.base_directory)        
@@ -70,36 +68,43 @@ if sep == '\'
 	sep = '\\';
 end
 
-[~,strName] = fileparts(regexprep(strPath,[sep '$'],''));
-FT_DATA.current_dataset = strName;
-FT_DATA.path.raw_file = strPath;
+[strBase,strName,ext] = fileparts(regexprep(strPath,[sep '$'],''));
+ext = regexprep(ext,'^\.','');
+
+params = struct('name',strName,'path',strBase,'full',strPath,'ext',ext);
+params.raw = ~any(strcmpi(params.ext,{'mat','set'}));
 
 hMsg = FT.UserInput('Reading data from file, plese wait...',1);
 
 %read the data    
-me = FT.io.ReadDataset(strPath);
+me = FT.io.ReadDataset(params);
 
 if ishandle(hMsg)
 	delete(hMsg);
 end
 
-if isa(me,'MException')
-    rethrow(me);
-else
-	if strcmpi(FT_DATA.gui.display_mode,'init')
-	    FT_DATA.gui.display_mode = 'preproc';
-	end
-end
-
-%update the display
-FT.UpdateGUI;
-
-%failed to load data somehow, clear everything
-catch me
+if ~isa(me,'MException')
+    
+    %process events? important if the data is from an edf file...
+    if params.raw
+        if strcmpi(params.ext,'edf')
+            resp = FT.UserInput(['\bf[\color{red}WARNING\color{black}]\n',...
+                'It is highly recomended that you process events\n',...
+                'BEFORE preprocessing EDF files.\n\nWould you like to process events now?'],...
+                1,'button',{'Yes','No'},'title','WARNING!');
+        else
+            resp = FT.UserInput('Process events?',1,'button',{'Yes','No'},'title','MESSAGE');
+        end
+        if strcmpi(resp,'yes')
+            FT.events.read.Gui;
+        end
+    end
+    
+else %failed to load data somehow, clear everything
     FT.ProcessError(me);
     
     %grab the fields that we will still need
-    gui  = FT_DATA.gui;
+    gui = FT_DATA.gui;
 
     %renew the FT_DATA struct
     FT_DATA = [];
@@ -108,8 +113,9 @@ catch me
     %add the fields back in 
     gui.display_mode = 'init'; %set display mode back to initial
     FT_DATA.gui = gui;
-
-    %update the GUI
-    FT.UpdateGUI;
 end
 
+%update the display
+FT.UpdateGUI;
+
+end

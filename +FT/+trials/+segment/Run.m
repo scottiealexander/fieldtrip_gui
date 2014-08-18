@@ -19,7 +19,7 @@ function me = Run(params)
 global FT_DATA
 me = [];
 
-FT_DATA.epoch = params;
+FT_DATA.epoch = params.epoch;
 
 try
     %segment into trials

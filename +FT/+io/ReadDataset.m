@@ -1,4 +1,4 @@
-function me = ReadDataset(strPath)
+function me = ReadDataset(params)
 
 % ReadDataset
 %
@@ -15,17 +15,26 @@ function me = ReadDataset(strPath)
 %
 % Please report bugs to: scottiealexander11@gmail.com
 
+global FT_DATA;
 me = [];
 
-%get extension
-[~,~,ext] = fileparts(strPath);
-ext = regexprep(ext,'^\.','');
-
 try
-    if any(strcmpi(ext,{'mat','set'}))    
-        FT.io.ReadSetFile(strPath);
+    FT_DATA.current_dataset = params.name;
+    FT_DATA.path.raw_file = params.full;
+    FT_DATA.path.base_directory = params.path;
+    
+    if ~params.raw  
+        FT.io.ReadSetFile(params.full);
     else
-        FT.io.ReadRawFile(strPath,ext);
+        FT.io.ReadRawFile(params.full);
+    end
+    
+    %update gui display fields
+    if strcmpi(FT_DATA.gui.display_mode,'init')
+	    FT_DATA.gui.display_mode = 'preproc';
     end
 catch me
+end
+
+FT.tools.AddHistory('io',params);
 end

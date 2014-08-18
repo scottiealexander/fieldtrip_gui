@@ -262,7 +262,8 @@ function BtnCtrl(obj,~)
                     
                     %run segmentation with trial definitions
                     hMsg = FT.UserInput('Segmenting data into trials',1);
-                    me = FT.trials.segment.Run(EPOCH);
+                    params.epoch = EPOCH;
+                    me = FT.trials.segment.Run(params);
                     if ishandle(hMsg)
                         close(hMsg);
                     end

@@ -47,13 +47,15 @@ FT.UpdateGUI;
 % File operations
 hFileMenu = uimenu(h,'Label','File');
 
-%initialize or load a dataset for processing
-uimenu(hFileMenu,'Label','Initialize Analysis','Callback',@InitAnalysis,...
-    'Accelerator','N');
-uimenu(hFileMenu,'Label','Load Existing Analysis','Callback',@LoadAnalysis,...
-    'Accelerator','I');
+% Template operations
+hTempMenu = uimenu(hFileMenu,'Label','Template');
+uimenu(hTempMenu,'Label','Create Template','Callback',@(varargin) FT.RunFunction(@FT.template.Create));
+uimenu(hTempMenu,'Label','Edit Current Template','Callback',@(varargin) FT.RunFunction(@FT.template.Edit));
+uimenu(hTempMenu,'Label','Save Current Template','Callback',@(varargin) FT.RunFunction(@FT.template.Save));
+uimenu(hTempMenu,'Label','Load Existing Template','Callback',@(varargin) FT.RunFunction(@FT.template.Load));
+uimenu(hTempMenu,'Label','Run Current Template','Callback',@(varargin) FT.RunFunction(@FT.template.Run));
 
-%read in raw files
+%read in data
 hRead = uimenu(hFileMenu,'Label','Load Data');
 uimenu(hRead,'Label','EEG File / Dataset','Callback',@FT.io.Gui,'Accelerator','L');
 uimenu(hRead,'Label','Neuralynx Dataset','Callback',@FT.io.Gui);
@@ -74,14 +76,6 @@ uimenu(hFileMenu,'Label','Clear Dataset','Callback',@ClearDataset);
 
 %quit
 uimenu(hFileMenu,'Label','Quit','Callback',@QuitGUI);
-
-% Template operations
-hTempMenu = uimenu(h,'Label','Template');
-uimenu(hTempMenu,'Label','Create Template','Callback',@(varargin) FT.RunFunction(@FT.template.Create));
-uimenu(hTempMenu,'Label','Edit Current Template','Callback',@(varargin) FT.RunFunction(@FT.template.Edit));
-uimenu(hTempMenu,'Label','Save Current Template','Callback',@(varargin) FT.RunFunction(@FT.template.Save));
-uimenu(hTempMenu,'Label','Load Existing Template','Callback',@(varargin) FT.RunFunction(@FT.template.Load));
-uimenu(hTempMenu,'Label','Run Current Template','Callback',@(varargin) FT.RunFunction(@FT.template.Run));
 
 % View operations
 hViewMenu = uimenu(h,'Label','View');
@@ -122,83 +116,6 @@ uimenu(hAnaMenu,'Label','Find Peaks & Valleys','Callback',@(varargin) FT.RunFunc
 hUpdMenu = uimenu(h,'Label','Update');
 uimenu(hUpdMenu,'Label','Update Toolbox','Callback',@(varargin) FT.Update(false));
 
-%-------------------------------------------------------------------------%
-function InitAnalysis(~,~)
-    
-    %make sure the user understands what we want
-    strQ = '\fontsize{14}\bfPlease select a base diretcory for this analysis.';
-    FT.UserInput(strQ,1,'button','OK');
-    
-    %get the base directory
-    strPath = uigetdir(pwd,'Select Base Directory');
-    if isequal(strPath,0)
-        return; %user selected cancel
-    end
-    FT_DATA.path.base_directory = strPath;
-    strName = FT.UserInput('Please enter a name for this analysis:',1,...
-                        'title','Select Analysis Name',...
-                        'button',{'OK','cancel'},'input',true,...
-                        'inp_str',[strrep(datestr(now,29),'-','') '_Analysis']...
-                        );
-    if isempty(strName)
-        return; %user selected cancel
-    end
-    
-    FT_DATA.analysis_name = strName;    
-    FT_DATA.path.template = fullfile(strPath,[strName '.template']);
-    
-    SaveAnalysisCfg;
-    
-    FT.UpdateGUI;
-end
-%-------------------------------------------------------------------------%
-function LoadAnalysis(~,~)
-    %get the base directory
-    strPath = uigetdir(pwd,'Select Analysis Directory');
-    if isequal(strPath,0)
-        return; %user selected cancel
-    end
-    
-    %set the base dir
-    FT_DATA.path.base_directory = strPath;
-    
-    strPathCfg = fullfile(strPath,'analysis.cfg');
-    
-    if exist(strPathCfg,'file') ~= 2
-        FT.UserInput(['Sorry, no analysis has been initialized in this directory.\n'...
-            'Please use \bfFile->Initialize Analysis\rm\nto initialize an analysis.'],0,'button','OK');
-        return;
-    end
-    
-    fid = fopen(strPathCfg,'r');
-    if fid < 0
-        return;
-    end
-    str = cast(fread(fid,'char'),'char')';
-    fclose(fid);
-    s = FT.ReStruct(regexp(str,'(?<field>[\S]*)\t(?<value>[\S]*)','names'));
-    for k = 1:numel(s.field)
-        cField = regexp(s.field{k},'\.','split');
-        if all(ismember(s.value{k},'0123456789.-+e'))
-            val = str2double(s.value{k});
-        else
-            val = s.value{k};
-        end
-        FT_DATA = AssignField(FT_DATA,cField,val);
-    end
-    FT.UpdateGUI;
-end
-%-------------------------------------------------------------------------%
-function SaveAnalysisCfg
-%save the analysis configuration file
-    strPathCfg = fullfile(FT_DATA.path.base_directory,'analysis.cfg');
-    fid = fopen(strPathCfg,'w');
-    if fid < 0
-        return;
-    end
-    fprintf(fid,'analysis_name\t%s\npath.template\t%s\n',FT_DATA.analysis_name,FT_DATA.path.template);
-    fclose(fid);
-end
 %-------------------------------------------------------------------------%
 function SaveDataset(~,~,varargin)
 %save the current state of the analysis
@@ -262,20 +179,13 @@ function SaveDataset(~,~,varargin)
 
         hMsg = FT.UserInput('Saving dataset, plese wait...',1); 
         
-        bAdd = false;
-        
-        if isfield(FT_DATA,'analysis_name')
-            %save configuration
-            SaveAnalysisCfg;
-
-            %remove the analysis name and gui fields as these can change
-            strName = FT_DATA.analysis_name;
-            FT_DATA = rmfield(FT_DATA,'analysis_name');
-            bAdd = true;
-        end
-        
+        % remove template and gui fields as these can change
         gui = FT_DATA.gui;
         FT_DATA.gui = rmfield(FT_DATA.gui,{'hAx','hText','sizText'});
+        template = FT_DATA.template;
+        FT_DATA = rmfield(FT_DATA,'template');
+        template_path = FT_DATA.path.template;
+        FT_DATA.path = rmfield(FT_DATA.path,'template');
         
         %save
         FT.io.WriteDataset(strPathOut);
@@ -289,10 +199,10 @@ function SaveDataset(~,~,varargin)
             close(hMsg);
         end
         
-        if bAdd
-            FT_DATA.analysis_name = strName;
-        end
+        % restore template and gui fields
         FT_DATA.gui = gui;
+        FT_DATA.template = template;
+        FT_DATA.path.template = template_path;
     end
     FT.UpdateGUI;
 end
@@ -303,7 +213,6 @@ function ClearDataset(~,~)
     if strcmpi(resp,'yes')
         %grab the fields that we will still need
         gui  = FT_DATA.gui;
-        name = FT_DATA.analysis_name;
         base = FT_DATA.path.base_directory;
         template_path = FT_DATA.path.template;
         template = FT_DATA.template;
@@ -315,7 +224,6 @@ function ClearDataset(~,~)
         %add the fields back in 
         gui.display_mode = 'init'; %set display mode back to initial
         FT_DATA.gui = gui;
-        FT_DATA.analysis_name = name;
         FT_DATA.path.base_directory = base;
         FT_DATA.path.template = template_path;
         FT_DATA.template = template;
