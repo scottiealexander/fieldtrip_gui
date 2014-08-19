@@ -123,14 +123,7 @@ function t = GetTime
 %GOAL: calculate the time vector (in seconds) given the segmentation scheme
     nPts = size(FT_DATA.power.data{1},2);
     s = FT_DATA.epoch{1}.ifo;
-    switch lower(s.format)        
-        case 'timelock'
-            t = linspace(-s.pre,s.post,nPts);
-        case 'endpoints'
-            t = linspace(0,nPts/FS,nPts);
-        otherwise
-            error('invalid epoch format: %s',s.format);
-    end
+    t = linspace(-s.pre,s.post,nPts);
 end
 %-------------------------------------------------------------------------%
 end

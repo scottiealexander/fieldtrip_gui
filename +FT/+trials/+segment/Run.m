@@ -28,6 +28,11 @@ try
         %segment
         cfg = FT.tools.CFGDefault;
         cfg.trl = FT_DATA.epoch{k}.trl;
+        % *** TODO: errors if cfg.trl is empty (happens if all trials lie
+        % outside the length of the data)
+        if isempty(cfg.trl)
+            error('Empty trial definition (no valid trials)');
+        end
         EPOCH{k,1} = ft_redefinetrial(cfg,FT_DATA.data);
     end
 

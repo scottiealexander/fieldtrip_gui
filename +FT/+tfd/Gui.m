@@ -19,16 +19,8 @@ function Gui(varargin)
 
 global FT_DATA;
 
-if ~FT.tools.Validate('tfd','done',{'read_events'},'todo',{'segment_trials'})
+if ~FT.tools.Validate('tfd','done',{'read_events','define_trials'},'todo',{'tfd','segment_trials'})
     return;
-end
-
-%get trial info
-epoch = FT.trials.segment.Gui;
-if isempty(epoch)
-    return;
-else
-    FT_DATA.epoch = epoch;
 end
 
 try % test if the wavelet toolbox is installed
@@ -82,10 +74,11 @@ end
 me = FT.tfd.Run(params);
 FT.ProcessError(me);
 
-% Segmentation of time series
-seg_params.epoch = FT_DATA.epoch;
-me = FT.trials.segment.Run(seg_params);
-FT.ProcessError(me);
+if ~isa(me,'MException')
+    % Segmentation of time series
+    me = FT.trials.segment.Run([]);
+    FT.ProcessError(me);
+end
 
 FT.UpdateGUI;
 

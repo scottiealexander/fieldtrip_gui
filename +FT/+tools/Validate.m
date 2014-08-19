@@ -40,9 +40,9 @@ opt.todo = opt.todo(isfield(FT_DATA.done,opt.todo));
 opt.warn = opt.warn(isfield(FT_DATA.done,opt.warn));
 
 % Determine which elements satisfy the conditions
-bDone = cellfun(@(x)  FT_DATA.done.(x),opt.done);
-bTodo = cellfun(@(x) ~FT_DATA.done.(x),opt.todo);
-bWarn = cellfun(@(x) ~FT_DATA.done.(x),opt.warn);
+bDone = cellfun(@(x)  FT_DATA.done.(x)==true,opt.done);
+bTodo = cellfun(@(x) ~FT_DATA.done.(x)==true,opt.todo);
+bWarn = cellfun(@(x) ~FT_DATA.done.(x)==true,opt.warn);
 
 % Not all the necessary stages are done
 if ~all(bDone)
