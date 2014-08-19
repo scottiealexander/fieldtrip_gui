@@ -40,15 +40,17 @@ i = win.res.condition;
 params.condition = i;
 params.tr_rem = FT.tools.DataBrowser(FT_DATA.data{i}.time{1},cat(3,FT_DATA.data{i}.trial{:}),'channel',4,FT_DATA.data{i}.label);
 
-hMsg = FT.UserInput('Removing trials...',1);
+if ~isempty(params.tr_rem)
+    hMsg = FT.UserInput('Removing trials...',1);
 
-me = FT.trials.reject.Run(params);
+    me = FT.trials.reject.Run(params);
 
-if ishandle(hMsg)
-    close(hMsg);
+    if ishandle(hMsg)
+        close(hMsg);
+    end
+
+    FT.ProcessError(me);
 end
-
-FT.ProcessError(me);
 
 FT.UpdateGUI;
 

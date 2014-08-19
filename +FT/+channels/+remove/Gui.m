@@ -46,15 +46,17 @@ else
     params.ch_rem = FT.tools.DataBrowser(FT_DATA.data{i}.time{1},cat(3,FT_DATA.data{i}.trial{:}),'trial',4,FT_DATA.data{i}.label);
 end
 
-hMsg = FT.UserInput('Removing channels...',1);
+if ~isempty(params.ch_rem)
+    hMsg = FT.UserInput('Removing channels...',1);
 
-me = FT.channels.remove.Run(params);
+    me = FT.channels.remove.Run(params);
 
-if ishandle(hMsg)
-    close(hMsg);
+    if ishandle(hMsg)
+        close(hMsg);
+    end
+
+    FT.ProcessError(me);
 end
-
-FT.ProcessError(me);
 
 FT.UpdateGUI;
 

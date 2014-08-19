@@ -33,6 +33,8 @@ function [marks] = DataBrowser(time,data,group_by,n,lChan,lTrial)
 % Updated: 2014-07-18
 % Peter Horak
 
+marks = [];
+
 % Minimal input checking
 if nargin < 4
     n = 4; % number of additional time series to plot on either side of current
@@ -51,8 +53,13 @@ nChan = size(data,1); % total number of channels
 N = size(data,2); % total number of time points
 nTrial = size(data,3); % total number of trials
 
-if length(time) ~= N
-    error('Time axis and number of data points are inconsistent.');
+if (nChan == 0) || (N == 0) || (nTrial == 0)
+    FT.UserInput('No data to view!',1,'title','Notice','button',{'OK'});
+    return;
+elseif length(time) ~= N
+    FT.UserInput(['\bf[\color{red}ERROR\color{black}]: Time axis and ',...
+        'number of data points are inconsistent.'],1,'title','Error','button',{'OK'});
+    return;
 end
 
 chan = 1; % current channel (being plotted)
@@ -118,16 +125,16 @@ c = {% Channel Browsing
      {'pushbutton','string','<','Callback',@Backward},...
 	 {'pushbutton','string','>','Callback',@Forward};...
      % Marking
-     {'text','string','Marked:'},...
-     {'checkbox','tag','mark','Callback',@Mark};...
-	 {'pushbutton','string',' Mark All','Callback',@Toggle},...
-     {'text','string',''};...
+     {'pushbutton','string',' Mark All','Callback',@Toggle},...
+     {'checkbox','tag','mark','Callback',@Mark};...     
      % Plot & Exit
+     {'pushbutton','string','Cancel','tag','cancel','validate',false},...
+     {'text','string',''};...
      {'pushbutton','string','Plot','Callback',@Plot},...
 	 {'pushbutton','string','Exit','validate',false}...
 	};
 
-w = FT.tools.Win(c,'position',[-ww*.25-100 0]); % user input/control window
+w = FT.tools.Win(c,'position',[-ww*.25-100 0],'focus','cancel'); % user input/control window
 UpdatePlot();
 
 % Wait for the user to close the control window
@@ -135,6 +142,10 @@ uiwait(w.h);
 % Close the plot if still open
 if ishandle(f)
     close(f);
+end
+
+if strcmpi(w.res.btn,'cancel')
+    marks = [];
 end
 
 %-------------------------------------------------------------------------%

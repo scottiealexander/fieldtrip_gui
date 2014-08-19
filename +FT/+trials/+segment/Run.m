@@ -19,8 +19,6 @@ function me = Run(params)
 global FT_DATA
 me = [];
 
-FT_DATA.epoch = params.epoch;
-
 try
     %segment into trials
     nCondition = numel(FT_DATA.epoch);
@@ -37,9 +35,11 @@ try
 catch me
 end
 
+%mark data as not saved
+FT_DATA.saved = false;
+
 %update history
 FT_DATA.gui.display_mode = 'segment';
 FT.tools.AddHistory('segment_trials',params);
 
-FT_DATA.saved = false;
 FT_DATA.done.segment_trials = isempty(me);

@@ -50,7 +50,7 @@ sTmp.done = sDone;
 
 % Make history field compatible in type
 if ~iscell(sTmp.history)
-    sTmp.history = {sTmp.history};
+    sTmp.history = {};
 end
 
 % if ~isempty(setxor(cFields,fieldnames(FT_DATA.done)))

@@ -19,45 +19,27 @@ function bGood = CheckStage(strStage)
 % Please report bugs to: scottiealexander11@gmail.com
 
 global FT_DATA;
+bGood = true;
 
 if isfield(FT_DATA.done,strStage)
     %check to see if the stage has already been done
-    if FT_DATA.done.(strStage)    
-        %make the stage name more comprehendable
-        switch lower(strStage)
-            case 'resample'
-                strStage = 'Resampling';
-            case 'filter'
-                strStage = 'Filtering';
-            case 'rereference'
-                strStage = 'Rereferencing';
-            case 'read_events'
-                strStage = 'Processing Events';
-            case 'segment'
-                strStage = 'Segmentation';
-            case 'baseline';
-                strStage = 'Baseline Correction';
-            case 'tfd';
-                strStage = 'Time-Frequency Decomposition';
-            case 'average'
-                strStage = 'ERP Averaging';
-            otherwise
-                %isn't a problem to run the stage multiple times
-        end
-
-        %ask user if we want to re-run
-        resp = FT.UserInput(['\bf\color{red}Warning\color{black}: ' strStage ' has already been performed. Continue?'],...
-                            0,'button',{'Continue','Cancel'},'title','Warning');
-        if strcmpi(resp,'continue')
-            bGood = true;
+    if FT_DATA.done.(strStage)
+        
+        % Use red warning for operations that generally should not be rur twice
+        if ismember(strStage,{'resample','filter','rereference','read_events',...
+                'relabel_events','define_trials','segment_trials','baseline_trials',...
+                'tfd','average'})
+            color = 'red';
         else
+            color = 'yellow';
+        end
+        
+        %ask user if we want to re-run
+        resp = FT.UserInput(['\bf\color{' color '}Warning\color{black}: ' strStage ' has already been performed. Continue?'],...
+            strcmpi('yellow',color),'button',{'Continue','Cancel'},'title','Warning');
+        if strcmpi(resp,'cancel')
             bGood = false;
         end
-    else
-        bGood = true;
     end
-else
-    %stage is not in the done struct so assume that the user is just checking
-    %that data has been loaded
-    bGood = true;
+end
 end
