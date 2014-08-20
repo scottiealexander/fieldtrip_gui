@@ -110,7 +110,7 @@ for i = 1:nFiles
         op = strsplit(steps{j}.operation,'_');
         if strcmpi('save',op{1})
             FT.io.WriteDataset(fullfile(steps{j}.params.path,[tempName...
-                num2str(j) '_' strName num2str(i) '.set']));
+                '-' num2str(j) '_' strName '-' num2str(i) '.set']));
         elseif numel(op) == 1
             me = FT.(op{1}).Run(steps{j}.params);
         elseif numel(op) == 2
