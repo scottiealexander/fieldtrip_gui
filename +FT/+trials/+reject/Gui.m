@@ -18,7 +18,7 @@ function Gui(varargin)
 
 global FT_DATA;
 
-if ~FT.tools.Validate('reject_trials','done',{'segment_trials'})
+if ~FT.tools.Validate('reject_trials','done',{'segment_trials'},'todo',{'average'})
     return;
 end
 

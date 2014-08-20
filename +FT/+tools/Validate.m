@@ -21,9 +21,9 @@ global FT_DATA
 
 %make sure data has been loaded
 if ~isfield(FT_DATA,'data') || isempty(FT_DATA.data)
-    FT.UserInput(['\bf\color{yellow}Notification\color{black}: No data '...
+    FT.UserInput(['\bf\color{yellow}Notice\color{black}: No data '...
         'has been loaded, please load data before proceeding'],...
-        0,'button','OK','title','Notification');
+        0,'button','OK','title','Notice');
     bGood = false;
     return;
 end
@@ -52,9 +52,9 @@ if ~all(bDone)
     c = FT.tools.Ternary(sum(~bDone) > 1,'s','');
     
     % Display message
-    FT.UserInput(['\bf\color{yellow}Notification\color{black}: Stage ''' strStage ...
+    FT.UserInput(['\bf\color{yellow}Notice\color{black}: Stage ''' strStage ...
         ''' cannot be run before completing stage' c ' ' missing '.\n'],...
-        0,'button','OK','title','Notification');
+        0,'button','OK','title','Notice');
     bGood = false;
 
 % Some stages are done that should not be (if this stage is to be run)
@@ -65,9 +65,9 @@ elseif ~all(bTodo)
     c = FT.tools.Ternary(sum(~bTodo) > 1,'s','');
 
     % Display message
-    FT.UserInput(['\bf\color{yellow}Notification\color{black}: Stage ''' strStage ...
+    FT.UserInput(['\bf\color{yellow}Notice\color{black}: Stage ''' strStage ...
         ''' cannot be run after completing stage' c ' ' problems '.\n'],...
-        0,'button','OK','title','Notification');
+        0,'button','OK','title','Notice');
     bGood = false;
     
 % Some stages should be run first

@@ -19,9 +19,9 @@ function PlotPSD()
 global FT_DATA;
 persistent BASELINE NORM_TYPE;
 
-if ~isfield(FT_DATA,'power') || isempty(FT_DATA.power)
-	FT.UserInput('\bfPSD does not yet exist for this data set',0,'button','OK');
-	return;
+%make sure we are ready to run
+if ~FT.tools.Validate('plot_psd','done',{'tfd'})
+    return;
 end
 
 time = FT_DATA.power.time;

@@ -108,7 +108,7 @@ uimenu(hSegMenu,'Label','Reject Trials','Callback',@(varargin) FT.RunFunction(@F
 
 % Analysis
 hAnaMenu  = uimenu(h,'Label','Analysis');
-uimenu(hAnaMenu,'Label','Average ERPs','Callback',@(varargin) FT.RunFunction(@FT.AverageERP));
+uimenu(hAnaMenu,'Label','Average ERPs','Callback',@(varargin) FT.RunFunction(@FT.average.Gui));
 uimenu(hAnaMenu,'Label','Time-Frequency Decomposition','Callback',@(varargin) FT.RunFunction(@FT.tfd.Gui));
 uimenu(hAnaMenu,'Label','ERP Grand Average','Callback',@(varargin) FT.RunFunction(@FT.GrandAverage));
 uimenu(hAnaMenu,'Label','Find Peaks & Valleys','Callback',@(varargin) FT.RunFunction(@FT.PeakFinder));

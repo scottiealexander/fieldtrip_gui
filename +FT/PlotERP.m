@@ -17,11 +17,9 @@ function PlotERP(varargin)
 
 global FT_DATA;
 
-if ~FT_DATA.done.average || ~isfield(FT_DATA.data{1},'avg')
-    FT.UserInput(['\color{red}Average ERPs do not exist for this dataset!\n\color{black}'...
-        'Please use:\n      \bfAnalysis->Average ERPs\rm\nbefore viewing ERPs.'],...
-        0,'title','Averaging Not Done','button','OK');
-    return
+%make sure we are ready to run
+if ~FT.tools.Validate('plot_avg','done',{'average'})
+    return;
 end
 
 pFig = GetFigPosition(800,600);
