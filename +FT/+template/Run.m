@@ -17,6 +17,13 @@ steps = FT_DATA.template(2:end);
 params = FT_DATA.template{1}.params;
 ext = ['*.' params.ext];
 
+% move to the template's directory
+[tempPath,tempName] = fileparts(FT_DATA.path.template);
+strDirCur = pwd;
+if isdir(tempPath)
+    cd(tempPath);
+end
+
 % Neuralynx data files
 if strcmpi('',params.ext)
     while (true)
@@ -76,6 +83,9 @@ else
     end
 end
 
+% Return to original directory
+cd(strDirCur);
+
 nFiles = numel(files);
 tSteps = numel(steps);
 
@@ -98,7 +108,10 @@ for i = 1:nFiles
     % Run each processing step
     for j = 1:tSteps
         op = strsplit(steps{j}.operation,'_');
-        if numel(op) == 1
+        if strcmpi('save',op{1})
+            FT.io.WriteDataset(fullfile(steps{j}.params.path,[tempName...
+                num2str(j) '_' strName num2str(i) '.set']));
+        elseif numel(op) == 1
             me = FT.(op{1}).Run(steps{j}.params);
         elseif numel(op) == 2
             me = FT.(op{2}).(op{1}).Run(steps{j}.params);
@@ -113,12 +126,10 @@ for i = 1:nFiles
         end
     end
 
-    % Save the processed data
-    if ~isa(me,'MException')
-        [~,dataName] = fileparts(files{i});
-        [tempPath,tempName] = fileparts(FT_DATA.path.template);
-        FT.io.WriteDataset(fullfile(tempPath,[tempName '_' dataName '.set']));
-    end
+%     % Save the processed data (only if there are multiple)
+%     if ~isa(me,'MException') && nFiles > 1
+%         FT.io.WriteDataset(fullfile(tempPath,[tempName '_' strName '.set']));
+%     end
 end
 
 FT.UpdateGUI;

@@ -35,3 +35,10 @@ else
     fprintf('data is < 2GB in size, using MAT file version 7.0...\n');
     save(strPathOut,'-struct','FT_DATA');
 end
+
+FT_DATA.saved = true;
+
+%add to history
+[path,name,ext] = fileparts(strPathOut);
+params = struct('path',path,'name',name,'ext',ext);
+FT.tools.AddHistory('save',params);

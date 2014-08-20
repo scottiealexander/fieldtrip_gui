@@ -71,8 +71,6 @@ params.raw = ~any(strcmpi(params.ext,{'mat','set'}));
 
 hMsg = FT.UserInput('Reading data from file, plese wait...',1);
 
-% clear old data
-FT.io.ClearDataset;
 % read new data    
 me = FT.io.ReadDataset(params);
 

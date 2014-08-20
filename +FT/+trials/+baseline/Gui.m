@@ -14,19 +14,14 @@ function varargout = Gui(varargin)
 %
 % Updated: 2014-06-27
 % Scottie Alexander
-%
-% Please report bugs to: scottiealexander11@gmail.com
-
-global FT_DATA;
-varargout{1} = [];
 
 %make sure we are ready to run
-if ~FT.tools.Validate('baseline_trials','todo',{'average'})%,'done',{'segment_trials'})
+if ~FT.tools.Validate('baseline_trials','todo',{'average'},'done',{'segment_trials'})
     return;
 end
 
+varargout{1} = [];
 cfg = FT.tools.CFGDefault(struct('demean','yes','baselinewindow',[NaN NaN]));
-
 cList = {'Event','Trial Start'};
 
 c = {...
@@ -43,9 +38,10 @@ c = {...
 win = FT.tools.Win(c,'title','Baseline Correction','grid',true,'focus','wstart');
 win.Wait;
 
+% If ths user presses run, it fails on invalid input, and then the windows
+% is closed it will look like run was pressed (thus the second condition)
 if strcmpi(win.res.btn,'run') && ~any(isnan(cfg.baselinewindow))
     if ~nargout
-        
         hMsg = FT.UserInput('Running baseline correction...',1);
 
         me = FT.trials.baseline.Run(cfg);
@@ -58,51 +54,50 @@ if strcmpi(win.res.btn,'run') && ~any(isnan(cfg.baselinewindow))
         FT.UpdateGUI;
     else
         varargout{1} = cfg;
-    end    
-else
-    varargout{1} = []; 
+    end
 end
 
 %-----------------------------------------------------------------------------%
-function [b,val] = Validate(obj,varargin)
+function [b,val] = Validate(~,varargin)
+    % Is the baseline window relative to an event or trial start
+    ref  = cList{win.GetElementProp('ref','Value')};
+
+    % Get the baseline time window
     tstart = str2double(win.GetElementProp('wstart','String'));
     tend = str2double(win.GetElementProp('wend','String'));
-    ref  = cList{win.GetElementProp('ref','Value')};
-    b = true;
-    val = '';
-    cfg.baselinewindow = [tstart tend];
+    baselinewin = [tstart tend];
     
+    % Get the trial time window
     time = FT.tools.GetParameter('data','time');
     if iscell(time)
         time = time{1};
     end
     validwin = [min(time),max(time)];
     
-    if isnan(tstart) || isnan(tend) || tstart >= tend
-        b = false;
-        val = ['\bf[\color{yellow}WARNING\color{black}]: Invalid value given.\n\n',...
-                'Start and End times MUST be numeric, and Start must come before End.'];
-% *** TODO: Fix? ***
-    elseif strncmpi(ref,'trial',5) && strcmpi(FT_DATA.epoch{1}.ifo.format,'timelock')
-        %baseline is given relative to trial start but segments are
-        %defined relative to an event           
-        cfg.baselinewindow = cfg.baselinewindow - FT_DATA.epoch{1}.ifo.pre;
-        validwin = validwin + FT_DATA.epoch{1}.ifo.pre;
+    % Baseline is given relative to trial start but segments are defined relative to an event           
+    if strcmpi('trial start',ref)
+        baselinewin = baselinewin + min(time);
+        validwin = validwin - min(time);
     end
-
-    %segments are defined relative to a timelocking event
-    if b && (cfg.baselinewindow(1) < min(time) || cfg.baselinewindow(2) > max(time))
+    
+    % Invalid baseline window
+    if any(isnan(baselinewin)) || baselinewin(1) > baselinewin(2)
+        b = false;
+        val = ['\bf[\color{yellow}WARNING\color{black}]: Invalid value(s) given.\n\n',...
+            'Start and end times MUST be numeric, and Start must come before End.'];
+    % Baseline window extends beyond the trial window
+    elseif (baselinewin(1) < min(time) || baselinewin(2) > max(time))
         b = false;
         val = ['\bf[\color{yellow}WARNING\color{black}]: Invalid time range.\n\n',...
-                  'The baseline start and/or end times that you ',...
-                  'entered fall outside the time range of the trials [',...
-                  num2str(validwin(1)) ',' num2str(validwin(2)) '].']; 
-    end 
-    
-    %make cfg invalid if fail (so will not run if user closes the window)
-    if ~b
-        cfg.baselinewindow = [NaN,NaN];
+            'The baseline start and/or end times entered fall outside the ',...
+            'time range of the trials [' num2str(validwin) '].']; 
+    % Valid baseline window
+    else
+        b = true;
+        val = '';
+        cfg.baselinewindow = baselinewin;
     end
+
     val = strrep(val,'\n',char(10));
 end
 %-----------------------------------------------------------------------------%

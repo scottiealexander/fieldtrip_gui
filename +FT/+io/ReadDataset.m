@@ -19,18 +19,24 @@ global FT_DATA;
 me = [];
 
 try
+    % clear old data
+    FT.io.ClearDataset;
+    
     FT_DATA.current_dataset = params.name;
     
     if ~params.raw  
         FT.io.ReadSetFile(params.full);
         FT_DATA.path.dataset = params.full;
+        
+        % If the .set file contained no base dir or an invalid one
+        if ~isdir(FT_DATA.path.base_directory)
+            FT_DATA.path.base_directory = params.path;
+        end
     else
         FT.io.ReadRawFile(params.full);
         FT_DATA.path.raw_file = params.full;
-    end
-    
-    % There is no base dir or the .set file contained an invalid one
-    if ~isdir(FT_DATA.path.base_directory)
+        
+        % Update base dir to reflect most recent file
         FT_DATA.path.base_directory = params.path;
     end
     

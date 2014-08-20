@@ -86,7 +86,7 @@ std_avg = 0; % std. dev. of data averaged over all trials and channels
 % De-mean each time series
 for i = 1:size(data,1)
     for j = 1:size(data,3)
-        data(i,:,j) = data(i,:,j) - mean(data(i,:,j));
+%         data(i,:,j) = data(i,:,j) - mean(data(i,:,j));
         std_avg = std_avg + std(data(i,:,j));
     end
 end
