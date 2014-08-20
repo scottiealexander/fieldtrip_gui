@@ -82,7 +82,7 @@ try
         FT_DATA.event = FT.ReStruct(evt);
 
         %neuralynx events
-        if strcmpi(params.type,'nlx')
+        if strcmpi(params.type,'ncs')
             ParseNLXEvents;
         end
     end

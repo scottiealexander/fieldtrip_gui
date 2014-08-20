@@ -16,8 +16,10 @@ function varargout = Gui(varargin)
 % Scottie Alexander
 
 %make sure we are ready to run
-if ~FT.tools.Validate('baseline_trials','todo',{'average'},'done',{'segment_trials'})
-    return;
+if ~nargout
+    if ~FT.tools.Validate('baseline_trials','todo',{'average'},'done',{'segment_trials'})
+        return;
+    end
 end
 
 varargout{1} = [];

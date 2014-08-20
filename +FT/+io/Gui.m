@@ -1,4 +1,4 @@
-function Gui(obj,varargin)
+function Gui(varargin)
 
 % FT.io.Gui
 %
@@ -23,40 +23,16 @@ if isdir(FT_DATA.path.base_directory)
     cd(FT_DATA.path.base_directory);       
 end
 
-%figure out what the user is trying to load
-if ishandle(obj)
-    str = get(obj,'Label');
-elseif ischar(obj)
-    str = obj;
-else
-    me = MException('FT:InvalidFormat','Invalid call to FT.io.Gui, first input should be a handle or a string');
-    FT.ProcessError(me);
-    cd(strDirCur);
-    return;    
-end
+%user-selected file
+[strName,strPath] = uigetfile('*','Load File');
 
-switch lower(str)
-    case 'eeg file / dataset'
-        [strName,strPath] = uigetfile('*','Load File');
-        if ~isequal(strName,0) && ~isequal(strPath,0)
-            strPath = fullfile(strPath,strName);
-        end
-    case 'neuralynx dataset'
-        strPath = uigetdir(pwd,'Load Neuralynx Dataset');
-    otherwise
-        me = MException('FT:InvalidFormat','Invalid call to FT.io.Gui, first input should be a handle or a string');
-        FT.ProcessError(me);
-        cd(strDirCur);
-        return;
-end
-
-%move back to the original directory
+% move back to the original directory
 cd(strDirCur);
 
-if isequal(strPath,0)
-	%user selected cancel
-	return; 
+if isequal(strName,0) || isequal(strPath,0)
+    return; % user selected cancel
 end
+strPath = fullfile(strPath,strName);
 
 sep = filesep;
 if sep == '\'
@@ -65,6 +41,12 @@ end
 
 [strBase,strName,ext] = fileparts(regexprep(strPath,[sep '$'],''));
 ext = regexprep(ext,'^\.','');
+
+% Neuralynx file
+if strcmpi('ncs',ext)
+    [strBase,strName] = fileparts(strBase);
+    strPath = fullfile(strBase,strName);
+end
 
 params = struct('name',strName,'path',strBase,'full',strPath,'ext',ext);
 params.raw = ~any(strcmpi(params.ext,{'mat','set'}));
@@ -79,7 +61,6 @@ if ishandle(hMsg)
 end
 
 if ~isa(me,'MException')
-    
     %process events? important if the data is from an edf file...
     if params.raw
         if strcmpi(params.ext,'edf')
@@ -94,7 +75,6 @@ if ~isa(me,'MException')
             FT.events.read.Gui;
         end
     end
-    
 else
     % failed to load data somehow
     FT.ProcessError(me);

@@ -24,64 +24,45 @@ if isdir(tempPath)
     cd(tempPath);
 end
 
-% Neuralynx data files
-if strcmpi('',params.ext)
-    while (true)
-        strPath = uigetdir(pwd,'Pick a file');
-        
-        if isequal(strPath,0)
-            return; % user selected cancel
-        end
-        files{end+1} = strPath;
+while (true)
+    [strNames, strPath, ind] = uigetfile(ext,'Pick a file','MultiSelect','on');
 
-        % Don't keep duplicate entries
-        files = unique(files);
-
-        % Query the user to continue adding directories
-        resp = FT.UserInput(['Files to analyze:\n' strjoin(files,'\n')],1,...
-            'title','Include More Files?','button',{'Yes','No (Run)','Cancel'});
-        if strcmpi(resp,'cancel')
-            return;
-        elseif strcmpi(resp,'no (run)')
-            break;
+    % Check that valid files were selected
+    if isequal(strNames,0) || isequal(strPath,0)
+        return; % user selected cancel
+    elseif ind ~= 1
+        FT.UserInput(['File extensions must be consistant with those in the template ('...
+            ext ')'],1,'button',{'OK'},'title','NOTICE');
+        continue;
+    end
+    
+    % Neuralnyx file (load entire folder)
+    if strcmpi(params.ext,'ncs')
+        strNames = '';
+    end
+    
+    % Add all files selected
+    if ~iscell(strNames)
+        files{end+1} = fullfile(strPath,strNames);
+    else
+        for i = 1:numel(strNames)
+            files{end+1} = fullfile(strPath,strNames{i});
         end
     end
-% All other data files
-else
-    while (true)
-        [strNames, strPath, ind] = uigetfile(ext,'Pick a file','MultiSelect','on');
-        
-        % Check that valid files were selected
-        if isequal(strNames,0) || isequal(strPath,0)
-            return; % user selected cancel
-        elseif ind ~= 1
-            FT.UserInput(['File extensions must be consistant with those in the template ('...
-                ext ')'],1,'button',{'OK'},'title','NOTICE');
-            continue;
-        end
-        
-        % Add all files selected
-        if ~iscell(strNames)
-            files{end+1} = fullfile(strPath,strNames);
-        else
-            for i = 1:numel(strNames)
-                files{end+1} = fullfile(strPath,strNames{i});
-            end
-        end
 
-        % Don't keep duplicate files
-        files = unique(files);
+    % Don't keep duplicate files
+    files = unique(files);
 
-        % Query the user to continue adding files
-        resp = FT.UserInput(['Files to analyze:\n' strjoin(files,'\n')],1,...
-            'title','Include More Files?','button',{'Yes','No (Run)','Cancel'});
-        if strcmpi(resp,'cancel')
-            return;
-        elseif strcmpi(resp,'no (run)')
-            break;
-        end
+    % Query the user to continue adding files
+    resp = FT.UserInput(['Files to analyze:\n' strjoin(files,'\n')],1,...
+        'title','Include More Files?','button',{'Yes','No (Run)','Cancel'});
+    if strcmpi(resp,'cancel')
+        return;
+    elseif strcmpi(resp,'no (run)')
+        break;
     end
 end
+
 
 % Return to original directory
 cd(strDirCur);
@@ -125,11 +106,6 @@ for i = 1:nFiles
             break;
         end
     end
-
-%     % Save the processed data (only if there are multiple)
-%     if ~isa(me,'MException') && nFiles > 1
-%         FT.io.WriteDataset(fullfile(tempPath,[tempName '_' strName '.set']));
-%     end
 end
 
 FT.UpdateGUI;

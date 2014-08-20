@@ -19,8 +19,6 @@ function b = IsNLXFile(varargin)
 
 global FT_DATA;
 
-b = false;
-
 if ~isempty(varargin)
     if ischar(varargin{1})
         strPath = varargin{1};

@@ -29,7 +29,8 @@ params = struct;
 
 %get file format
 [~,~,ext] = fileparts(FT_DATA.path.raw_file);
-ext = strrep(ext,'.','');
+ext = regexprep(ext,'^\.','');
+params.type = ext;
 
 %convert code pulses to events if need be
 if strcmpi(ext,'edf')
@@ -73,10 +74,8 @@ if strcmpi(ext,'edf')
     params.interval = win.res.interval;
     params.max_pulse = win.res.max_pulse;
     
-elseif FT.tools.IsNLXFile
-    params.type = 'nlx';
-else
-    params.type = ext;
+elseif strcmpi(ext,'')
+    params.type = 'ncs';
 end
 
 hMsg = FT.UserInput('Reading events...',1);
@@ -92,7 +91,7 @@ FT.ProcessError(me);
 FT.UpdateGUI;
 
 %------------------------------------------------------------------------------%
-function SelectChannel(obj,evt)
+function SelectChannel(obj,~)
 %allow user to select the stim channel    
     %set the height of the figure
     nChan = numel(FT_DATA.data.label);

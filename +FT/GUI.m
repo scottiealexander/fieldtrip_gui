@@ -56,10 +56,10 @@ uimenu(hTempMenu,'Label','Load Existing','Callback',@(varargin) FT.RunFunction(@
 uimenu(hTempMenu,'Label','Run Current','Callback',@(varargin) FT.RunFunction(@FT.template.Run));
 
 %read in data
-hRead = uimenu(hFileMenu,'Label','Load Data');
-uimenu(hRead,'Label','EEG File / Dataset','Callback',@FT.io.Gui,'Accelerator','L');
-uimenu(hRead,'Label','Neuralynx Dataset','Callback',@FT.io.Gui);
-
+% hRead = uimenu(hFileMenu,'Label','Load Data');
+% uimenu(hRead,'Label','EEG File / Dataset','Callback',@FT.io.Gui,'Accelerator','L');
+% uimenu(hRead,'Label','Neuralynx Dataset','Callback',@FT.io.Gui);
+uimenu(hFileMenu,'Label','Load Data','Callback',@FT.io.Gui,'Accelerator','L');
 %save
 uimenu(hFileMenu,'Label','Save Dataset','Callback',@SaveDataset);
 
