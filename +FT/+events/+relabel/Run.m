@@ -22,17 +22,18 @@ me = [];
 try
     % Restructure the events struct
     events = FT.ReStruct(FT_DATA.event);
+    evtVals = events.value;
     
-    % Make sure the events.value is a cell of strings that can be field names
-    if ~iscell(events.value)
-        events.value = arrayfun(@(x) num2str(x),events.value,'uni',false);
-    elseif ~iscellstr(events.value)
-        events.value = cellfun(@(x) num2str(x),events.value,'uni',false);
+    % Make sure the evtVals is a cell of strings that can be field names
+    if ~iscell(evtVals)
+        evtVals = arrayfun(@(x) num2str(x),evtVals,'uni',false);
+    elseif ~iscellstr(evtVals)
+        evtVals = cellfun(@(x) num2str(x),evtVals,'uni',false);
     end
-    events.value = matlab.lang.makeValidName(events.value);
+    evtVals = matlab.lang.makeValidName(evtVals);
     
     % One of each value that appears
-    values = unique(events.value);
+    values = unique(evtVals);
     
     % Initialize all the event to a type of none
     events.type(:) = {'none'};
@@ -42,8 +43,8 @@ try
         % If params contains a field for events with this value
         if isfield(params,values{i})
             % Apply the label (or code file) from params to these events
-            bSet = strcmpi(events.value,values{i});
-            labels = FT.events.relabel.ProcLabel(params.(values{i}),values{i},events.value);
+            bSet = strcmpi(evtVals,values{i});
+            labels = FT.events.relabel.ProcLabel(params.(values{i}),values{i},evtVals);
             events.type(bSet) = labels(:);
         end
     end

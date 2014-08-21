@@ -40,12 +40,12 @@ pulse_int   = (FT_DATA.pulse_evts.interval/1000)*FT_DATA.pulse_evts.fs;
 siz_win = round(FT_DATA.pulse_evts.fs*.3); % ~# samples in 250ms
 
 % --- FIGURE --- %;
-pFig = GetFigPosition(800,720);
+pFig = FT.tools.GetFigPosition(800,720);
 
 h = figure('Units','pixels','OuterPosition',pFig,...
            'Name','Event Check','NumberTitle','off','MenuBar','none');
 
-pFigCtrl = GetFigPosition(250,250);
+pFigCtrl = FT.tools.GetFigPosition(250,250);
 pFigCtrl(1) = pFig(1) - 250;
 hCtrl = figure('Units','pixels','OuterPosition',pFigCtrl,...
            'Name','Plot Control','NumberTitle','off','MenuBar','none');
