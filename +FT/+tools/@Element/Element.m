@@ -22,7 +22,7 @@ properties
     fig;
     ax; 
     string = '';
-    len = [1 5];
+    len = [nan nan];
     pos = zeros(1,4);   
     opt;
     tag = '';
@@ -48,7 +48,7 @@ methods
         
         if isfield(s,'size')
             if numel(s.size) == 1
-                s.size = [1 s.size];
+                s.size = [nan s.size];
             end
             self.len = s.size;
             s = rmfield(s,'size');
@@ -288,19 +288,29 @@ methods (Access=private)
                 'Units'    , 'pixels'     ,...
                 'Position' , self.pos     ,...
                 'Parent'   , self.fig      ...
-              };
+              }; 
+        default_len = [1 5];
         switch self.type
             case {'edit','checkbox','listbox'}
                 def = [def {'BackgroundColor',[1 1 1]}];
                 if iscell(self.string)
                     def = [def {'Min',0,'Max',2}];
-                    self.len = [numel(self.string) max(cellfun(@numel,self.string))];
+                    default_len = [numel(self.string) max(cellfun(@numel,self.string))];
                 elseif ~isempty(self.string)
-                    self.len = [1 numel(self.string)];                
+                    default_len = [1 numel(self.string)];                
                 end
             case 'text'
                 def = [def {'BackgroundColor',get(self.fig,'Color')}]; %get(self.fig,'Color')
         end
+        % If the user hasn't provided a valid size use the default or
+        % automatically determined size
+        if isnan(self.len(1)) || ~isnumeric(self.len(1))
+            self.len(1) = default_len(1);
+        end
+        if isnan(self.len(2)) || ~isnumeric(self.len(2))
+            self.len(2) = default_len(2);
+        end
+        
         def = self.pvpair2struct(def);
         fields = fieldnames(s);
         for k = 1:numel(fields)

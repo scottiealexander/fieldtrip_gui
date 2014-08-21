@@ -1,8 +1,8 @@
-function Gui(varargin)
+function Gui()
 
 % FT.events.relabel.Gui
 %
-% Description: relabel events based on either user input or specified file
+% Description: get parameters for relabeling events
 %
 % Syntax: FT.events.relabel.Gui
 %
@@ -10,157 +10,125 @@ function Gui(varargin)
 %
 % Out: 
 %
-% SEE ALSO: FT.events.relabel.Run
+% See also: FT.events.relabel.Run
 %
-% Updated: 2014-07-15
-% Scottie Alexander
-%
-% Please report bugs to: scottiealexander11@gmail.com
+% Updated: 2014-08-21
+% Peter Horak
 
 global FT_DATA;
 
-if ~FT.tools.Validate('relabel_events','done',{'read_events'},'todo',{'segment_trials'})
+%make sure we are ready to run
+if ~FT.tools.Validate('relabel_events','done',{'read_events'},'todo',{'define_trials'})
     return;
 end
 
-bRun = false;
-strMap = '';
+% Restructure the events struct
+events = FT.ReStruct(FT_DATA.event);
 
-evt = FT.ReStruct(FT_DATA.event);
+% Make sure the events.value is a cell of strings that can be field names
+if ~iscell(events.value)
+    events.value = arrayfun(@(x) num2str(x),events.value,'uni',false);
+elseif ~iscellstr(events.value)
+    events.value = cellfun(@(x) num2str(x),events.value,'uni',false);
+end
+events.value = matlab.lang.makeValidName(events.value);
 
-s.vals = unique(evt.value);
+% Create list of values along with # occurances
+values = unique(events.value); % event values
+valList = cellfun(@(x) ['"' x '"(' num2str(sum(strcmpi(x,events.value))) ')'],values,'uni',false);
 
-if isnumeric(evt.value)
-    s.freq = arrayfun(@(x) sum(evt.value==x),s.vals);
-else
-    s.freq = arrayfun(@(x) sum(strcmpi(x,evt.value)),s.vals);
+% Cell array of event values (text) and input labels (edit)
+textList = cellfun(@(x) {'text','string',x},valList,'uni',false);
+editList = cellfun(@(x) {'edit','string','','tag',x,'callback',@UpdateColor},values,'uni',false);
+inputFields = cat(2,textList,editList);
+
+% Cell array of control buttons
+buttons = {{'pushbutton','string','Save','callback',@Save},...
+    {'pushbutton','string','Load','callback',@Load};...
+    {'pushbutton','string','Done'},...
+    {'pushbutton','string','Cancel'}};
+
+% Create user input window with specified content (c)
+c = cat(1,inputFields,buttons);
+win = FT.tools.Win(c,'title','Relabel Events','grid',true,'focus',values{1});
+win.Wait;
+
+% User selected cancel
+if strcmpi(win.res.btn,'cancel')
+    return;
 end
 
-strCodeCur = FT.io.WriteStruct(s,'headers',{'code','# of occurances'},'delim',9);
+% Strip button field and use edit box inputs as the parameters
+params = rmfield(win.res,'btn');
 
-strInst = ['#any line begining with a ''#'' is a comment' 10,...
-           '#format: new_code = old_code' 10,...
-           '#examples: ' 10,...
-           '#   trial_start = 1' 10,...
-           '#   stimulus_onset = [2,3,4]' 10,...
-           '#   response = "S17"' 10,...
-           '#   error = ["S9","S20","S30"]' 10];
+hMsg = FT.UserInput('Relabeling events...',1);
 
-%get the size and position for the figure
-pFig = FT.tools.GetFigPosition(800,600);
+me = FT.events.relabel.Run(params);
 
-%main figure
-h = figure('Units','pixels','OuterPosition',pFig,...
-           'Name','Recode Events','NumberTitle','off','MenuBar','none',...
-           'KeyPressFcn',@FT.tools.KeyPress);
-
-%--- current event codes --- %
-hPanelCur = uipanel('Units','normalized','Position',[.63 .6 .35 .4],'HighlightColor',[0 0 0],...
-    'Title','Current Event Codes','FontSize',12,'FontWeight','bold','Parent',h);
-
-%show user current event codes
-uicontrol('Style','edit','Units','normalized','Position',[.01 .01 .99 .99],...
-            'String',strCodeCur,'Parent',hPanelCur,'BackgroundColor',[1 1 1],...
-            'HorizontalAlignment','left','Max',2,'Min',0,'Enable','Inactive',...
-            'FontSize',14);
-        
-% --- new event codes --- %
-hPanelNew = uipanel('Units','normalized','Position',[.02 .02 .59 .98],...
-    'HighlightColor',[0 0 0],'Title','New Event Codes','FontSize',12,'FontWeight','bold','Parent',h);
-
-%edit box for new event codes
-hEdit = uicontrol('Style','edit','Units','normalized','Position',[.01 .01 .99 .99],...
-    'String',strInst,'Parent',hPanelNew,'BackgroundColor',[1 1 1],...
-    'HorizontalAlignment','left','Max',2','Min',0,'FontSize',14);
-
-% --- control buttons --- %
-%load
-uicontrol('Style','pushbutton','Units','normalized','Position',[.68 .26 .25 .1],...
-    'String','Load New Codes From File','Callback',@LoadBtn,'Parent',h);
-
-%write
-uicontrol('Style','pushbutton','Units','normalized','Position',[.68 .14 .25 .1],...
-    'String','Write New Codes To File','Callback',@WriteBtn,'Parent',h);
-
-%submit
-uicontrol('Style','pushbutton','Units','normalized','Position',[.68 .02 .25 .1],...
-    'String','Submit','Callback',@SubmitBtn,'Parent',h);
-
-% --- wait for user --- %
-uicontrol(hEdit);
-uiwait(h);
-
-if bRun
-    %parse the mapping and recode the events
-    params.strMap = strMap;
-    FT.events.relabel.Run(params);
+if ishandle(hMsg)
+    close(hMsg);
 end
 
-%------------------------------------------------------------------------------%
-function SubmitBtn(obj,evt)
-%get the new event codes and terminate
-    strMap = FT.tools.ReformatStr(get(hEdit,'String'));
-    bRun = true;
-    if ishandle(h)
-        close(h);
+FT.ProcessError(me);
+
+FT.UpdateGUI;
+
+%-------------------------------------------------------------------------%
+% Change the background color of an edit box to reflect its contents
+function UpdateColor(obj,varargin)
+    [~,color] = FT.events.relabel.ProcLabel(get(obj,'string'),get(obj,'tag'),events.value);
+    set(obj,'BackgroundColor',color);
+end
+%-----------------------------------------------------------------------------%
+% Save the current labels to a .evtc (event code) file
+function Save(~,varargin)
+    % Collect the codes (labels) for each event value in a struct
+    evtc = struct;
+    for i = 1:numel(values)
+        evtc.(values{i}) = win.GetElementProp(values{i},'string');
+    end
+    
+    % Choose a file to save the codes in
+    [strName,strPath] = uiputfile({'*.evtc','Event code files (*.evtc)'},...
+        'Save Event Code File',fullfile(FT_DATA.path.base_directory,'new_codes.evtc'));
+    
+    % Save the codes as a struct
+    if ~isequal(strName,0) && ~isequal(strPath,0)
+        strPathEvt = fullfile(strPath,strName);
+        save(strPathEvt,'-struct','evtc');
     end
 end
-%------------------------------------------------------------------------------%
-function LoadBtn(obj,evt)
-%read event codes from file
+%-----------------------------------------------------------------------------%
+% Load labels from a .evtc (event code) file
+function Load(~,varargin)
+    % Choose an event code file to load
     strDir = pwd;
     if isdir(FT_DATA.path.base_directory)
         cd(FT_DATA.path.base_directory);
     end
-    [strName,strPath] = uigetfile({'*.txt;*.asc;*.cfg;*.evt','Event code files (*.txt *.asc *.cfg *.evt)'},...
-                                   'Load Event Code File');
+    [strName,strPath] = uigetfile({'*.evtc','Event code files (*.evtc)'},'Load Event Code File');
     cd(strDir);
+    
+    % Check that the user didn't select cancel
     if ~isequal(strName,0) && ~isequal(strPath,0)
         strPathEvt = fullfile(strPath,strName);
-        fid = fopen(strPathEvt,'r');
-        if fid > 0
-           str = reshape(cast(fread(fid,'char'),'char'),1,[]);
-           set(hEdit,'String',str);
-           fclose(fid);
-        else
-            %nothing to do
+        
+        % Attempt to load the codes
+        err = []; try evtc = load(strPathEvt,'-mat'); catch err; end
+        if ~isa(err,'MException') && ~isempty(evtc)
+            
+            % For each event type, if evtc has a corresponding code use it,
+            % otherwise set the code to ''
+            for i = 1:numel(values)
+                if isfield(evtc,values{i})
+                    win.SetElementProp(values{i},'string',evtc.(values{i}));
+                else
+                    win.SetElementProp(values{i},'string','');
+                end
+                UpdateColor(win.GetElementProp(values{i},'h'));
+            end
         end
-    end    
+    end
 end
-%------------------------------------------------------------------------------%
-function WriteBtn(obj,evt)
-%write event codes to file
-    strDir = pwd;
-    cd(FT_DATA.path.base_directory);
-    [strName,strPath] = uiputfile({'*.txt;*.asc;*.cfg;*.evt','Event code files (*.txt *.asc *.cfg *.evt)'},...
-            'Load Event Code File',fullfile(FT_DATA.path.base_directory,'new_codes.evt'));
-    cd(strDir);
-    if ~isequal(strName,0) && ~isequal(strPath,0)
-        strPathEvt = fullfile(strPath,strName);
-        fid = fopen(strPathEvt,'w');
-        if fid > 0
-           str = FT.tools.ReformatStr(get(hEdit,'String'));           
-           fprintf(fid,'%s\n',str);
-           fclose(fid);
-        else
-            %nothing to do
-        end
-    end    
+%-------------------------------------------------------------------------%
 end
-%------------------------------------------------------------------------------%
-end
-
-%{
-prompt={'New Event Codes'};
-name='Recode Events';
-numlines=[20 50];
-defaultanswer={['#any line begining with a ''#'' is a comment' 10 ...
-    '#format: new_code = old_code' 10 ...
-    '#examples: ' 10 ...
-    '#   trial_start = 1' 10 ...
-    '#   stimulus_onset = [2,3,4]' 10 ...
-    '#   response = "S17"' 10 ...
-    '#   error = ["S9","S20","S30"]' 10]};
-resize='on';
-answer=inputdlg(prompt,name,numlines,defaultanswer,resize);
-%}

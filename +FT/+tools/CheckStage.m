@@ -27,8 +27,7 @@ if isfield(FT_DATA.done,strStage)
         
         % Use red warning for operations that generally should not be rur twice
         if ismember(strStage,{'resample','filter','rereference','read_events',...
-                'relabel_events','define_trials','segment_trials','baseline_trials',...
-                'tfd','average'})
+                'segment_trials','baseline_trials','tfd','average'})
             color = 'red';
         else
             color = 'yellow';
