@@ -34,8 +34,8 @@ kFinal  = [];
 kData   = 1;
 kStim   = strcmpi(FT_DATA.pulse_evts.channel,FT_DATA.data.label);
 
-pulse_width = (FT_DATA.pulse_evts.width/1000)*FT_DATA.pulse_evts.fs;
-pulse_int   = (FT_DATA.pulse_evts.interval/1000)*FT_DATA.pulse_evts.fs;
+pulse_width = (FT_DATA.pulse_evts.width/1000)*FT_DATA.data.fsample;
+pulse_int   = (FT_DATA.pulse_evts.interval/1000)*FT_DATA.data.fsample;
 
 siz_win = round(FT_DATA.pulse_evts.fs*.3); % ~# samples in 250ms
 

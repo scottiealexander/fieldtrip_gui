@@ -105,6 +105,7 @@ set(f,'DefaultAxesColorOrder',[0,0,1;0,.5,0;1,0,0;0,.75,.75;.75,0,.75;.75,.75,0;
 % set(f,'DefaultAxesColorOrder',[0,0,1]);
 
 hAx = axes; % handle to plot axis object
+set(f,'DeleteFcn',@FigDeleteFcn);
 
 c = {% Channel Browsing
      {'text','string','Chan:'},...
@@ -131,7 +132,7 @@ c = {% Channel Browsing
      {'pushbutton','string','Cancel','tag','cancel','validate',false},...
      {'text','string',''};...
      {'pushbutton','string','Plot','Callback',@Plot},...
-	 {'pushbutton','string','Exit','validate',false}...
+	 {'pushbutton','string','Done','validate',false}...
 	};
 
 w = FT.tools.Win(c,'position',[-ww*.25-100 0],'focus','cancel'); % user input/control window
@@ -144,19 +145,21 @@ if ishandle(f)
     close(f);
 end
 
-if strcmpi(w.res.btn,'cancel')
+if ~strcmpi(w.res.btn,'done')
     marks = [];
 end
 
 %-------------------------------------------------------------------------%
-
-% Update the plot (data viewer)
-function UpdatePlot()
-    % If the plot was manually close, quit
-    if ~ishandle(hAx)
+function FigDeleteFcn(~,~)
+    if ishandle(w.h)
         close(w.h);
         return;
     end
+end
+%-------------------------------------------------------------------------%
+
+% Update the plot (data viewer)
+function UpdatePlot()
     
     % Plot nearby channels on the same plot...
     if group_chan

@@ -24,6 +24,8 @@ function me = Run(params)
 global FT_DATA;
 me = [];
 
+fs_prev = FT_DATA.data.fsample;
+
 cfg = FT.tools.CFGDefault(params);
 cfg.detrend = 'no'; %we'll have to check on these
 cfg.demean  = 'no';
@@ -53,7 +55,7 @@ FT_DATA.done.resample = isempty(me);
 function ResampleEvents
 %resample event indicies according to new sampling rate
     if isfield(FT_DATA,'event') && ~isempty(FT_DATA.event)
-        fs_ratio = FT_DATA.data.fsample/FT_DATA.data.hdr.Fs;
+        fs_ratio = FT_DATA.data.fsample/fs_prev;
         evt = FT.ReStruct(FT_DATA.event);
         evt.sample = ceil(evt.sample*fs_ratio);
         FT_DATA.event = FT.ReStruct(evt);
