@@ -1,462 +1,312 @@
-function Gui(varargin)
-
+function Gui()
 % FT.events.check.Gui
 %
-% Description: check events against stimulus channel data
+% Description: allow the user to manually check the position and value of
+% events that were translated from pulses on the stimulus channel
 %
-% Syntax: FT.events.check.Gui
+% Syntax: FT.events.check.Gui()
 %
 % In:
 %
 % Out:
 %
-% Updated: 2014-03-13
-% Scottie Alexander
+% GUI Controller:
+%       Event- event number
+%       Prev - make previous event the current
+%       Next - make the next event the current
+%       Plot - make the event given above the current
+%       Del  - delete the current event
+%       Type - event name
+%       Value- number of pulses in event
+%         +  - magnify (zoom in on) the horizontal axis
+%         -  - minify (zoom out of) the horizontal axis
+%         <  - scroll left  along the horizontal axis
+%         >  - scroll right along the horizontal axis
+%       Done - apply all changes and close the browser
+%       Cancel - discard all changes and close the browser
 %
-% See also: FT.events.check.Run
+% Updated: 2014-08-25
+% Peter Horak
 
 global FT_DATA;
 
-if ~FT.tools.Validate('check_events','done',{'read_events'},'todo',{'remove_channels','segment_trials'})
+if ~FT.tools.Validate('check_events','done',{'read_events'},'todo',{'remove_channels','define_trials'})
     return;
 end
 
 if ~isfield(FT_DATA,'pulse_evts')
-    FT.UserInput(['\color{red}Events did not have to be translated from pulses for this dataset!\n\color{black}'...
-        'No manual event checking is needed.'],0,'title','No Event Translation','button','OK');
+    FT.UserInput(['\bf\color{yellow}Notice\color{black}Events did not have to be translated from pulses for this dataset!\n\color{black}'...
+        'No manual event checking is needed.'],0,'title','Notice','button','OK');
     return;
 end
 
-EVENT   = FT.ReStruct(FT_DATA.event);
-bRM     = false;
-kRemove = [];
-kFinal  = [];
-kData   = 1;
-kStim   = strcmpi(FT_DATA.pulse_evts.channel,FT_DATA.data.label);
+% Stimulus channel
+channel = strcmpi(FT_DATA.pulse_evts.channel,FT_DATA.data.label);
+data = FT_DATA.data.trial{1}(channel,:); % stimulus channel only
+N = length(data); % total number of samples
 
+% Events
+ft_events = FT_DATA.event; % FieldTrip event struct array
+nEvents = numel(ft_events); % number of events
+event = 1; % start with the first event as the current
+
+% Make sure the events are in increasing order
+samples = cat(1,ft_events.sample); % samples/indices at which events occur
+[samples,ind] = sort(samples);
+ft_events = ft_events(ind);
+
+% Create the plot and set its dimensions
+f = figure('NumberTitle','off','MenuBar','none');
+wDims = get(0,'ScreenSize');
+ww = wDims(3); wh = wDims(4);
+set(f,'Position',round([ww*.25,wh*.1,ww*.5,wh*.8]));
+set(f,'DeleteFcn',@FigDeleteFcn); % close the controller window if the plot closes
+set(f,'KeyPressFcn',@FigKeyFcn); % function to handle keystrokes
+
+% Create axes object and plot the data
+hAx = axes;
+hPl = plot(hAx,1:N,data);
+xlabel(hAx,'Sample'); ylabel(hAx,'LFP');
+
+% Make it so clicking on the plot will create a new event at that location
+set(hPl,'HitTest','off');
+set(hAx,'ButtonDownFcn',@AddEvent);
+
+% Init ylim so as to encompass the full range of the data
+ylimits = [min(data),max(data)];
+ylim(hAx,ylimits);
+
+% Init xlim so as to be able to view the longest expected pulse series
 pulse_width = (FT_DATA.pulse_evts.width/1000)*FT_DATA.data.fsample;
 pulse_int   = (FT_DATA.pulse_evts.interval/1000)*FT_DATA.data.fsample;
+cent_init = (pulse_width+pulse_int)*(FT_DATA.pulse_evts.max_pulse+2);
+xlim(hAx,cent_init*[-1,1]+ft_events(event).sample);
 
-siz_win = round(FT_DATA.pulse_evts.fs*.3); % ~# samples in 250ms
+% Add a handle field to the events structure for lines in the figure
+events = FT.ReStruct(ft_events);
+events.h = zeros(size(ft_events));
+for i = 1:nEvents
+    events.h(i) = line(ft_events(i).sample*[1,1],ylimits,'Color',[0 0 0],'LineWidth',2,'Parent',hAx);
+end
+ft_events = FT.ReStruct(events);
 
-% --- FIGURE --- %;
-pFig = FT.tools.GetFigPosition(800,720);
+c = {% Event Browsing
+     {'text','string','Event:'},...
+     {'edit','string',num2str(event),'tag','event','Callback',@(varargin) UpdatePlot('update')};...
+     {'pushbutton','string','Prev','Callback',@(varargin) UpdatePlot('prev'),       'ToolTipString','Shortcut: Backspace'},...
+     {'pushbutton','string','Next','Callback',@(varargin) UpdatePlot('next'),       'ToolTipString','Shortcut: Space'};...
+     {'pushbutton','string','Plot','Callback',@(varargin) UpdatePlot('update'),     'ToolTipString','Shortcut: Return'},...
+     {'pushbutton','string','Del ','Callback',@(varargin) UpdatePlot('del'),        'ToolTipString','Shortcut: Delete'};...
+     % Edit Events
+     {'text','string','Type:'},...
+     {'edit','string','','tag','type','Callback',@(varargin) UpdatePlot('')};...
+     {'text','string','Value:'},...
+     {'edit','size',5,'string',num2str(ft_events(event).value),'tag','val','Callback',@(varargin) UpdatePlot('')};...
+     % Navigation
+     {'text','string',' Navigation'},{'text','string',''};...
+     {'pushbutton','string','+','Callback',@(varargin) UpdatePlot('mag'),           'ToolTipString','Shortcut: +'},...
+     {'pushbutton','string','-','Callback',@(varargin) UpdatePlot('min'),           'ToolTipString','Shortcut: -'};...
+     {'pushbutton','string','<','Callback',@(varargin) UpdatePlot('backward'),      'ToolTipString','Shortcut: <'},...
+	 {'pushbutton','string','>','Callback',@(varargin) UpdatePlot('forward'),       'ToolTipString','Shortcut: >'};...
+     {'pushbutton','string','Done'},...
+     {'pushbutton','string','Cancel',                                               'ToolTipString','Shortcut: Escape'}...
+	};
 
-h = figure('Units','pixels','OuterPosition',pFig,...
-           'Name','Event Check','NumberTitle','off','MenuBar','none');
+% User input/control window
+w = FT.tools.Win(c,'position',[-ww*.25-100 0],'focus','cancel');
+w.SetElementProp('type','string',ft_events(event).type);
+set(w.h,'KeyPressFcn',@FigKeyFcn);
+UpdatePlot('update');
 
-pFigCtrl = FT.tools.GetFigPosition(250,250);
-pFigCtrl(1) = pFig(1) - 250;
-hCtrl = figure('Units','pixels','OuterPosition',pFigCtrl,...
-           'Name','Plot Control','NumberTitle','off','MenuBar','none');
-
-% --- AXES --- %
-hA = axes('Units','normalized','OuterPosition',[0,.05,1,.95],'Parent',h);
-
-% --- LINE AND TITLE HANDLES --- %
-[hP,hTitle,hLine,hInit] = deal([]);
-
-height = .12;
-
-% --- EDIT --- %
-uicontrol('Style','text','Units','normalized','Position',[.05 .85 .4 height],...
-    'String','New type:','BackgroundColor',get(hCtrl,'Color'),...
-    'FontSize',14,'HorizontalAlignment','right','Parent',hCtrl);
-
-hEdit = uicontrol('Style','edit','Units','normalized','Position',[.55 .87 .4 height],...
-    'String','','BackgroundColor',[1 1 1],'FontSize',12,'Parent',hCtrl);
-
-% --- ZOOM --- %
-uicontrol('Style','pushbutton','Units','normalized','Position',[.05 .7 .4 height],...
-    'String','Zoom In','FontSize',11,'Callback',@ZoomCtrl,'Parent',hCtrl);
-
-uicontrol('Style','pushbutton','Units','normalized','Position',[.55 .7 .4 height],...
-    'String','Zoom Out','FontSize',11,'Callback',@ZoomCtrl,'Parent',hCtrl);
-
-% --- BUTTONS --- %
-wBtn  = .4;
-pad   = .05;
-lInit = .5-((wBtn*5 + pad*4)/2);
-lInit = lInit:wBtn+pad:lInit+(wBtn+pad)*5;
-
-uicontrol('Style','pushbutton','Units','normalized','Position',[.05 .55 .4 height],...
-    'String','Previous','Callback',@(x,y) PlotCtrl(x,y,'previous'),...
-    'FontSize',12,'Parent',hCtrl);
-
-uicontrol('Style','pushbutton','Units','normalized','Position',[.55 .55 .4 height],...
-    'String','Next','Callback',@(x,y) PlotCtrl(x,y,'next'),...
-    'FontSize',12,'Parent',hCtrl);
-
-uicontrol('Style','text','Units','normalized','Position',[.05 .38 .4 height],...
-    'String','Display:','BackgroundColor',get(hCtrl,'Color'),...
-    'FontSize',14,'HorizontalAlignment','right','Parent',hCtrl);
-
-hFilt = uicontrol('Style','edit','Units','normalized','Position',[.55 .4 .4 height],...
-    'String','','BackgroundColor',[1 1 1],'FontSize',12,'Parent',hCtrl);
-
-uicontrol('Style','text','Units','normalized','Position',[.05 .25 .4 height],...
-    'String','Remove:','BackgroundColor',get(hCtrl,'Color'),...
-    'FontSize',14,'HorizontalAlignment','right','Parent',hCtrl);
-
-hRM = uicontrol('Style','checkbox','Units','normalized','Position',[.55 .29 .08 .08],...
-    'BackgroundColor',[1 1 1],'Min',0,'Max',1,'Value',0,'Parent',hCtrl);
-
-uicontrol('Style','pushbutton','Units','normalized','Position',[.05 .1 .4 height],...
-    'String','Done','Callback',@(x,y) PlotCtrl(x,y,'done'),...
-    'FontSize',12,'Parent',hCtrl);
-
-uicontrol('Style','pushbutton','Units','normalized','Position',[.55 .1 .4 height],...
-    'String','Cancel','Callback',@(x,y) PlotCtrl(x,y,'cancel'),...
-    'FontSize',12,'Parent',hCtrl);
-
-% --- PLOT --- %
-NewPlot;
-
-%allow markers to be clicked
-set(hP,'hittest','off');
-hold(hA,'on');
-
-%fnct to deal with keypresses
-set(h,'KeyPressFcn',@KeyCtrl);
-
-%fnct to deal with clicks
-set(hA,'ButtonDownFcn',@MouseCtrl);
-
-%give focus to the figure
-set(hEdit,'Enable','off');
-drawnow;
-set(hEdit,'Enable','on');
-
-% wait till user is done
-uiwait(h)
-
-%only actually remove events if the user clicks done
-if bRM && ~isempty(kRemove)
-    params.remove = kRemove;
-    me = FT.events.check.Run(params);
-    FT.ProcessError(me);
+% Wait for the control window to close
+uiwait(w.h);
+% Close the plot if still open
+if ishandle(f)
+    close(f);
 end
 
-if ishandle(h)
-    close(h);
+% The user selected cancel
+if ~strcmpi(w.res.btn,'done')
+    return;
 end
 
-if ishandle(hCtrl)
-    close(hCtrl);
+hMsg = FT.UserInput('Applying changes...',1);
+
+FT_DATA.event = rmfield(ft_events,'h'); % write the modified events into FT_DATA
+FT_DATA.saved = false; % mark data as not saved
+% don't add history because meaningless to automated template at this point
+FT_DATA.done.check_events = isempty(me);
+
+if ishandle(hMsg)
+    close(hMsg);
 end
 
-%------------------------------------------------------------------------------%
-function NewPlot
-%refresh the stim channel plot and related text to reflect the event that is
-%currently being reviewed / edited
-    %get current event
-    evt    = FT_DATA.event(kData);
-    kFinal = evt.sample;
-
-    %get and plot stim channel surrounding current event
-    nPnts  = (evt.value * pulse_width) + ((evt.value-1) * pulse_int);
-    kStart = nPnts+round(siz_win*1.25);
-
-    if kStart > evt.sample
-        kStart = 1;
+%-------------------------------------------------------------------------%
+% Close the controller window if the plot closes
+function FigDeleteFcn(~,~)
+    if ishandle(w.h)
+        close(w.h);
+        return;
     end
+end
+%-------------------------------------------------------------------------%
+% Create a new event where the user clicked on the plot
+function AddEvent(~,~)
+    click_type = get(f,'SelectionType');
     
-    dX = evt.sample-kStart:evt.sample+round(siz_win*.75);
-    dY = FT_DATA.data.trial{1}(kStim,dX);
-    if isempty(hP) || ~ishandle(hP)
-        hP = plot(dX,dY,'Color',[1 0 0],'LineWidth',2,'Parent',hA);
-        set(get(get(hP,'Annotation'),'LegendInformation'),'IconDisplayStyle','Off');
-    else
-        set(hP,'XData',dX,'YData',dY); 
-    end
-    
-    %reset axes limits to reflect new data
-    set(hA,'XLim',[min(dX) max(dX)],'YLim',[min(dY)-20 max(dY)+20]);
-    
-    %remove old event lines
-    if ishandle(hInit)
-        delete(hInit);
-    end
-    if ishandle(hLine)
-        delete(hLine);
-    end
-    
-    %add starting (green) and movable (blue) event lines
-    hInit = AddLine([evt.sample evt.sample],[min(dY) max(dY)],[0 1 0]);
-    hLine = AddLine([evt.sample evt.sample],[min(dY) max(dY)],[0 0 1]);
-    set(get(get(hLine,'Annotation'),'LegendInformation'),'IconDisplayStyle','Children');
-    set(get(get(hInit,'Annotation'),'LegendInformation'),'IconDisplayStyle','Off');
-    
-    %axes title location
-    xText = dX(1); %initial x location for title, this is finialized below
-    yLim = get(hA,'YLim');
-    yText = yLim(2) + (yLim(2)/20);
-    
-    %set axes title to inform user of event number, event code/value, and event
-    %type
-    strType = strrep(evt.type,'_','\_'); %escape underscores for tex interpretation
-    strTitle = ['Event #' num2str(kData) '  -  Value ' num2str(evt.value) ': ''' strType ''''];
-    if isempty(hTitle) || ~ishandle(hTitle)
-        hTitle = text(xText,yText,strTitle,'FontSize',20,'FontWeight','bold','Units','data','Parent',hA);
-    else
-        set(hTitle,'String',strTitle,'Position',[xText yText 0],'Units','data');
-    end
-    
-    %make sure that the title is actually centered
-    tExt = get(hTitle,'Extent');
-    xLim = get(hA,'XLim');
-    xText = mean(xLim) - tExt(3)/2;
-    set(hTitle,'Position',[xText yText]);
-    
-    %remove old legend
-    hL = findobj(h,'Tag','legend');
-    if ishandle(hL)        
-        delete(hL);
-    end
+    % Make sure it's a left mouse click
+    if strcmp(click_type,'normal')
+        pt = get(hAx,'CurrentPoint');
+        idx = round(pt(1,1));
         
-    %update edit box with default event type
-    set(hEdit,'String',evt.type);
-    
-    %add new legend
-    set(hLine,'DisplayName',['Value ' num2str(evt.value) ': ' strType]);    
-    hL = legend(hA,'show');
-    set(hL,'Location','NorthWest');
-    
-    %fix x-axis tick labels
-    xT = reshape(get(hA,'XTick'),[],1);
-    xTL = arrayfun(@(x) num2str(x),xT,'uni',false);
-    set(hA,'XTickLabel',xTL);
-    
-    %has this event already been removed?
-    if ~isempty(kRemove) && ismember(kData,kRemove)
-        set(hRM,'Value',1);
-    else
-        set(hRM,'Value',0);
-    end
+        % Make sure the location lies within the data extent
+        if (1 <= idx) && (idx <= N)
+            % Copy fields from the current event
+            evt = ft_events(event);
+            % Use the click location as the event sample/index
+            evt.sample = idx;
+            % Set the color of the current event marker to black
+            set(evt.h,'Color',[0 0 0]);
+            % Crate a marker for the new event
+            evt.h = line([idx,idx],ylimits,'Color',[0 0 0],'LineWidth',2,'Parent',hAx);
+            
+            % Append the new event to the event struct array
+            ft_events(end+1) = evt;
+            nEvents = numel(ft_events);
+            samples = cat(1,ft_events.sample);
+            
+            % Make sure the events are in order of increasing sample index
+            [samples,ind] = sort(samples);
+            ft_events = ft_events(ind);
 
-    %force figure update
-    drawnow;
-end
-%------------------------------------------------------------------------------%
-function PlotCtrl(obj,evt,strAct)
-%simple function to handle button clicks    
-    %update event struct
-    EvtCtrl(strAct);
-
-    %increment/decrement current event index
-    switch strAct
-        case {'next','previous'}
-            GetNextEvent(strAct)
-        case 'done'
-            bRM = true;
-            uiresume(h);            
-            return;
-        case 'cancel'
-            bRM = false;
-            uiresume(h);
-            return;
-        otherwise
-            %this should never happen
-            error('invalid action %s',strAct);
-    end        
-    
-    %make sure we stay within limites of the event struct
-    if kData > numel(FT_DATA.event)
-        kData = numel(FT_DATA.event);
-    elseif kData < 1
-        kData = 1;
-    else
-        NewPlot;
-    end
-    
-    %give focus back to the figure so keypresses work immediatly
-    set(obj,'Enable','off');
-    drawnow;
-    set(obj,'Enable','on');
-end
-%------------------------------------------------------------------------------%
-function EvtCtrl(act)
-    if get(hRM,'Value')
-        kRemove(end+1,1) = kData;
-    elseif ~isempty(kRemove)        
-        kRemove(kRemove == kData) = [];        
-    end
-    if any(strcmpi(act,{'next','previous'}))
-        if isempty(kRemove) || ~ismember(kData,kRemove)
-            strType = get(hEdit,'String');
-            params2.adjust.type = strType;
-            params2.adjust.sample = kFinal;
-            params2.adjust.kData = kData;
-            me2 = FT.events.check.Run(params2);
-            FT.ProcessError(me2);
+            UpdatePlot('add');
         end
     end
-        
 end
-%------------------------------------------------------------------------------%
-function KeyCtrl(obj,evt)
-    if ishandle(hLine)
-        drawnow;
-        xD = get(hLine,'XData');
-        yD = get(hLine,'YData');
-        bNew = false; 
-
-        switch lower(evt.Key)        
-            case 'space'
-                kFinal = xD(1);
-                PlotCtrl([],[],'next');
-            case 'backspace'
-                kFinal = xD(1);
-                PlotCtrl([],[],'previous');
-            case 'escape'
-                kFinal = [];
-                PlotCtrl([],[],'done');
-            case 'leftarrow'
-                xD = xD-1;
-                bNew = true;
-            case 'rightarrow'
-                xD = xD+1;
-                bNew = true;
-            otherwise
-                %some other key...
-        end
-
-        if bNew
-            delete(hLine);
-            hLine = AddLine(xD,yD,[0 0 1]);
-            kFinal = xD(1);
-        end
-    elseif strcmpi(evt.Key,'escape')
-        uiresume(h);
+%-------------------------------------------------------------------------%
+% Update the data and input/control graphical displays
+function UpdatePlot(action)
+    % Initialize some parameters/defaults
+    evt = NaN; % invalid new event
+    limits = xlim(hAx);
+    newlims = limits;
+    
+    % Set the current event marker to black because another event may become current
+    set(ft_events(event).h,'color',[0 0 0]);
+    
+    % Set the current event parameters based on the user input (if any)
+    ft_events(event).type = w.GetElementProp('type','string');
+    val = str2double(w.GetElementProp('val','string'));
+    if val > 0
+        ft_events(event).value = val;
+    else % invalid input, restore what is displayed to the previous value
+        w.SetElementProp('val','string',ft_events(event).value);
     end
-end
-%------------------------------------------------------------------------------%
-function MouseCtrl(obj,evt)
-    drawnow;
-    click_type = get(h,'SelectionType');    
-    if strcmp(click_type,'normal')        
-        %Finding the closest point and draw a vertical line through it
-        pt = get(hA,'CurrentPoint');
-
-        %Getting coordinates of line object
-        xp = get(hP,'Xdata'); 
-        yp = get(hP,'Ydata');
-
-        %Aspect ratio is needed to compensate for uneven axis when calculating the distance
-        dx = daspect(hA);
-        
-        %find closest point on line
-        [~,idx] = min(((pt(1,1)-xp).*dx(2)).^2 + ((pt(1,2)-yp).*dx(1)).^2);
-
-        %draw a line at the chosen point
-        if ishandle(hLine)
-            delete(hLine);
-        end
-        hLine = AddLine([xp(idx),xp(idx)],[min(yp) max(yp)],[0 0 1]);
-        
-        %keep track of the location
-        kFinal = get(hLine,'XData');
-        kFinal = kFinal(1);
-    end
-end
-%------------------------------------------------------------------------------%
-function hL = AddLine(x,y,col)
-    hL = line(x,y,'Color',col,'LineWidth',2.5,'Parent',hA);
-    setappdata(hA,'CurrentPoint',hL);
-end
-%------------------------------------------------------------------------------%
-function ZoomCtrl(obj,evt)
-    action = regexprep(get(obj,'String'),'Zoom ','');
+    
+    % Perform operations that depend on the specified action
     switch lower(action)
-        case 'in'
-            siz_win = floor(siz_win*.6);
-        case 'out'
-            siz_win = ceil(siz_win*1.4);
+        case 'update' % go to the event number specified by the user
+            evt = w.GetElementProp('event','string');
+            evt = round(str2double(evt));
+        case 'prev' % go to the previous event
+            evt = event-1;
+        case 'next' % go to the next event
+            evt = event+1;
+        case 'mag' % magnify the plot (along the x-axis)
+            newlims = limits+diff(limits)*[.1,-.1];
+        case 'min' % minify the plot (along the x-axis)
+            newlims = limits+diff(limits)*[-.1,.1];
+        case 'backward' % scroll backward (along the x-axis)
+            newlims = limits-diff(limits)*.1;
+        case 'forward' % scroll forward (along the x-axis)
+            newlims = limits+diff(limits)*.1;
+        case 'del' % delete the current event
+            delete(ft_events(event).h)
+            ft_events = ft_events([1:event-1,event+1:end]);
+            nEvents = numel(ft_events);
+            samples = samples([1:event-1,event+1:end]);
+    end
+
+    % The user didn't request a specific event, make the current event the
+    % one which lies closest to the center of the plot
+    if ismember(action,{'mag','min','forward','backward','add','del'})
+        xlim(hAx,newlims);
+        [~,event] = min(abs(samples-mean(newlims)));
+    end
+    
+    % Change the current event index to a new one if it is valid
+    if ~isnan(evt)
+        event = evt;
+    end
+    % Make sure the event index lies within the number of events
+    if (event < 1) || (nEvents < event)
+        event = min(max(event,1),nEvents);
+    end
+    
+    % Set the new current event's marker color to green
+    tmp_evt = ft_events(event);
+    set(tmp_evt.h,'color',[0 1 0]);
+    
+    % If the user requested to see an event, center the plot on it
+    if ismember(action,{'update','prev','next'})
+        xlim(hAx,limits-mean(limits)+tmp_evt.sample);
+    end
+
+    % Update the event parameters displayed in the control and plot figures
+    w.SetElementProp('event','string',num2str(event));
+    w.SetElementProp('type','string',tmp_evt.type);
+    w.SetElementProp('val','string',num2str(tmp_evt.value));
+    title(hAx,sprintf('Event %d: %s (%d pulses)',event,tmp_evt.type,tmp_evt.value));
+end
+%-------------------------------------------------------------------------%
+function Shift(direction)
+    incr = ceil(diff(xlim(hAx))/400);
+    evt = ft_events(event);
+    if strcmpi(direction,'left') && (1 < evt.sample)
+        evt.sample = evt.sample - incr;
+        if 1 < event
+            evt.sample = max(evt.sample,ft_events(event-1).sample+1);
+        end
+    elseif strcmpi(direction,'right') && (evt.sample < N)
+        evt.sample = evt.sample + incr;
+        if event < nEvents
+            evt.sample = min(evt.sample,ft_events(event+1).sample-1);
+        end
+    end
+    set(evt.h,'XData',evt.sample*[1,1]);
+    ft_events(event) = evt;
+end
+%-------------------------------------------------------------------------%
+function FigKeyFcn(~,evt)
+    switch lower(evt.Key)        
+        case 'space'
+            UpdatePlot('next');
+        case 'backspace'
+            UpdatePlot('prev');
+        case 'escape'
+            uiresume(w.h);
+        case 'leftarrow'
+            Shift('left');
+        case 'rightarrow'
+            Shift('right');
+        case 'delete'
+            UpdatePlot('del');
+        case 'return'
+            UpdatePlot('update');
         otherwise
-            error('Invalid zoom action %s',action);
-    end
-    NewPlot;
-end
-%------------------------------------------------------------------------------%
-function GetNextEvent(btn)
-    
-    str = strtrim(get(hFilt,'String'));
-    if isempty(str)
-        DefaultIncrement(btn);
-        return;
-    end
-
-    re = regexp(str,'(?<key>\w+)\s*(?<op>[=\<\>]+)\s*(?<val>[^=\<\>]*)','names');
-
-    if isempty(re) || ~any(strcmpi(re.key,fieldnames(EVENT)))
-        BadFilterExpr(btn);
-        return;
-    end
-    
-    re.op = regexprep(re.op,'\s+','');
-    re.val = strtrim(re.val);
-
-    if ~all(ismember(re.op,'=><'))
-        BadFilterExpr(btn);
-        return;
-    end
-    val = str2double(re.val);
-    if ~isnan(val)
-        if re.op == '='
-            re.op = '==';
-        end
-        cmd = ['EVENT.' re.key ' ' re.op ' ' re.val];        
-    elseif any(strcmp(re.op,{'=','=='}))
-        if ~any(ismember(re.val,EVENT.(re.key)))
-            BadFilterExpr(btn);
-            return;
-        else
-            if re.val(1) ~= char(39)
-                re.val = [char(39) re.val];
+            switch (evt.Character)
+                case '+'
+                    UpdatePlot('mag');
+                case '-'
+                    UpdatePlot('min')
+                case '<'
+                    UpdatePlot('backward')
+                case '>'
+                    UpdatePlot('forward');
+                otherwise
+                    % other
             end
-            if re.val(end) ~= char(39)
-                re.val = [re.val char(39)];
-            end
-
-            cmd = ['strcmpi(' re.val ',EVENT.' re.key ')'];
-        end
-
-    else
-        BadFilterExpr(btn);
-        return;
-    end
-    try
-        b = eval(cmd);
-    catch me
-        BadFilterExpr(btn);
-        return;
-    end    
-    if any(b)
-        kGood = find(b);        
-        if strcmpi(btn,'next')
-            kNext = find(kGood > kData,1,'first');            
-        elseif strcmpi(btn,'previous')
-            kNext = find(kGood < kData,1,'last');
-        end
-        if ~isempty(kNext)
-            kData = kGood(kNext);
-        end
     end
 end
-%------------------------------------------------------------------------------%
-function BadFilterExpr(btn)
-    FT.UserInput('\bf[WARNING]: you entered an invalid filter expression',0,'button','OK');
-    DefaultIncrement(btn);
-    set(hFilt,'String','');
-end
-%------------------------------------------------------------------------------%
-function DefaultIncrement(btn)    
-    switch lower(btn)
-    case 'next'
-        kData = kData+1;
-    case 'previous'
-        kData = kData-1;
-    end
-end
-%------------------------------------------------------------------------------%
+%-------------------------------------------------------------------------%
 end

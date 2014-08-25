@@ -86,8 +86,8 @@ for k = 1:numel(kP)
                 %find the next point where the stim channel < 0, put the marker there
                 kEvt = kP(k)+kPeak(end)+find(dTmp(kPeak(end):end) < 80,1,'first');
                 if ~isempty(kEvt)
-                    evt.sample(end+1,1) = kEvt-ceil((opt.width+opt.interval)*numel(kPeak)*fs);
-%                     evt.sample(end+1,1) = kEvt;
+%                     evt.sample(end+1,1) = kEvt-ceil((opt.width+opt.interval)*numel(kPeak)*fs);
+                    evt.sample(end+1,1) = kEvt;
                     evt.value(end+1,1) = numel(kPeak);
                     kLast = kEvt;
                 end
