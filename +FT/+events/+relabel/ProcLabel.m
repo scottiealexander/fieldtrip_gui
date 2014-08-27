@@ -36,7 +36,7 @@ else
             % Invalid event array file
             label = {str};
             color = [.8 1 .8]; %[1 1 .8]; % yellow
-        elseif length(map.evta) ~= sum(strcmpi(tag,evts))
+        elseif (length(map.evta) ~= sum(strcmpi(tag,evts))) && (length(map.evta) ~= 1)
             % Length of event array doesn't match the # of event occurances
             label = {str};
             color = [.8 1 .8]; %[1 .8 .8]; % red
