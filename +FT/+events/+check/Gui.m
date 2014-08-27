@@ -41,9 +41,11 @@ if ~isfield(FT_DATA,'pulse_evts')
 end
 
 % Stimulus channel
+range = FT_DATA.data.sampleinfo;
 channel = strcmpi(FT_DATA.pulse_evts.channel,FT_DATA.data.label);
-data = FT_DATA.data.trial{1}(channel,:); % stimulus channel only
-N = length(data); % total number of samples
+data = [zeros(1,range(1)-1),FT_DATA.data.trial{1}(channel,:)]; % stimulus channel only
+sample = 1:size(data,2);
+%%% sample = [1:(range(1)-1),FT_DATA.data.time{1}*FT_DATA.data.fsample];
 
 % Events
 ft_events = FT_DATA.event; % FieldTrip event struct array
@@ -65,7 +67,7 @@ set(f,'KeyPressFcn',@FigKeyFcn); % function to handle keystrokes
 
 % Create axes object and plot the data
 hAx = axes;
-hPl = plot(hAx,1:N,data);
+hPl = plot(hAx,sample(range(1):range(2)),data(range(1):range(2)));
 xlabel(hAx,'Sample'); ylabel(hAx,'LFP');
 
 % Make it so clicking on the plot will create a new event at that location
@@ -96,7 +98,9 @@ c = {% Event Browsing
      {'pushbutton','string','Prev','Callback',@(varargin) UpdatePlot('prev'),       'ToolTipString','Shortcut: Backspace'},...
      {'pushbutton','string','Next','Callback',@(varargin) UpdatePlot('next'),       'ToolTipString','Shortcut: Space'};...
      {'pushbutton','string','Plot','Callback',@(varargin) UpdatePlot('update'),     'ToolTipString','Shortcut: Return'},...
-     {'pushbutton','string','Del ','Callback',@(varargin) UpdatePlot('del'),        'ToolTipString','Shortcut: Delete'};...
+     {'pushbutton','string','Del ','Callback',@(varargin) UpdatePlot('del'),        'ToolTipString','Shortcut: Delete current event'};...
+     {'pushbutton','string','<del','Callback',@(varargin) UpdatePlot('dels'),       'ToolTipString','Shortcut: Delete all previous events'},...
+     {'pushbutton','string','del>','Callback',@(varargin) UpdatePlot('dele'),       'ToolTipString','Shortcut: Delete all subsequent events'};...
      % Edit Events
      {'text','string','Type:'},...
      {'edit','string','','tag','type','Callback',@(varargin) UpdatePlot('')};...
@@ -132,10 +136,23 @@ end
 
 hMsg = FT.UserInput('Applying changes...',1);
 
-FT_DATA.event = rmfield(ft_events,'h'); % write the modified events into FT_DATA
-FT_DATA.saved = false; % mark data as not saved
-% don't add history because meaningless to automated template at this point
-FT_DATA.done.check_events = isempty(me);
+% Crop the data
+FT_DATA.data.trial{1} = FT_DATA.data.trial{1}(:,(range(1):range(2))-FT_DATA.data.sampleinfo(1)+1);
+FT_DATA.data.time{1} = FT_DATA.data.time{1}((range(1):range(2))-FT_DATA.data.sampleinfo(1)+1);
+%%% FT_DATA.data.sampleinfo = range;
+
+% Adjust sample information to account for shift in starting index
+FT_DATA.data.sampleinfo = [1 length(FT_DATA.data.time{1})];
+for i = 1:nEvents
+    ft_events(i).sample = ft_events(i).sample - range(1) + 1;
+end
+
+% Write the modified events into FT_DATA
+FT_DATA.event = rmfield(ft_events,'h');
+% Mark data as unsaved
+FT_DATA.saved = false;
+% Don't add history because meaningless to automated template at this point
+FT_DATA.done.check_events = true;
 
 if ishandle(hMsg)
     close(hMsg);
@@ -160,7 +177,7 @@ function AddEvent(~,~)
         idx = round(pt(1,1));
         
         % Make sure the location lies within the data extent
-        if (1 <= idx) && (idx <= N)
+        if (range(1) <= idx) && (idx <= range(2))
             % Copy fields from the current event
             evt = ft_events(event);
             % Use the click location as the event sample/index
@@ -182,6 +199,19 @@ function AddEvent(~,~)
             UpdatePlot('add');
         end
     end
+end
+%-------------------------------------------------------------------------%
+% Crop data when all preceding or trailing events are deleted
+function Crop(side)
+    if strcmpi(side,'end') && (event < nEvents)
+        % Remove trailing data
+        range(2) = ft_events(event+1).sample;
+    elseif strcmpi(side,'start') && (1 < event)
+        % Remove preceding data
+        range(1) = ft_events(event-1).sample;
+    else return;
+    end
+    set(hPl,'XData',sample(range(1):range(2)),'YData',data(range(1):range(2)));
 end
 %-------------------------------------------------------------------------%
 % Update the data and input/control graphical displays
@@ -220,13 +250,31 @@ function UpdatePlot(action)
             newlims = limits-diff(limits)*.1;
         case 'forward' % scroll forward (along the x-axis)
             newlims = limits+diff(limits)*.1;
-        case 'del' % delete the current event
-            delete(ft_events(event).h)
-            ft_events = ft_events([1:event-1,event+1:end]);
-            nEvents = numel(ft_events);
-            samples = samples([1:event-1,event+1:end]);
+        case 'del' % remove the current event
+            if (nEvents > 1)
+                rm_evt = event;
+            else % don't delete the last event
+                warndlg('Cannot delete event because only one remains.','Failed Delete');
+                rm_evt = [];
+            end
+        case 'dels' % remove all previous events (to start)
+            Crop('start');
+            rm_evt = 1:(event-1);
+            event = 1;
+        case 'dele' % remove all subsequent events (to end)
+            Crop('end');
+            rm_evt = (event+1):nEvents;
     end
-
+    
+    % Remove events
+    if ismember(action,{'del','dels','dele'}) && ~isempty(rm_evt)
+        delete(ft_events(rm_evt).h)
+        keep = setdiff(1:nEvents,rm_evt);
+        ft_events = ft_events(keep);
+        samples = samples(keep);
+        nEvents = numel(ft_events);
+    end
+    
     % The user didn't request a specific event, make the current event the
     % one which lies closest to the center of the plot
     if ismember(action,{'mag','min','forward','backward','add','del'})
@@ -262,12 +310,12 @@ end
 function Shift(direction)
     incr = ceil(diff(xlim(hAx))/400);
     evt = ft_events(event);
-    if strcmpi(direction,'left') && (1 < evt.sample)
+    if strcmpi(direction,'left') && (range(1) < evt.sample)
         evt.sample = evt.sample - incr;
         if 1 < event
             evt.sample = max(evt.sample,ft_events(event-1).sample+1);
         end
-    elseif strcmpi(direction,'right') && (evt.sample < N)
+    elseif strcmpi(direction,'right') && (evt.sample < range(2))
         evt.sample = evt.sample + incr;
         if event < nEvents
             evt.sample = min(evt.sample,ft_events(event+1).sample-1);

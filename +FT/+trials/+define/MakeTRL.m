@@ -49,6 +49,7 @@ trl(:,3) = zeros(nEvt,1) - sOpt.pre;
 
 %make sure no trial definition samples fall outside the data range
 bad_trials = (trl(:,1) < 1) | (trl(:,2) > size(FT_DATA.data.trial{1},2));
+%%% bad_trials = (trl(:,1) < FT_DATA.data.sampleinfo(1)) | (trl(:,2) > FT_DATA.data.sampleinfo(2));
 trl = trl(~bad_trials,:);
 
 end
