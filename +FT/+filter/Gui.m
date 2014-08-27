@@ -24,7 +24,7 @@ if ~FT.tools.Validate('filter','todo',{'segment_trials'},'warn',{'read_events'})
     return;
 end
 
-ftypes = {'Butterworth','FIR','FIRLS'};
+ftypes = {'Butterworth','Chebyshev','FIR'};
 
 fnyq = FT_DATA.data.fsample/2-0.01;
 params = struct('channel','all');
@@ -51,19 +51,10 @@ uiwait(win.h);
 if strcmpi(win.res.btn,'cancel')
     return;
 else
-    type = lower(ftypes{win.res.type});
-    params.lpfilttype  = FT.tools.Ternary(strcmp(type,'butterworth'),'but',type);
-    params.hpfilttype  = params.lpfilttype;
-    params.hpfilter    = FT.tools.Ternary(isempty(win.res.hp),'no','yes');
-    params.lpfilter    = FT.tools.Ternary(isempty(win.res.lp),'no','yes');
+    params.filttype    = lower(ftypes{win.res.type});
     params.hpfreq      = win.res.hp;
     params.lpfreq      = win.res.lp;
-    if ~isempty(win.res.notch)
-        params.dftfilter = 'yes';
-        params.dftfreq = win.res.notch;
-    else
-        params.dftfilter = 'no';
-    end
+    params.notchfreq   = win.res.notch;
 end
 
 hMsg = FT.UserInput('Filtering data...',1);
@@ -79,7 +70,7 @@ FT.ProcessError(me);
 FT.UpdateGUI;
 
 %------------------------------------------------------------------------------%
-function SelectChannels(obj,evt)
+function SelectChannels(obj,~)
 %allow user to select specific channels
     %set the height of the figure
     nChan = numel(FT_DATA.data.label);
