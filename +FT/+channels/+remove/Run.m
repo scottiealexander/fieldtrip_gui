@@ -19,19 +19,13 @@ function me = Run(params)
 global FT_DATA;
 me = [];
 
-% Channels to keep
-ch = ~params.ch_rem;
-
 try
-    if ~params.segmented
-        FT_DATA.data.trial{1} = FT_DATA.data.trial{1}(ch,:);
-        FT_DATA.data.label = FT_DATA.data.label(ch);
-    else
-        for i = 1:numel(FT_DATA.data)
-            FT_DATA.data{i}.trial = cellfun(@(x) x(ch,:),FT_DATA.data{i}.trial,'uni',false);
-            FT_DATA.data{i}.label = FT_DATA.data{i}.label(ch);
-        end
-    end
+    % Channels to keep
+    ch = ~ismember(FT_DATA.data.label,params.remove);
+    
+    % Remove channels
+    FT_DATA.data.trial{1} = FT_DATA.data.trial{1}(ch,:);
+    FT_DATA.data.label = FT_DATA.data.label(ch);
 catch me
 end
 

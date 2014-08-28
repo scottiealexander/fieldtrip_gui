@@ -24,24 +24,26 @@ me = [];
 
 try
     epoch = cell(size(params));
+    j = 0;
     for i = 1:numel(params)
         % Make trial definitions for the ith condition
         trl = FT.trials.define.MakeTRL(params(i));
         
-%         % Put params in a struct to be compatible with current epoch.ifo format
-%         sOpt.event = params(i).type;
-%         sOpt.pre   = params(i).pre;
-%         sOpt.post  = params(i).post;
-%         sOpt.field = 'type';
-%         sOpt.format = 'timelock';
-
-        % Add the trials to the epoch cell array
-        epoch{i}.name = params(i).name;
-        epoch{i}.trl = trl;
-        epoch{i}.ifo = params(i);
+        % If there are any valid trials
+        if ~isempty(trl)
+            j = j + 1;
+            % Add the trials to the epoch cell array
+            epoch{j}.name = params(i).name;
+            epoch{j}.trl = trl;
+            epoch{j}.ifo = params(i);
+        end
     end
 
-    FT_DATA.epoch = epoch;
+    if (j == 0)
+        error('No valid trials defined');
+    end
+    
+    FT_DATA.epoch = epoch(1:j);
 catch me
 end
 

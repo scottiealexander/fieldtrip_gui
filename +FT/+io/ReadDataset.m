@@ -28,17 +28,20 @@ try
         FT.io.ReadSetFile(params.full);
         FT_DATA.path.dataset = params.full;
         
-        % If the .set file contained no base dir or an invalid one
-        if ~isdir(FT_DATA.path.base_directory)
-            FT_DATA.path.base_directory = params.path;
-        end
+%         % If the .set file contained no base dir or and invalid one
+%         if ~isdir(FT_DATA.path.base_directory)
+%             FT_DATA.path.base_directory = params.path;
+%         end
     else
         FT.io.ReadRawFile(params.full);
         FT_DATA.path.raw_file = params.full;
         
-        % Update base dir to reflect most recent file
-        FT_DATA.path.base_directory = params.path;
+%         % Update base dir to reflect most recent file
+%         FT_DATA.path.base_directory = params.path;
     end
+    
+    % Update base dir to reflect the most recently loaded file
+    FT_DATA.path.base_directory = params.path;
     
     %update gui display fields
     if strcmpi(FT_DATA.gui.display_mode,'init')

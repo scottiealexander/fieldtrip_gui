@@ -21,8 +21,13 @@ global FT_DATA;
 FS = FT_DATA.data.fsample;
 nChan = size(FT_DATA.data.trial{1},1);
 
-window = round(FS*(params.n-1)/(params.hi-params.lo));%128
-overlap = round(window/2);%64
+% Choose window so as to give the desired number of frequencies (params.n)
+% between params.lo and params.hi
+window = ceil(FS*(params.n-1)/(params.hi-params.lo));
+while (floor(params.hi*window/FS)-ceil(params.lo*window/FS)+1) < params.n
+    window = window + 1;
+end
+overlap = round(window/2);
 
 %convert to percent
 params.w = params.w/100;
@@ -41,7 +46,7 @@ for ch = 1:nChan
     % Find indices of frequency range of interest
     if isempty(fStart)
         fStart = find(centers>=params.lo,1,'first');
-        fEnd = find(centers>=params.hi,1,'first');
+        fEnd = find(centers<=params.hi,1,'last');
     end
     
     % Crop frequencies to range of interest

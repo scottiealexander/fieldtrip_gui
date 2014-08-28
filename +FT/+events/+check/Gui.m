@@ -75,7 +75,7 @@ set(hPl,'HitTest','off');
 set(hAx,'ButtonDownFcn',@AddEvent);
 
 % Init ylim so as to encompass the full range of the data
-ylimits = [min(data),max(data)];
+ylimits = mean(data) + std(data)*10*[-1,1];%[min(data),max(data)];
 ylim(hAx,ylimits);
 
 % Init xlim so as to be able to view the longest expected pulse series
@@ -98,9 +98,9 @@ c = {% Event Browsing
      {'pushbutton','string','Prev','Callback',@(varargin) UpdatePlot('prev'),       'ToolTipString','Shortcut: Backspace'},...
      {'pushbutton','string','Next','Callback',@(varargin) UpdatePlot('next'),       'ToolTipString','Shortcut: Space'};...
      {'pushbutton','string','Plot','Callback',@(varargin) UpdatePlot('update'),     'ToolTipString','Shortcut: Return'},...
-     {'pushbutton','string','Del ','Callback',@(varargin) UpdatePlot('del'),        'ToolTipString','Shortcut: Delete current event'};...
-     {'pushbutton','string','<del','Callback',@(varargin) UpdatePlot('dels'),       'ToolTipString','Shortcut: Delete all previous events'},...
-     {'pushbutton','string','del>','Callback',@(varargin) UpdatePlot('dele'),       'ToolTipString','Shortcut: Delete all subsequent events'};...
+     {'pushbutton','string','Del ','Callback',@(varargin) UpdatePlot('del'),        'ToolTipString','Shortcut: Delete '};...
+     {'pushbutton','string','<del','Callback',@(varargin) UpdatePlot('dels'),       'ToolTipString','Shortcut: Home'},...
+     {'pushbutton','string','del>','Callback',@(varargin) UpdatePlot('dele'),       'ToolTipString','Shortcut: End'};...
      % Edit Events
      {'text','string','Type:'},...
      {'edit','string','','tag','type','Callback',@(varargin) UpdatePlot('')};...
@@ -157,6 +157,8 @@ FT_DATA.done.check_events = true;
 if ishandle(hMsg)
     close(hMsg);
 end
+
+FT.UpdateGUI;
 
 %-------------------------------------------------------------------------%
 % Close the controller window if the plot closes
@@ -304,7 +306,7 @@ function UpdatePlot(action)
     w.SetElementProp('event','string',num2str(event));
     w.SetElementProp('type','string',tmp_evt.type);
     w.SetElementProp('val','string',num2str(tmp_evt.value));
-    title(hAx,sprintf('Event %d: %s (%d pulses)',event,tmp_evt.type,tmp_evt.value));
+    title(hAx,sprintf('Event %d/%d: %s (%d pulses)',event,nEvents,tmp_evt.type,tmp_evt.value));
 end
 %-------------------------------------------------------------------------%
 function Shift(direction)
@@ -339,6 +341,10 @@ function FigKeyFcn(~,evt)
             Shift('right');
         case 'delete'
             UpdatePlot('del');
+        case 'home'
+            UpdatePlot('dels');
+        case 'end'
+            UpdatePlot('dele');
         case 'return'
             UpdatePlot('update');
         otherwise
