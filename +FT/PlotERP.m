@@ -28,6 +28,7 @@ hF = figure('Units','pixels','OuterPosition',pFig,...
             'Color',[1 1 1]);
 
 FT.PlotCtrl(hF,FT_DATA.data{1}.label,@PlotOne);
+uiwait(hF);
 
 %------------------------------------------------------------------------------%
 function PlotOne(strChan)

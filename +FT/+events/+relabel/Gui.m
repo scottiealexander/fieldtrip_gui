@@ -31,8 +31,13 @@ if ~iscell(events.value)
 elseif ~iscellstr(events.value)
     events.value = cellfun(@(x) num2str(x),events.value,'uni',false);
 end
-events.value = matlab.lang.makeValidName(events.value);
-
+ver = version('-release');
+if str2double(ver(1:4)) >= 2014
+    events.value = matlab.lang.makeValidName(events.value);
+else
+    events.value = cellfun(@(x) genvarname(x),events.value,'uni',false);
+end
+    
 % Create list of values along with # occurances
 values = unique(events.value); % event values
 valList = cellfun(@(x) ['"' x '"(' num2str(sum(strcmpi(x,events.value))) ')'],values,'uni',false);

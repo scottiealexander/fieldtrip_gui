@@ -17,10 +17,22 @@ function RunFunction(f)
 %
 % Please report bugs to: scottiealexander11@gmail.com
 
-%try running the command and catch any error
-try
-    f();
-catch me
-    %error was reaised, allow reporting
-    FT.ProcessError(me);
+persistent inprogress;
+if isempty(inprogress)
+    inprogress = false;
+end
+
+% Only allow one operation to run at a time
+if ~inprogress
+    inprogress = true;
+
+    %try running the command and catch any error
+    try
+        f();
+    catch me
+        %error was reaised, allow reporting
+        FT.ProcessError(me);
+    end
+
+    inprogress = false;
 end
