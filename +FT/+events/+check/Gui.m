@@ -30,7 +30,7 @@ function Gui()
 
 global FT_DATA;
 
-if ~FT.tools.Validate('check_events','done',{'read_events'},'todo',{'remove_channels','define_trials'})
+if ~FT.tools.Validate('check_events','done',{'read_events'},'todo',{'define_trials'})
     return;
 end
 

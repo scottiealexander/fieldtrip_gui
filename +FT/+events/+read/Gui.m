@@ -21,7 +21,7 @@ function Gui(varargin)
 
 global FT_DATA;
 
-if ~FT.tools.Validate('read_events','todo',{'segment_trials'})
+if ~FT.tools.Validate('read_events','todo',{'define_trials'})
     return;
 end
 
