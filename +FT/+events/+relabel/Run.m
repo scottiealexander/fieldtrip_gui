@@ -30,7 +30,12 @@ try
     elseif ~iscellstr(evtVals)
         evtVals = cellfun(@(x) num2str(x),evtVals,'uni',false);
     end
-    evtVals = matlab.lang.makeValidName(evtVals);
+    ver = version('-release');
+    if str2double(ver(1:4)) >= 2014
+        evtVals = matlab.lang.makeValidName(evtVals);
+    else
+        evtVals = cellfun(@(x) genvarname(x),evtVals,'uni',false);
+    end
     
     % One of each value that appears
     values = unique(evtVals);

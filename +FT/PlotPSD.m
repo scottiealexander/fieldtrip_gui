@@ -62,6 +62,7 @@ h = figure('Units','pixels','Position',pFig,'Name','Spectrogram',...
 f = fspecial('gaussian',[10 10], 3);
 
 FT.PlotCtrl(h,cLabel,@PlotOne);
+uiwait(h);
 
 %-----------------------------------------------------------------------------%
 function PlotOne(strChan)	
