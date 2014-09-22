@@ -67,9 +67,7 @@ if any(strcmpi(opt.type,{'all','data'}))
 
     FT_DATA.gui.screen_size = get(0,'ScreenSize');
     set(0,'Units',ROOT_UNITS);
-     
-    FT_DATA.debug = false;
-
+    
     %initial display mode
     FT_DATA.gui.display_mode = 'init';
 

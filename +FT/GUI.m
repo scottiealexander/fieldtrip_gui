@@ -56,26 +56,20 @@ uimenu(hTempMenu,'Label','Load Existing','Callback',@(varargin) FT.RunFunction(@
 uimenu(hTempMenu,'Label','Run Current','Callback',@(varargin) FT.RunFunction(@FT.template.Run));
 
 %read in data
-% hRead = uimenu(hFileMenu,'Label','Load Data');
-% uimenu(hRead,'Label','EEG File / Dataset','Callback',@FT.io.Gui,'Accelerator','L');
-% uimenu(hRead,'Label','Neuralynx Dataset','Callback',@FT.io.Gui);
 uimenu(hFileMenu,'Label','Load Data','Callback',@FT.io.Gui,'Accelerator','L');
 %save
-uimenu(hFileMenu,'Label','Save Dataset','Callback',@SaveDataset);
+uimenu(hFileMenu,'Label','Save Dataset',...
+    'Callback',@(x,y) SaveDataset(x,y,false));
 
 %save as
 uimenu(hFileMenu,'Label','Save Dataset As...',...
-    'Callback',@(x,y) SaveDataset(x,y,'as'),'Accelerator','S');
-
-%save ERP
-uimenu(hFileMenu,'Label','Save Average Dataset',...
-    'Callback',@(x,y) SaveDataset(x,y,'avg'));
+    'Callback',@(x,y) SaveDataset(x,y,true),'Accelerator','S');
 
 %clear
 uimenu(hFileMenu,'Label','Clear Dataset','Callback',@ClearDataset);
 
 %quit
-uimenu(hFileMenu,'Label','Quit','Callback',@QuitGUI);
+uimenu(hFileMenu,'Label','Quit','Callback',@QuitGUI,'Accelerator','Q');
 
 % View operations
 hViewMenu = uimenu(h,'Label','View');
@@ -110,7 +104,7 @@ uimenu(hSegMenu,'Label','Reject Trials','Callback',@(varargin) FT.RunFunction(@F
 hAnaMenu  = uimenu(h,'Label','Analysis');
 uimenu(hAnaMenu,'Label','Average ERPs','Callback',@(varargin) FT.RunFunction(@FT.average.Gui));
 uimenu(hAnaMenu,'Label','Time-Frequency Decomposition','Callback',@(varargin) FT.RunFunction(@FT.tfd.Gui));
-uimenu(hAnaMenu,'Label','ERP Grand Average','Callback',@(varargin) FT.RunFunction(@FT.GrandAverage));
+uimenu(hAnaMenu,'Label','ERP Grand Average','Callback',@(varargin) FT.RunFunction(@FT.average.grand.Gui));
 uimenu(hAnaMenu,'Label','Find Peaks & Valleys','Callback',@(varargin) FT.RunFunction(@FT.PeakFinder));
 
 % Update
@@ -126,93 +120,59 @@ function ClearDataset(~,~)
     end
 end
 %-------------------------------------------------------------------------%
-function SaveDataset(~,~,varargin)
-%save the current state of the analysis
-    [action,type] = deal('');
-    if ~isempty(varargin) && ~isempty(varargin{1}) && ischar(varargin{1})
-        action = varargin{1};
-        switch lower(action)
-            %save as?
-            case {'as','avg'}
-                %move into the subjects dir or base dir for this analysis
-                if isfield(FT_DATA.path,'raw_file') && ~isempty(FT_DATA.path.raw_file)
-                    strDir = fileparts(FT_DATA.path.raw_file);
-                else
-                    strDir = FT_DATA.path.base_directory;
-                end
-                if strcmpi(action,'avg')
-                    type = FT.UserInput('\bfPlease select an average dataset type:',1,'button',{'ERP','PSD'},'title','Save Average Dataset');
-                    type = lower(type);
-                end
+function SaveDataset(~,~,saveas)
+    % save the current state of the analysis
+    
+    strPathOut = FT_DATA.path.dataset;
+    
+    % user selected 'save as', data already saved, or no current .set file exists
+    if saveas || FT_DATA.saved || isempty(strPathOut)
+        % the directory of the current .set file or the base directory
+        if ~isempty(strPathOut)
+            strDir = fileparts(strPathOut);
+        else
+            strDir = FT_DATA.path.base_directory;
+        end
 
-                %get the filepath the user wants to sue
-                strPathDef = fullfile(strDir,[FT_DATA.current_dataset '.set']);
-                [strName,strPath] = uiputfile('*.set','Save Analysis As...',strPathDef);
-                
-                %construct the file path
-                if ~isequal(strName,0) && ~isequal(strPath,0)
-                    strPathOut = fullfile(strPath,strName);            
-                else
-                    return; %user selected cancel
-                end
-            otherwise
-                error('Unrecognized action: %s',action);
+        % get the filepath the user wants
+        strPathDef = fullfile(strDir,[FT_DATA.current_dataset '.set']);
+        [strName,strPath] = uiputfile('*.set','Save Analysis As...',strPathDef);
+
+        % construct the file path
+        if ~isequal(strName,0) && ~isequal(strPath,0)
+            strPathOut = fullfile(strPath,strName);            
+        else
+            return; % user selected cancel
         end
-    elseif ~FT_DATA.saved
-        %get the most likely path name
-        if ~isempty(FT_DATA.path.dataset)
-            strPathOut = FT_DATA.path.dataset;
-        elseif ~isempty(FT_DATA.path.raw_file)
-            strPathOut = FT_DATA.path.raw_file;
-        else            
-            return; %nothing to save
-        end
-    else
-        %user selected save and no changes have been made.
-        FT.UserInput(['\bfNo changes have been made since the last save. '...
-            'Use ''Save As'' to save a copy of the dataset'],1,'button','OK');
-        return;
     end
     
-    %force extension to be '.set'
+    % force extension to be '.set'
     strPathOut = regexprep(strPathOut,'\.[\w\-\+\.]+$','.set');
+    
+    % get the new dataset path and name
     FT_DATA.path.dataset = strPathOut;
-    
-    %get the new dataset name
     [~,FT_DATA.current_dataset] = fileparts(strPathOut);
-    
-    %mark as saved
-    FT_DATA.saved = true;
-    
-    if ~FT_DATA.debug
 
-        hMsg = FT.UserInput('Saving dataset, plese wait...',1); 
-        
-        % remove template and gui fields as these can change
-        gui = FT_DATA.gui;
-        FT_DATA.gui = rmfield(FT_DATA.gui,{'hAx','hText','sizText'});
-        template = FT_DATA.template;
-        FT_DATA = rmfield(FT_DATA,'template');
-        template_path = FT_DATA.path.template;
-        FT_DATA.path = rmfield(FT_DATA.path,'template');
-        
-        %save
-        FT.io.WriteDataset(strPathOut);
+    % remove template and gui fields as these can change
+    gui = FT_DATA.gui;
+    FT_DATA.gui = rmfield(FT_DATA.gui,{'hAx','hText','sizText'});
+    template = FT_DATA.template;
+    FT_DATA = rmfield(FT_DATA,'template');
+    template_path = FT_DATA.path.template;
+    FT_DATA.path = rmfield(FT_DATA.path,'template');
 
-        %averaged erp?
-        if strcmpi(action,'avg') && FT_DATA.done.average
-            AvgFileOps('add',type);
-        end
-
-        if ishandle(hMsg)
-            close(hMsg);
-        end
-        
-        % restore template and gui fields
-        FT_DATA.gui = gui;
-        FT_DATA.template = template;
-        FT_DATA.path.template = template_path;
+    % save data
+    hMsg = FT.UserInput('Saving dataset, plese wait...',1); 
+    FT.io.WriteDataset(strPathOut);
+    if ishandle(hMsg)
+        close(hMsg);
     end
+
+    % restore template and gui fields
+    FT_DATA.gui = gui;
+    FT_DATA.template = template;
+    FT_DATA.path.template = template_path;
+    
     FT.UpdateGUI;
 end
 %-------------------------------------------------------------------------%
