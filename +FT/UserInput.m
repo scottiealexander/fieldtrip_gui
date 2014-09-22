@@ -320,7 +320,7 @@ function BtnPress(obj,evt)
     if opt.input
         output = get(hInp,'String');
         if opt.nline > 1
-            output = ReformatStr(output,'cell',true);
+            output = FT.tools.ReformatStr(output,'cell',true);
         end
     else
         output = strBtn;

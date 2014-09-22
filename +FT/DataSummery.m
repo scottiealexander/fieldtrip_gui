@@ -108,19 +108,4 @@ function strFmt = GetFormat
     end
 end
 %------------------------------------------------------------------------------%
-% function s = FmtNewChan
-%     if isfield(FT_DATA.history,'add_channels')
-%         chan = FT_DATA.history.add_channels;
-%         if ~isempty(chan)
-%             cFields = fieldnames(chan);
-%             cFields = cellfun(@(x) [x ' = ' chan.(x)],cFields,'uni',false);
-%             s = ['Add Channels: ' 10 '        ' FT.Join(cFields,[10 '        ']) 10];
-%         else
-%             s = '';
-%         end
-%     else
-%         s = '';
-%     end
-% end
-%------------------------------------------------------------------------------%
 end
