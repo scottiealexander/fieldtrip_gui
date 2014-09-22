@@ -74,8 +74,8 @@ uimenu(hFileMenu,'Label','Quit','Callback',@QuitGUI,'Accelerator','Q');
 % View operations
 hViewMenu = uimenu(h,'Label','View');
 uimenu(hViewMenu,'Label','Data Info','Callback',@(varargin) FT.RunFunction(@FT.DataSummery));
-uimenu(hViewMenu,'Label','Channel Data','Callback',@(varargin) FT.RunFunction(@FT.PlotData));
-uimenu(hViewMenu,'Label','Average ERP','Callback',@(varargin) FT.RunFunction(@FT.PlotERP));
+uimenu(hViewMenu,'Label','Plot Time Series','Callback',@(varargin) FT.RunFunction(@FT.PlotData));
+uimenu(hViewMenu,'Label','Plot Average ERP','Callback',@(varargin) FT.RunFunction(@FT.PlotERP));
 uimenu(hViewMenu,'Label','ERP Image','Callback',@(varargin) FT.RunFunction(@FT.ERPImage));
 uimenu(hViewMenu,'Label','Plot PSD','Callback',@(varargin) FT.RunFunction(@FT.PlotPSD));
 uimenu(hViewMenu,'Label','Channel Correlations','Callback',@(varargin) FT.RunFunction(@FT.ChannelCorr));

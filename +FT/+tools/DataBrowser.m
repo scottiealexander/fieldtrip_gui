@@ -138,6 +138,7 @@ c = {% Channel Browsing
 
 w = FT.tools.Win(c,'position',[-ww*.25-100 0],'focus','cancel'); % user input/control window
 set(w.h,'KeyPressFcn',@FigKeyFcn);
+ResetLimits();
 UpdatePlot();
 
 % Wait for the user to close the control window
@@ -159,13 +160,19 @@ function FigDeleteFcn(~,~)
     end
 end
 %-------------------------------------------------------------------------%
+function ResetLimits()
+    span = 4*std_avg; % reset the spacing of the series
+    ylim(hAx,[-(n+.5)*span,(n+.5)*span]);
+    xlim(hAx,[time(1),min(time(end),time(1)+10)]);
+end
+%-------------------------------------------------------------------------%
 
 % Update the plot (data viewer)
 function UpdatePlot()
+    atmp = axis(hAx); % remember the current plot limits
     
     % Plot nearby channels on the same plot...
     if group_chan
-        
         % Don't attempt to plot channels outside the valid range
         pred = -min(n,chan-1);
         succ = min(n,nChan-chan);
@@ -176,7 +183,6 @@ function UpdatePlot()
         title(hAx,['Trial: ' lTrial{trial}]);
         legend(hAx,lChan{range+chan});
     else % ...or nearby trials
-        
         % Don't attempt to plot trials outside the valid range
         pred = -min(n,trial-1);
         succ = min(n,nTrial-trial);
@@ -188,10 +194,9 @@ function UpdatePlot()
         legend(hAx,lTrial{range+trial});
     end
     
-    % Plot labels & apply default y-axis limits
-    ylim(hAx,[-(n+.5)*span,(n+.5)*span]);
-    xlim(hAx,[time(1),min(time(end),time(1)+10)]);
+    % Plot labels and restore the current plot limits
     xlabel(hAx,'time'); ylabel(hAx,'LFP (volt)');
+    axis(hAx,atmp);
     
     % Update checkbox to reflect the state of the current channel or trial
     if group_chan
@@ -211,7 +216,6 @@ function PrevC(~,~)
         chan = chan-1;
         % update current channel # to match
         w.SetElementProp('channel','string',num2str(chan));
-        span = 4*std_avg; % reset the spacing of the series
         UpdatePlot();
     end
 end
@@ -222,7 +226,6 @@ function NextC(~,~)
         chan = chan+1;
         % update current channel # to match
         w.SetElementProp('channel','string',num2str(chan));
-        span = 4*std_avg; % reset the spacing of the series
         UpdatePlot();
     end
 end
@@ -233,7 +236,6 @@ function PrevT(~,~)
         trial = trial-1;
         % update current trial # to match
         w.SetElementProp('trial','string',num2str(trial));
-        span = 4*std_avg; % reset the spacing of the series
         UpdatePlot();
     end
 end
@@ -244,7 +246,6 @@ function NextT(~,~)
         trial = trial+1;
         % update current trial # to match
         w.SetElementProp('trial','string',num2str(trial));
-        span = 4*std_avg; % reset the spacing of the series
         UpdatePlot();
     end
 end
@@ -274,7 +275,7 @@ function Plot(~,~)
     chan = ch;
     
     % Reset the spacing of series to the default and update the plot
-    span = 4*std_avg;
+    ResetLimits();
     UpdatePlot();
 end
 
@@ -289,9 +290,7 @@ function MagV(~,~)
     
     % Update the plot but maintain the spacing of the series in the window
     span = span*0.8;
-    atmp = axis(hAx);
     UpdatePlot();
-    axis(hAx,atmp);
 end
 
 % Minify the vertical axis
@@ -301,9 +300,7 @@ function MinV(~,~)
     
     % Update the plot but maintain the spacing of the series in the window
     span = span*1.2;
-    atmp = axis(hAx);
     UpdatePlot();
-    axis(hAx,atmp);
 end
 
 % Magnify the time axis
