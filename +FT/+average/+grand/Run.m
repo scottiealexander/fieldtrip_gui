@@ -20,55 +20,55 @@ global FT_DATA
 me = [];
 
 try
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-FT.io.ClearDataset;
+    FT.io.ClearDataset;
 
-cPathERP = params.files;
-nFile    = numel(cPathERP);
+    cPathERP = params.files;
+    nFile    = numel(cPathERP);
 
-s.files  = cPathERP;
-s.data 	 = struct;
-s.label  = cell(nFile,1);
-s.time   = [];
+    s.files  = cPathERP;
+    s.data 	 = struct;
+    s.label  = cell(nFile,1);
+    s.time   = [];
 
-cellfun(@GetData,cPathERP,reshape(num2cell(1:nFile),size(cPathERP)));
+    cellfun(@GetData,cPathERP,reshape(num2cell(1:nFile),size(cPathERP)));
 
-bCommon = cellfun(@IsCommonChannel,s.label{1});
+    bCommon = cellfun(@IsCommonChannel,s.label{1});
 
-if ~any(bCommon)	
-	error('No common labels could be detected across subjects!');
-end
+    if ~any(bCommon)	
+        error('No common labels could be detected across subjects!');
+    end
 
-cCommonLabel = s.label{1}(bCommon);
-cFields = fieldnames(s.data);
+    cCommonLabel = s.label{1}(bCommon);
+    cFields = fieldnames(s.data);
 
-ExtractChannelData;
+    ExtractChannelData;
 
-s.label = cCommonLabel;
+    s.label = cCommonLabel;
 
-s.data = s.data;
-[data,epoch] = deal(cell(numel(cFields),1));
-for k = 1:numel(cFields)
-	tmp = s.data.(cFields{k});
-	tmp = reshape(tmp,1,1,nFile);
-	tmp = cat(3,tmp{:});
-	data{k}.avg = nanmean(tmp,3);
-	data{k}.err = nanstderr(tmp,3);
-	data{k}.label = s.label;
-	data{k}.time  = s.time;
-	epoch{k}.name = cFields{k};
-end
+    s.data = s.data;
+    [data,epoch] = deal(cell(numel(cFields),1));
+    for k = 1:numel(cFields)
+        tmp = s.data.(cFields{k});
+        tmp = reshape(tmp,1,1,nFile);
+        tmp = cat(3,tmp{:});
+        data{k}.avg = nanmean(tmp,3);
+        data{k}.err = nanstderr(tmp,3);
+        data{k}.label = s.label;
+        data{k}.time  = s.time;
+        data{k}.fsample = 1/median(diff(s.time));
+        epoch{k}.name = cFields{k};
+    end
 
-FT_DATA.data = data;
-FT_DATA.epoch = epoch;
-FT_DATA.done.average = true;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    FT_DATA.data = data;
+    FT_DATA.epoch = epoch;
+    FT_DATA.done.average = true;
 catch me
 end
 
 % update display fields
 FT_DATA.gui.display_mode = 'analysis';
-
+% new dataset name (because cleared the last one)
+FT_DATA.current_dataset = 'GrandAverage';
 % mark data as not saved
 FT_DATA.saved = false;
 

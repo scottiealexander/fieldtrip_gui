@@ -25,28 +25,34 @@ if isdir(FT_DATA.path.base_directory)
 end
 
 while (true)
-    [strName, strPath, ind] = uigetfile('*.set','Pick a file');
+    [strNames, strPath, ind] = uigetfile('*.set','Pick a file(s)','MultiSelect','on');
 
     % Check that valid files were selected
-    if isequal(strName,0) || isequal(strPath,0)
+    if isequal(strNames,0) || isequal(strPath,0)
         return; % user selected cancel
     elseif ind ~= 1
         FT.UserInput('File extensions must be .set',1,'button',{'OK'},'title','NOTICE');
         continue;
     end
     
-    % Add the selected file
-    newFile = fullfile(strPath,strName);
-    if ~ismember(newFile,files)
-        try
-            DATA = load(newFile,'-mat');
-            if ~DATA.done.average
-                error('averaging not performed')
+    if ~iscell(strNames)
+        strNames = {strNames};
+    end
+    
+    % Add all files selected
+    for i = 1:numel(strNames)
+        newFile = fullfile(strPath,strNames{i});
+        if ~ismember(newFile,files)
+            try
+                DATA = load(newFile,'-mat');
+                if ~DATA.done.average
+                    error('averaging not performed')
+                end
+                files{end+1} = newFile;
+            catch
+                FT.UserInput(['Invalid .set file (' strNames{i} ')'],1,'button',{'OK'},'title','NOTICE');
+                continue;
             end
-            files{end+1} = newFile;
-        catch
-            FT.UserInput('Invalid .set file',1,'button',{'OK'},'title','NOTICE');
-            continue;
         end
     end
 

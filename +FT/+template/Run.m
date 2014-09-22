@@ -25,7 +25,7 @@ if isdir(tempPath)
 end
 
 while (true)
-    [strNames, strPath, ind] = uigetfile(ext,'Pick a file','MultiSelect','on');
+    [strNames, strPath, ind] = uigetfile(ext,'Pick a file(s)','MultiSelect','on');
 
     % Check that valid files were selected
     if isequal(strNames,0) || isequal(strPath,0)
