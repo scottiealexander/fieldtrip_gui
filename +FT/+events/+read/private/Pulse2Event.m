@@ -45,6 +45,10 @@ thresh2 = 50;
 max_width = (opt.width+.1)*fs; %maximum pulse width (add 100ms cushion for jitter)
 chunk_size = ceil((opt.width+opt.interval)*opt.max_pulse*fs);
 
+% data = -data;
+% thresh = -50;
+% thresh2 = 150;
+
 %we flip the sign of the data here only to make use of the 'minpeakheight' option
 %as the initial deviation of each pulse is negative and that is what we want to detect
 [~,kP] = findpeaks(data*-1,'minpeakheight',-thresh,'minpeakdistance',opt.width*fs);
@@ -70,6 +74,7 @@ for k = 1:numel(kP)
     
     r = FitPulse(data(kStart:kEnd),'max_width',max_width,'neg_thresh',thresh,'pos_thresh',thresh2,'plot',false);
     
+%     if kP(k) > kLast
     if r > .8 && kP(k) > kLast
         if  kP(k)+chunk_size > nData
             kChunk = kP(k):nData;
@@ -86,8 +91,8 @@ for k = 1:numel(kP)
                 %find the next point where the stim channel < 0, put the marker there
                 kEvt = kP(k)+kPeak(end)+find(dTmp(kPeak(end):end) < 80,1,'first');
                 if ~isempty(kEvt)
-%                     evt.sample(end+1,1) = kEvt-ceil((opt.width+opt.interval)*numel(kPeak)*fs);
-                    evt.sample(end+1,1) = kEvt;
+                    evt.sample(end+1,1) = kEvt-ceil((opt.width+opt.interval)*numel(kPeak)*fs);
+%                     evt.sample(end+1,1) = kEvt;
                     evt.value(end+1,1) = numel(kPeak);
                     kLast = kEvt;
                 end

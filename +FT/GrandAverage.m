@@ -94,9 +94,12 @@ end
 %-----------------------------------------------------------------------------%
 function ExtractChannelData	
 	for kA = 1:nFile
-		bChan = ismember(s.label{kA},cCommonLabel);
+		[bChan,iChan] = ismember(cCommonLabel,s.label{kA});
+        if ~all(bChan)
+            error('Common Labels are not all common (this should never happen)');
+        end
 		for kB = 1:numel(cFields)
-			s.data.(cFields{kB}){kA} = s.data.(cFields{kB}){kA}(bChan,:);
+			s.data.(cFields{kB}){kA} = s.data.(cFields{kB}){kA}(iChan,:);
 		end
 	end
 end

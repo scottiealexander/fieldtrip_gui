@@ -33,7 +33,6 @@ end
 fnyq = floor(FT_DATA.data.fsample/2);
 params = struct('lo',10,'hi',fnyq,'n',42,'w',10,'log',true,'surrogate',true,'nsurrogate',10);
 params.method = availableMethods{1};
-loShared = params.lo;
 
 c = {...
     {'text','String','Select Method:'},...    
@@ -108,7 +107,7 @@ function [b,val] = CheckFreqN(str)
     lo = str2double(win.GetElementProp('lo','string'));
     hi = str2double(win.GetElementProp('hi','string'));
     n = str2double(win.GetElementProp('n','string'));
-    tlen = FT_DATA.epoch{1}.ifo.pre + FT_DATA.epoch{1}.ifo.post;
+    tlen = diff(FT_DATA.data.sampleinfo)/FT_DATA.data.fsample;
 
     if ~(ceil(1/tlen) <= lo && lo <= fnyq)
         val = 'Invalid value for the starting frequency.';

@@ -27,16 +27,12 @@ window = ceil(FS*(params.n-1)/(params.hi-params.lo));
 while (floor(params.hi*window/FS)-ceil(params.lo*window/FS)+1) < params.n
     window = window + 1;
 end
-overlap = round(window/2);
+overlap = round(window*.9);
 
 %convert to percent
 params.w = params.w/100;
 
 FT.Progress2(nChan+params.n+1,'Computing spectrogram: Fourier');
-
-%indices for cropping frequency range
-fStart = [];%ceil(params.n*params.lo/(params.hi-params.lo));%find(freq>=lo,1,'first');
-fEnd = [];%floor(params.n*params.hi/(params.hi-params.lo));%find(freq>=hi,1,'first');
 
 data_raw = cell(params.n,1);
 
@@ -44,15 +40,16 @@ for ch = 1:nChan
     % PSD: freq x time    
     [~,centers,time,PSD] = spectrogram(FT_DATA.data.trial{1}(ch,:),window,overlap,window,FS);
     % Find indices of frequency range of interest
-    if isempty(fStart)
+    if ~exist('keep','var')
         fStart = find(centers>=params.lo,1,'first');
         fEnd = find(centers<=params.hi,1,'last');
+        fKeep = round(linspace(fStart,fEnd,params.n));
     end
     
     % Crop frequencies to range of interest
-    PSD = PSD(fStart:fEnd,:);
+    PSD = PSD(fKeep,:);
     % Interpolate between spectrogram and data time axes
-    PSD = spline(time,PSD,FT_DATA.data.time{1});    
+    PSD = spline(time,PSD,FT_DATA.data.time{1}-FT_DATA.data.time{1}(1));    
     % PSD: freq x 1 cell of 1 x time
     PSD = mat2cell(PSD,ones(params.n,1));    
     % data_raw: freq x 1 cell of channel x time
@@ -60,7 +57,7 @@ for ch = 1:nChan
     FT.Progress2;
 end
 
-centers = centers(fStart:fEnd);
+centers = centers(fKeep);
 
 %frequency band edges
 cBands = arrayfun(@(x) [x*(1-params.w) x*(1+params.w)],centers,'uni',false);

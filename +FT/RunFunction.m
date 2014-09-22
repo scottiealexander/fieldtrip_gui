@@ -21,6 +21,7 @@ persistent inprogress;
 if isempty(inprogress)
     inprogress = false;
 end
+c = onCleanup(@() ResetProgress);
 
 % Only allow one operation to run at a time
 if ~inprogress
@@ -35,4 +36,11 @@ if ~inprogress
     end
 
     inprogress = false;
+end
+
+%-------------------------------------------------------------------------%
+function ResetProgress
+    inprogress = false;
+end
+%-------------------------------------------------------------------------%
 end

@@ -106,6 +106,7 @@ set(f,'DefaultAxesColorOrder',[0,0,1;0,.5,0;1,0,0;0,.75,.75;.75,0,.75;.75,.75,0;
 
 hAx = axes; % handle to plot axis object
 set(f,'DeleteFcn',@FigDeleteFcn);
+set(f,'KeyPressFcn',@FigKeyFcn);
 
 c = {% Channel Browsing
      {'text','string','Chan:'},...
@@ -136,6 +137,7 @@ c = {% Channel Browsing
 	};
 
 w = FT.tools.Win(c,'position',[-ww*.25-100 0],'focus','cancel'); % user input/control window
+set(w.h,'KeyPressFcn',@FigKeyFcn);
 UpdatePlot();
 
 % Wait for the user to close the control window
@@ -352,6 +354,48 @@ function Toggle(~,~)
     end
 end
 
+%-------------------------------------------------------------------------%
+function FigKeyFcn(~,evt)
+    switch lower(evt.Key)        
+        case 'rightarrow'
+            if group_chan
+                NextT;
+            else
+                NextC;
+            end
+        case 'leftarrow'
+            if group_chan
+                PrevT;
+            else
+                PrevC;
+            end
+        case 'escape'
+            uiresume(w.h);
+        case 'space'
+            if group_chan
+                curr = trial;
+            else
+                curr = chan;
+            end
+            marks(curr) = ~marks(curr);
+            w.SetElementProp('mark','Value',marks(curr));
+        case 'return'
+            Plot;
+        otherwise
+            switch (evt.Character)
+                case '+'
+                    MagH;
+                case '-'
+                    MinH;
+                case '<'
+                    Backward;
+                case '>'
+                    Forward;
+                otherwise
+                    % other
+            end
+    end
+end
 %-------------------------------------------------------------------------%
 end
 
