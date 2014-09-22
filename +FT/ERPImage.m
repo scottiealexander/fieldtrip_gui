@@ -36,10 +36,11 @@ function PlotOne(strChan)
     cD = cellfun(@(x) cellfun(@(y) y(bChan,:),x.trial,'uni',false),FT_DATA.data,'uni',false);
     cD = cellfun(@(x) cat(1,x{:}),cD,'uni',false);
 
-    %smoothing
-    f = fspecial('gaussian',[10 10], 2);
-    cFilt = cellfun(@(x) imfilter(x,f,'replicate'),cD,'uni',false);
-    im_filt = cat(1,cFilt{:});
+%     %smoothing
+%     f = fspecial('gaussian',[10 10], 2);
+%     cFilt = cellfun(@(x) imfilter(x,f,'replicate'),cD,'uni',false);
+%     im_filt = cat(1,cFilt{:});
+    im_filt = cat(1,cD{:});
     
     hA = axes('Parent',hF,'Units','normalized','OuterPosition',[0 0 1 1],...
             'Box','off','LineWidth',2,'Color',[.8 .8 .8]);
@@ -49,7 +50,7 @@ function PlotOne(strChan)
     for k = 1:numel(cD)
         y = y + size(cD{k},1);
         if k < numel(cD)
-            line([0,size(im_filt,2)],[y,y],'Color',[0 0 0],'LineWidth',2,'Parent',hA);
+            line([0,size(im_filt,2)],[y,y]+.5,'Color',[0 0 0],'LineWidth',2,'Parent',hA);
         end
         text(3,y-3,FT_DATA.epoch{k}.name,'FontWeight','bold','Parent',hA);
     end
@@ -61,7 +62,7 @@ function PlotOne(strChan)
        kL = find(time>=0,1,'first');
        line([kL,kL],get(hA,'YLim'),'Color',[1 1 1],'LineWidth',2,'Parent',hA);       
     end
-    xkT = arrayfun(@(x) find(time>=x,1,'first'),kT);
+    xkT = arrayfun(@(x) find(time>=x,1,'first'),time(kT));
     set(hA,'XTick',xkT);
     set(hA,'XTickLabel',xT);
 

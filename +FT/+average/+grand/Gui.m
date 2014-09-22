@@ -1,19 +1,19 @@
 function Gui()
 
-% FT.average.Gui
+% FT.average.grand.Gui
 %
-% Description: check the stage and then average trials
+% Description: check the stage and then average ERPs across datasets
 %
-% Syntax: FT.average.Gui
+% Syntax: FT.average.grand.Gui
 %
 % In: 
 %
 % Out:
 %
-% Updated: 2014-08-20
+% Updated: 2014-09-22
 % Peter Horak
 %
-% See also: FT.average.Run
+% See also: FT.average.grand.Run
 
 global FT_DATA;
 files = {};

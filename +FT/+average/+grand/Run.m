@@ -1,10 +1,10 @@
 function me = Run(params)
 
-% FT.average.Run
+% FT.average.grand.Run
 %
-% Description: calculate average ERP for a single dataset
+% Description: calculate average ERP across multiple datasets
 %
-% Syntax: me = FT.average.Run(params)
+% Syntax: me = FT.average.grand.Run(params)
 %
 % In:   params - a struct holding parameters from the user
 %
@@ -14,7 +14,7 @@ function me = Run(params)
 % Updated: 2014-03-30
 % Scottie Alexander
 %
-% See also: FT.average.Gui
+% See also: FT.average.grand.Gui
 
 global FT_DATA
 me = [];

@@ -195,7 +195,7 @@ function UpdatePlot()
     end
     
     % Plot labels and restore the current plot limits
-    xlabel(hAx,'time'); ylabel(hAx,'LFP (volt)');
+    xlabel(hAx,'time'); ylabel(hAx,'Amplitude (mV)');
     axis(hAx,atmp);
     
     % Update checkbox to reflect the state of the current channel or trial

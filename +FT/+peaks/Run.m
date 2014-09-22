@@ -1,55 +1,36 @@
-function PeakFinder()
+function me = Run(params)
 
-% FT.PeakFinder
+% FT.filter.Run
 %
-% Description: 
+% Description: filter data
 %
-% Syntax: FT.PeakFinder
+% Syntax: me = FT.filter.Run(params)
 %
 % In: 
+%       params - a struct holding the filtering parameters from the user
+%             see 'FT.filter.Gui'
 %
-% Out: 
+% Out:
+%       me - an empty matrix if filtering finished with out error, otherwise a
+%            MException object caught from the error
 %
-% Updated: 2013-09-05
-% Scottie Alexander
+% Updated: 2014-08-27
+% Peter Horak
 %
-% Please report bugs to: scottiealexander11@gmail.com
-dbstop if error
+% See also: FT.filter.Gui
+
 global FT_DATA;
+me = [];
 
-%make sure we have data...
-if ~FT.tools.Validate('findpeaks','done',{'segment_trials'})
-    return;
-end
-
-%initialize the important variables
-WINDOW = [NaN NaN];
-STAT = struct;
-FS = FT_DATA.data{1}.fsample;
-
-%get the window in which to find peaks
-cfg = FT.trials.baseline.Gui('Peak & Valley Finder');
-
-if ~isempty(cfg) && isfield(cfg,'baselinewindow')
-    WINDOW = round(cfg.baselinewindow*FS)+1; 
+try
+    %initialize important variables
+    STAT = struct;
+    FS = FT_DATA.data{1}.fsample;
     
-    resp = FT.UserInput('\bfWould you like the output to be:\n1 file per-condition or\n1 file per-statistic?',...
-                        1,'button',{'Condition','Statistic'},'title','Output Format');
-    if isempty(resp)
-        return;
-    else
-        bSingle = strcmpi(resp,'condition');
-    end
-    
-    FT.UserInput('Please select an output directory.',1,'button','OK');
-    strDirOut = fileparts(FT_DATA.path.dataset);
-    strDirOut = uigetdir(strDirOut,'Select Output Directory');
-    
-    if isequal(strDirOut,0)
-        return;
-    end
-    
-    hMsg = FT.UserInput('Finding peaks & valleys...',1);        
+    %user-specified parameters
+    WINDOW = params.window;
+    bSingle = params.bSingle;
+    strDirOut = params.strDirOut;
     
     for k = 1:numel(FT_DATA.data)
         % --- OUTPUT PATH --- %
@@ -65,7 +46,7 @@ if ~isempty(cfg) && isfield(cfg,'baselinewindow')
            STAT.valley_amplitude.channel = FT_DATA.data{k}.label;
            STAT.valley_latency.channel   = FT_DATA.data{k}.label;
         end    
-    
+
         %is this averaged data?
         if isfield(FT_DATA.data{k},'trial')
             cellfun(@(x,y) FindPeak(x,y),FT_DATA.data{k}.trial,num2cell(1:numel(FT_DATA.data{k}.trial)));
@@ -94,10 +75,15 @@ if ~isempty(cfg) && isfield(cfg,'baselinewindow')
             end
         end
     end
-    if ishandle(hMsg)
-        close(hMsg);
-    end
+catch me
 end
+
+%mark data as not saved
+FT_DATA.saved = false;
+
+%update the history
+FT.tools.AddHistory('findpeaks',params);
+FT_DATA.done.findpeaks = isempty(me);
 
 %------------------------------------------------------------------------------%
 function FindPeak(data,kTrial)
