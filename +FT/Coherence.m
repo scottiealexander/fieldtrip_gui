@@ -17,6 +17,11 @@ function Coherence()
 
 global FT_DATA;
 
+%make sure we are ready to run
+if ~FT.tools.Validate('coherence','done',{'segment_trials'})
+    return;
+end
+
 [fMin,fMax,smooth] = deal(NaN);
 GetParameters;
 

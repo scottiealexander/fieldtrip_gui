@@ -33,8 +33,8 @@ opt = FT.ParseOpts(varargin,...
     );
 
 %allow user to only set the pad option
-opt.h_pad = Ternary(isempty(opt.h_pad),opt.pad,opt.h_pad);
-opt.v_pad = Ternary(isempty(opt.h_pad),opt.pad,opt.v_pad);
+opt.h_pad = FT.tools.Ternary(isempty(opt.h_pad),opt.pad,opt.h_pad);
+opt.v_pad = FT.tools.Ternary(isempty(opt.h_pad),opt.pad,opt.v_pad);
 
 %get the position of the figure in pixels
 if ishandle(h) && strcmpi(get(h,'Type'),'figure')

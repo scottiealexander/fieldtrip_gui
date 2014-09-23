@@ -17,6 +17,11 @@ function ChannelCorr()
 
 global FT_DATA;
 
+%make sure we are ready to run
+if ~FT.tools.Validate('channel_corr','done',{'segment_trials'})
+    return;
+end
+
 [kChan,b] = listdlg('ListString',FT_DATA.data{1}.label,'Name','Choose Channels',...
                     'SelectionMode','multiple','ListSize',[180,300]);
                 
