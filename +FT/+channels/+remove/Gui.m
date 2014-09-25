@@ -18,7 +18,7 @@ function Gui(varargin)
 global FT_DATA;
 
 %make sure we are ready to run
-% *** could potentially remove channels even after averaging
+% *** could potentially remove channels even after segmenting, averaging, etc
 if ~FT.tools.Validate('remove_channels','warn',{'read_events'},'todo',{'segment_trials','tfd','average'})
     return;
 end

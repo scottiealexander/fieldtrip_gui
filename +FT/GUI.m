@@ -94,10 +94,10 @@ uimenu(hProcMenu,'Label','Rereference Data','Callback',@(varargin) FT.RunFunctio
 hSegMenu  = uimenu(h,'Label','Segmentation');
 uimenu(hSegMenu,'Label','Process Events','Callback',@(varargin) FT.RunFunction(@FT.events.read.Gui));
 uimenu(hSegMenu,'Label','Manual Event Checking','Callback',@(varargin) FT.RunFunction(@FT.events.check.Gui));
-uimenu(hSegMenu,'Label','Re-label Events','Callback',@(varargin) FT.RunFunction(@FT.events.relabel.Gui));
+uimenu(hSegMenu,'Label','Relabel Events','Callback',@(varargin) FT.RunFunction(@FT.events.relabel.Gui));
 uimenu(hSegMenu,'Label','Define Trials','Callback',@(varargin) FT.RunFunction(@FT.trials.define.Gui));
 uimenu(hSegMenu,'Label','Segment Trials','Callback',@(varargin) FT.RunFunction(@FT.trials.segment.Gui));
-uimenu(hSegMenu,'Label','Baseline Correct','Callback',@(varargin) FT.RunFunction(@FT.trials.baseline.Gui));
+uimenu(hSegMenu,'Label','Baseline Correct Trials','Callback',@(varargin) FT.RunFunction(@FT.trials.baseline.Gui));
 uimenu(hSegMenu,'Label','Reject Trials','Callback',@(varargin) FT.RunFunction(@FT.trials.reject.Gui));
 
 % Analysis
