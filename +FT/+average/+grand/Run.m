@@ -66,7 +66,7 @@ catch me
 end
 
 % update display fields
-FT_DATA.gui.display_mode = 'analysis';
+FT_DATA.gui.display_mode = 'averaged';
 % new dataset name (because cleared the last one)
 FT_DATA.current_dataset = 'GrandAverage';
 % mark data as not saved

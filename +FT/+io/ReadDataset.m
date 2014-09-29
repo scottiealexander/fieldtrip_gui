@@ -43,8 +43,8 @@ try
     % Update base dir to reflect the most recently loaded file
     FT_DATA.path.base_directory = params.path;
     
-    %update gui display fields
-    if strcmpi(FT_DATA.gui.display_mode,'init')
+    % Update gui display fields
+    if params.raw || strcmpi(FT_DATA.gui.display_mode,'init')
 	    FT_DATA.gui.display_mode = 'preproc';
     end
 catch me

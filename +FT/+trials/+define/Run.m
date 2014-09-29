@@ -47,6 +47,8 @@ try
 catch me
 end
 
+% update display fields
+FT_DATA.gui.display_mode = 'analysis';
 %mark data as not saved
 FT_DATA.saved = false;
 

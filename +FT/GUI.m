@@ -102,8 +102,8 @@ uimenu(hSegMenu,'Label','Reject Trials','Callback',@(varargin) FT.RunFunction(@F
 
 % Analysis
 hAnaMenu  = uimenu(h,'Label','Analysis');
-uimenu(hAnaMenu,'Label','Average ERPs','Callback',@(varargin) FT.RunFunction(@FT.average.Gui));
 uimenu(hAnaMenu,'Label','Time-Frequency Decomposition','Callback',@(varargin) FT.RunFunction(@FT.tfd.Gui));
+uimenu(hAnaMenu,'Label','Average ERPs','Callback',@(varargin) FT.RunFunction(@FT.average.Gui));
 uimenu(hAnaMenu,'Label','ERP Grand Average','Callback',@(varargin) FT.RunFunction(@FT.average.grand.Gui));
 uimenu(hAnaMenu,'Label','Find Peaks & Valleys','Callback',@(varargin) FT.RunFunction(@FT.findpeaks.Gui));
 
@@ -178,13 +178,12 @@ end
 %-------------------------------------------------------------------------%
 function QuitGUI(obj,evt)
     if exist('FT_DATA','var') && isfield(FT_DATA,'gui') && isfield(FT_DATA,'saved')
-        if FT_DATA.saved || ~isfield(FT_DATA,'data') || isempty(FT_DATA.data)
-            %data is saved or there is none, print our message and quit
-        else        
+        % data exists and is unsaved
+        if isfield(FT_DATA,'data') && ~isempty(FT_DATA.data) &&  ~FT_DATA.saved
             resp = FT.UserInput('\fontsize{14}\bfThis dataset has unsaved changes.\nWould you like to save them?',1,...
                     'button',{'Yes','No'},'title','Unsaved Changes');
             if strcmpi(resp,'yes')
-                SaveDataset(obj,evt,'as');
+                SaveDataset(obj,evt,true);
                 if ~FT_DATA.saved
                     return;
                 end

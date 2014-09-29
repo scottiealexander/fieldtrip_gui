@@ -48,10 +48,12 @@ try
 catch me
 end
 
-%mark data as not saved
+% update display fields
+FT_DATA.gui.display_mode = 'averaged';
+% mark data as not saved
 FT_DATA.saved = false;
 
-%update history
+% update history
 FT.tools.AddHistory('average',params);
 FT_DATA.done.average = isempty(me);
 

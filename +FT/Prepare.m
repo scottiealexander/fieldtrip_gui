@@ -81,13 +81,13 @@ if any(strcmpi(opt.type,{'all','data'}))
     FT_DATA.gui.display_fields.preproc = cPreProc;
     
     %segmentation display fields
-    cSegment = [cInit {'saved',{'done','segment_trials'},{'done','baseline_trials'},...
-        {'done','reject_trials'}}];
-    FT_DATA.gui.display_fields.segment = cSegment;
-    
-    %analysis display fields
-    cAnalysis = [cInit {'saved',{'done','average'},{'done','tfd'}}];
+    cAnalysis = [cInit {'saved',{'done','segment_trials'},{'done','baseline_trials'},...
+        {'done','reject_trials'},{'done','tfd'},{'done','average'}}];
     FT_DATA.gui.display_fields.analysis = cAnalysis;
+    
+    %averaged display fields
+    cAveraged = [cInit {'saved',{'done','average'},{'done','grand_average'}}];
+    FT_DATA.gui.display_fields.averaged = cAveraged;
 end
 
 if any(strcmpi(opt.type,{'all','path'}))

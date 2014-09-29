@@ -44,7 +44,6 @@ end
 FT_DATA.saved = false;
 
 %update history
-FT_DATA.gui.display_mode = 'segment';
 FT.tools.AddHistory('segment_trials',params);
 
 FT_DATA.done.segment_trials = isempty(me);
