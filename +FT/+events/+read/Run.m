@@ -76,8 +76,8 @@ try
                 evt.value(cellfun(@isempty,evt.value)) = {NaN};
                 evt.value = cat(1,evt.value{:});
             else
-               error('Poorly formated event code values. Please contact the developer with the circumstances of this error'); 
-            end                
+                error('Poorly formated event code values. Please contact the developer with the circumstances of this error'); 
+            end
         end
         FT_DATA.event = FT.ReStruct(evt);
 

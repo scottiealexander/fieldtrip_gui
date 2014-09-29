@@ -92,7 +92,7 @@ uimenu(hProcMenu,'Label','Rereference Data','Callback',@(varargin) FT.RunFunctio
 
 % Segmentation
 hSegMenu  = uimenu(h,'Label','Segmentation');
-uimenu(hSegMenu,'Label','Process Events','Callback',@(varargin) FT.RunFunction(@FT.events.read.Gui));
+uimenu(hSegMenu,'Label','Read Events','Callback',@(varargin) FT.RunFunction(@FT.events.read.Gui));
 uimenu(hSegMenu,'Label','Manual Event Checking','Callback',@(varargin) FT.RunFunction(@FT.events.check.Gui));
 uimenu(hSegMenu,'Label','Relabel Events','Callback',@(varargin) FT.RunFunction(@FT.events.relabel.Gui));
 uimenu(hSegMenu,'Label','Define Trials','Callback',@(varargin) FT.RunFunction(@FT.trials.define.Gui));
