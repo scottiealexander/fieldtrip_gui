@@ -91,13 +91,20 @@ function MethodCB(varargin)
         win.SetElementProp('log','Value',true);
         win.SetElementProp('log','Enable','on');
     end
+    if strcmpi(availableMethods{k},'hilbert')
+        win.SetElementProp('w','Enable','on');
+    else
+        win.SetElementProp('w','Enable','off');
+    end
 end
 %-------------------------------------------------------------------------%
 function SurrogateCB(varargin)
     if ~win.GetElementProp('surrogate','Value')
         win.SetElementProp('nsurrogate','String','0');
+        win.SetElementProp('nsurrogate','Enable','off');
     else
         win.SetElementProp('nsurrogate','String',num2str(params.nsurrogate));
+        win.SetElementProp('nsurrogate','Enable','on');
     end
 end
 %-------------------------------------------------------------------------%
