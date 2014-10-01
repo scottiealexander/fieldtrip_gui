@@ -1,0 +1,4 @@
+# Ignore everything in this directory (is only should hold temporary files for Progress2.m)
+*
+# Except this file
+!.gitignore
