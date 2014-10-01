@@ -144,7 +144,7 @@ FT_DATA.power.surrogate.mean = cellfun(@(x) nanmean(x,4),data,'uni',false);
 FT_DATA.power.surrogate.std  = cellfun(@(x) nanstd(x,[],4),data,'uni',false);
 
 %remove the raw data
-FT_DATA.power = rmfield(FT_DATA.power,'raw');
+% FT_DATA.power = rmfield(FT_DATA.power,'raw');
 
 FT_DATA.saved = false;
 
