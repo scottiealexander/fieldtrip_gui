@@ -69,7 +69,7 @@ for kM = 1:numel(hMsg)
 end
 
 %which icon to display
-strDirIcon = fullfile(fileparts(mfilename('fullpath')),'icon');
+strDirIcon = fullfile(fileparts(mfilename('fullpath')),'assets','icon');
 switch vType
     case 0
         strPathIcon = fullfile(strDirIcon,'error.png');

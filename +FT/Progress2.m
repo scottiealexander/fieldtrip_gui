@@ -15,8 +15,8 @@ function Progress2(varargin)
 %
 % Please report bugs to: scottiealexander11@gmail.com
 
-strPathProc = fullfile(fileparts(mfilename('fullpath')),'tmp','progress.txt');
-strPathIfo  = fullfile(fileparts(mfilename('fullpath')),'tmp','info.txt');
+strPathProc = fullfile(fileparts(mfilename('fullpath')),'assets','tmp','progress.txt');
+strPathIfo  = fullfile(fileparts(mfilename('fullpath')),'assets','tmp','info.txt');
 
 if ~isempty(varargin)
     if isnumeric(varargin{1})

@@ -2,7 +2,8 @@ function UpdateGUI()
 
 % FT.UpdateGUI
 %
-% Description: update the FieldTrip GUI display figure
+% Description: update the FieldTrip GUI display figure, if figure cannot
+%              be found aborts
 %
 % Syntax: FT.UpdateGUI
 %
@@ -10,12 +11,16 @@ function UpdateGUI()
 %
 % Out: 
 %
-% Updated: 2014-06-27
+% Updated: 2014-10-01
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
 
 global FT_DATA
+if isempty(FT_DATA) || isempty(findobj('Type','figure','Name','FieldTrip GUI'))
+    return;
+end
+
 gui = FT_DATA.gui;
 
 FT_DATA.size = sprintf('%.1f MB',getfield(whos('FT_DATA'),'bytes')/1e6);

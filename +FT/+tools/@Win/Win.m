@@ -227,7 +227,7 @@ methods (Access=private)
         for kR = 1:self.nrow
                         
             if ~self.opt.grid
-                btm_cur = btm_cur - (max(height(kR,:)) + self.pad);
+                btm_cur = btm_cur - (max(height(kR,:)) + self.pad);                
                 row_width = sum(width(kR,:)) + (self.pad * (self.ncol(kR)-1));
                 left_cur = (pFig(3)/2) - (row_width/2);
             else
@@ -239,7 +239,10 @@ methods (Access=private)
                     if ~self.opt.grid
                         halign = self.GetHAlignment(kC,self.ncol(kR));
                         width_use = width(kR,kC);
-                        height_use = height(kR,kC);
+
+                        %always use the max height of a row to get a centered vertical alignment                    
+                        height_use = mx_height(kR);
+                        % height_use = height(kR,kC);
                     else
                         halign = self.el{kR,kC}.opt.halign;
                         width_use = mx_width(kC);

@@ -7,7 +7,7 @@ function c = CellJoin(c,dim)
 % Syntax: c = CellJoin(c,dim)
 %
 % In: 
-%       c   - a NxN cell
+%       c   - a NxM cell
 %       dim - the dimention over which the join the elements
 %
 % Out: 

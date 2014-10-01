@@ -47,16 +47,26 @@ FT.UpdateGUI;
 % File operations
 hFileMenu = uimenu(h,'Label','File');
 
-% Template operations
-hTempMenu = uimenu(hFileMenu,'Label','Template');
-uimenu(hTempMenu,'Label','Create New','Callback',@(varargin) FT.RunFunction(@FT.template.Create));
-uimenu(hTempMenu,'Label','Edit Current','Callback',@(varargin) FT.RunFunction(@FT.template.Edit));
-uimenu(hTempMenu,'Label','Save Current','Callback',@(varargin) FT.RunFunction(@FT.template.Save));
-uimenu(hTempMenu,'Label','Load Existing','Callback',@(varargin) FT.RunFunction(@FT.template.Load));
-uimenu(hTempMenu,'Label','Run Current','Callback',@(varargin) FT.RunFunction(@FT.template.Run));
+% Study operations
+hStudyMenu = uimenu(hFileMenu,'Label','Study');
+uimenu(hStudyMenu,'Label','Create New','Callback',@(varargin) FT.RunFunction(@FT.study.Create));
+uimenu(hStudyMenu,'Label','Load','Accelerator','L','Callback',@(varargin) FT.RunFunction(@FT.study.Load));
+
+% Subject operations
+hSubjMenu = uimenu(hFileMenu,'Label','Subject');
+uimenu(hSubjMenu,'Label','Add New','Callback',@(varargin) FT.RunFunction(@FT.study.subject.Add));
+uimenu(hSubjMenu,'Label','Load','Accelerator','D','Callback',@(varargin) FT.RunFunction(@FT.study.subject.Load));
+
+% % Template operations
+% hTempMenu = uimenu(hFileMenu,'Label','Template');
+% uimenu(hTempMenu,'Label','Create New','Callback',@(varargin) FT.RunFunction(@FT.template.Create));
+% uimenu(hTempMenu,'Label','Edit Current','Callback',@(varargin) FT.RunFunction(@FT.template.Edit));
+% uimenu(hTempMenu,'Label','Save Current','Callback',@(varargin) FT.RunFunction(@FT.template.Save));
+% uimenu(hTempMenu,'Label','Load Existing','Callback',@(varargin) FT.RunFunction(@FT.template.Load));
+% uimenu(hTempMenu,'Label','Run Current','Callback',@(varargin) FT.RunFunction(@FT.template.Run));
 
 %read in data
-uimenu(hFileMenu,'Label','Load Data','Callback',@FT.io.Gui,'Accelerator','L');
+uimenu(hFileMenu,'Label','Load Data','Callback',@FT.io.Gui,'Accelerator','D');
 %save
 uimenu(hFileMenu,'Label','Save Dataset',...
     'Callback',@(x,y) SaveDataset(x,y,false));

@@ -3,12 +3,12 @@ function Surrogate(nITER)
 % FT.tfd.Surrogate
 %
 % Description: construct surrogate PSD by phase scrambling the instantaneous power values
-%			   from a time-frequency decomposition
+%              from a time-frequency decomposition
 %
 % Syntax: FT.tfd.Surrogate(nITER)
 %
 % In:
-%		nITER - the number of surrogate datasets to generate
+%       nITER - the number of surrogate datasets to generate
 %
 % Out: 
 %
@@ -18,35 +18,35 @@ function Surrogate(nITER)
 % Please report bugs to: scottiealexander11@gmail.com
 
 %GOAL:
-%	given a 3D matrix of power values (channels x time x frequency)
-%	1) scramble the phases of the signal
-%	2) randomly extract trials for each condition
-%	3) average trials within condition
-%	4) collect average ERSPs
-%	5) compute mean and std of average ERSPs
+%   given a 3D matrix of power values (channels x time x frequency)
+%   1) scramble the phases of the signal
+%   2) randomly extract trials for each condition
+%   3) average trials within condition
+%   4) collect average ERSPs
+%   5) compute mean and std of average ERSPs
 
 global FT_DATA;
 
 if ~isfield(FT_DATA,'power') || ~isfield(FT_DATA.power,'raw') || isempty(FT_DATA.power.raw)
-	msg = ['\bf[\color{red}ERROR\color{black}]: Hilbert decomposition has not been ',...
-		   'performed on this data set!'];
-	FT.UserInput(msg,0,'button','OK');
-	return;
+    msg = ['\bf[\color{red}ERROR\color{black}]: Hilbert decomposition has not been ',...
+           'performed on this data set!'];
+    FT.UserInput(msg,0,'button','OK');
+    return;
 end
 
 if nITER > 1
-	s = ver;
-	bParallel = any(strcmpi({s(:).Name},'Parallel Computing Toolbox'));
-	if bParallel
-		nWorker = java.lang.Runtime.getRuntime().availableProcessors-1;
-	end
-	if isnan(nWorker) || nWorker < 2
-		bParallel = false;
-	elseif nWorker > nITER
-		nWorker = nITER;
-	end
+    s = ver;
+    bParallel = any(strcmpi({s(:).Name},'Parallel Computing Toolbox'));
+    if bParallel
+        nWorker = java.lang.Runtime.getRuntime().availableProcessors-1;
+    end
+    if isnan(nWorker) || nWorker < 2
+        bParallel = false;
+    elseif nWorker > nITER
+        nWorker = nITER;
+    end
 else
-	bParallel = false;
+    bParallel = false;
 end
 
 %total number of trials
@@ -54,32 +54,36 @@ nTrial = cellfun(@(x) size(x,4),FT_DATA.power.data);
 nTrialTotal = sum(nTrial);
 
 %trial and data length in number of data points
-trial_len 	 = numel(FT_DATA.power.time);
-data_length  = size(FT_DATA.power.raw,2);
+trial_len = numel(FT_DATA.power.time);
+data_len  = size(FT_DATA.power.raw,2);
+n_condition = numel(FT_DATA.power.data);
 
-%indicies of points that mark the start of a trial
-kStart = nan(nTrialTotal,1);
+cTrlDef = cell(nITER,1);
+for kI = 1:nITER    
+    %indicies of points that mark the start of a trial
+    kStart = nan(nTrialTotal,1);
 
-%all possible starting points for trials
-pnts = 1:(data_length-trial_len);
+    %all possible starting points for trials
+    pnts = 1:(data_len-trial_len);
 
-%choose a random starting point for each trial such that no trials will overlap
-%and no randomly selected trials will be discontinuous
-for k = 1:nTrialTotal
-	trial_start = pnts(randi(numel(pnts),1));
+    %choose a random starting point for each trial such that no trials will overlap
+    %and no randomly selected trials will be discontinuous
+    for k = 1:nTrialTotal
+        trial_start = pnts(randi(numel(pnts),1));
 
-	%setting up the 'window' both before and after our starting index
-	%prevents and future trials from being discontinuous	
-	bRM = (pnts > trial_start-trial_len) & (pnts < trial_start+trial_len);
-	pnts(bRM) = [];
-	kStart(k) = trial_start;
+        %setting up the 'window' both before and after our starting index
+        %prevents and future trials from being discontinuous    
+        bRM = (pnts > trial_start-trial_len) & (pnts < trial_start+trial_len);
+        pnts(bRM) = [];
+        kStart(k) = trial_start;
+    end
+
+    %group trials for each condition
+    %NOTE: we need to subtract 1 from the trial length as the point
+    %at which the trial starts is part of the trial
+    kTrial  = [kStart kStart+(trial_len-1)];
+    cTrlDef{kI,1} = mat2cell(kTrial,nTrial,2);
 end
-
-%group trials for each condition
-%NOTE: we need to subtract 1 from the trial length as the point
-%at which the trial starts is part of the trial
-kTrial  = [kStart kStart+(trial_len-1)];
-cKStart = mat2cell(kTrial,nTrial,2);
 
 %init our cell of data
 nBand = numel(FT_DATA.power.bands);
@@ -93,11 +97,11 @@ raw   = FT_DATA.power.raw;
 bands = FT_DATA.power.bands;
 
 %generate the surrogate ERSP matricies
-FT.Progress2(nBand*numel(cKStart)*nITER,'Generating surrogate data');
+FT.Progress2(nBand*n_condition*nITER,'Generating surrogate data');
 id = tic;
 if bParallel
-	%use multiple workers in parallel
-	fprintf('Using %d threads for processing\n',nWorker);
+    %use multiple workers in parallel
+    fprintf('Using %d threads for processing\n',nWorker);
     if matlabpool('size') > 0
         matlabpool('close');
     end    
@@ -109,9 +113,9 @@ if bParallel
     else
         bUsePar = false;
         matlabpool(pc,nWorker);
-    end	
+    end 
     parfor kIter = 1:nITER
-        data{kIter,1} = SurrogateERSP(raw,bands,trial_len,cKStart);
+        data{kIter,1} = SurrogateERSP(raw,bands,trial_len,cTrlDef{kIter});
     end
     if bUsePar
         delete(pp);
@@ -119,10 +123,10 @@ if bParallel
         matlabpool('close');
     end
 else
-	%single worker
-	for kIter = 1:nITER
-		data{kIter,1} = SurrogateERSP(raw,bands,trial_len,cKStart);
-	end
+    %single worker
+    for kIter = 1:nITER
+        data{kIter,1} = SurrogateERSP(raw,bands,trial_len,cTrlDef{kIter});
+    end
 end
 fprintf('TOTAL ELASPED TIME: %.2f\n',toc(id));
 
@@ -155,54 +159,54 @@ function cD = SurrogateERSP(raw,bands,trial_len,cKStart)
 % Syntax: cD = SurrogateERSP(raw,bands,trial_len,cKStart)
 %
 % In:
-%		raw       - the 3D matrix of power values (channels x time x frequency band)
-%		bands     - the upper and lower cutoff frequency for each frequency band
-%		trial_len - the lenght of a trial in samples
-%		cKStart   - a nCondition length cell of start and end indicies for each 
-%				    trial
+%       raw       - the 3D matrix of power values (channels x time x frequency band)
+%       bands     - the upper and lower cutoff frequency for each frequency band
+%       trial_len - the lenght of a trial in samples
+%       cKStart   - a nCondition length cell of start and end indicies for each 
+%                   trial
 %
 % Out:
-%		cD - a nCondition length cell of ERSP matricies (freq x time x channel) 
+%       cD - a nCondition length cell of ERSP matricies (freq x time x channel) 
 %
 % Updated: 2014-06-20
 % Scottie Alexnader
 
 %INFO the function that actually computes a surrogate ERSP by:
-%		1) scrambling the phase of the tfd matrix of each 
-%		   frequency band => channel x time 
-%		2) extracting the randomly positioned trials => channel x time x trial
-%		3) reformatting our trials matrix to be freq x time x channel x trial
-%		4) averaging accross trials to get a surrogate ERSP matrix that is
-%		   freq x time x channel
-	id2 = tic;
-	%initialize a cell of nans for each condition
-	nband 	  = numel(bands);	
-	nchan 	  = size(raw,1);
+%       1) scrambling the phase of the tfd matrix of each 
+%          frequency band => channel x time 
+%       2) extracting the randomly positioned trials => channel x time x trial
+%       3) reformatting our trials matrix to be freq x time x channel x trial
+%       4) averaging accross trials to get a surrogate ERSP matrix that is
+%          freq x time x channel
+    id2 = tic;
+    %initialize a cell of nans for each condition
+    nband     = numel(bands);   
+    nchan     = size(raw,1);
 
-	cD = repmat({nan(nband,trial_len,nchan)},numel(cKStart),1);
-	
-	%iterate through the decomposition matrix for each power band
-	for kA = 1:nband
-		%scramble the phases
-		d = FT.tools.phaseran2(raw(:,:,kA));
+    cD = repmat({nan(nband,trial_len,nchan)},numel(cKStart),1);
+    
+    %iterate through the decomposition matrix for each power band
+    for kA = 1:nband
+        %scramble the phases
+        d = FT.tools.phaseran2(raw(:,:,kA));
 
-		%iterate through the cell of trial start and end indicies
-		for kB = 1:numel(cKStart)
-			kStart = cKStart{kB};
-			%extract trials for the current condition
-			nTrial   = size(kStart,1);			
-			tmp 	 = zeros(size(d,1),trial_len,nTrial);
-			for kC = 1:nTrial
-				tmp(:,:,kC) =  d(:,kStart(kC,1):kStart(kC,2));
-			end			
+        %iterate through the cell of trial start and end indicies
+        for kB = 1:numel(cKStart)
+            kStart = cKStart{kB};
+            %extract trials for the current condition
+            nTrial   = size(kStart,1);          
+            tmp      = zeros(size(d,1),trial_len,nTrial);
+            for kC = 1:nTrial
+                tmp(:,:,kC) =  d(:,kStart(kC,1):kStart(kC,2));
+            end         
 
-			%reformat to be 1 x time x channel x trial and insert into
-			%the cell element that corresponds with the condition, and the row
-			%of the contents of that cell element that corresponds to the
-			%current frequency band			
-			cD{kB}(kA,:,:) = mean(permute(reshape(tmp,[1 size(tmp)]),[1,3,2,4]),4);
-			FT.Progress2;            
-		end
-	end	
-	fprintf('%s: iter done [%.2f]\n',datestr(now,13),toc(id2));
+            %reformat to be 1 x time x channel x trial and insert into
+            %the cell element that corresponds with the condition, and the row
+            %of the contents of that cell element that corresponds to the
+            %current frequency band         
+            cD{kB}(kA,:,:) = mean(permute(reshape(tmp,[1 size(tmp)]),[1,3,2,4]),4);
+            FT.Progress2;            
+        end
+    end 
+    fprintf('%s: iter done [%.2f]\n',datestr(now,13),toc(id2));
 %-----------------------------------------------------------------------------%
