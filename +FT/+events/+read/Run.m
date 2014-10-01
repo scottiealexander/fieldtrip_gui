@@ -87,6 +87,12 @@ try
         end
     end
     
+    %make sure struct is Nx1 array of structs to be consistent with ft_definetrial (above)
+    if numel(FT_DATA.event) == 1
+        FT_DATA.event = FT.ReStruct(FT_DATA.event);
+    end
+    FT_DATA.data.cfg.event = FT_DATA.event;
+    
     % Make the event types match the event values (but always be strings)
     events = FT.ReStruct(FT_DATA.event);
     if ~iscell(events.value)
@@ -95,12 +101,6 @@ try
         events.type = cellfun(@(x) num2str(x),events.value,'uni',false);
     end
     FT_DATA.event = FT.ReStruct(events);
-    
-    %make sure struct is Nx1 array of structs to be consistent with ft_definetrial (above)
-    if numel(FT_DATA.event) == 1
-        FT_DATA.event = FT.ReStruct(FT_DATA.event);
-    end
-    FT_DATA.data.cfg.event = FT_DATA.event;
 
 catch me
 end

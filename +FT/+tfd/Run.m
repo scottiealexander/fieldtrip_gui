@@ -51,7 +51,7 @@ try
     cellfun(@SegmentData,data_raw,num2cell(1:params.n)','uni',false);
 
     %add to the data struct
-    FT_DATA.power.raw     = FT.ROA(cat(3,data_raw{:}));
+    FT_DATA.power.raw     = (cat(3,data_raw{:}));
     FT_DATA.power.data    = data;
     FT_DATA.power.centers = centers;
     FT_DATA.power.bands   = cBands;
@@ -63,6 +63,9 @@ try
     if params.surrogate && (params.nsurrogate > 0)
         FT.tfd.Surrogate(params.nsurrogate);
     end
+    % Remove the raw data used to generate the surrogates
+    FT_DATA.power = rmfield(FT_DATA.power,'raw');
+    
 catch me
 end
 

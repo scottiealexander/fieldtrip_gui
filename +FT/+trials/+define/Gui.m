@@ -54,6 +54,9 @@ while true
         return;
     elseif strcmpi('done',win.res.btn)
         params = params(1:i);
+        if (i == 0)
+            return; % no trials defined
+        end
         break;
     else
         % Get trial parameters for an event
