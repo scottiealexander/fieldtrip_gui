@@ -33,7 +33,7 @@ function DoUpdate
 	[b,local]  = system('git rev-parse master');
 	[b,remote] = system('git rev-parse origin/master');
 	[b,base]   = system('git merge-base master origin/master');
-        clc;
+    clc;
 	cd(x);
 	if strcmpi(local,remote)
 		%everything is up-to-date		

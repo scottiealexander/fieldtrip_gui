@@ -1,6 +1,18 @@
 function ClearDataset()
-
-%TODO: this needs major works
+% FT.io.ClearDataset
+%
+% Description: clear the existing dataset but maintain session specific data
+%
+% Syntax: FT.io.ClearDataset
+%
+% In: 
+%
+% Out: 
+%
+% Updated: 2014-10-01
+% Scottie Alexander
+%
+% Please report bugs to: scottiealexander11@gmail.com
 
 global FT_DATA;
 
@@ -10,7 +22,6 @@ gui  = FT_DATA.gui;
 template_path = FT_DATA.path.template;
 template = FT_DATA.template;
 study_name = FT_DATA.study_name;
-subject_name = FT_DATA.subject_name;
 
 %renew the FT_DATA struct
 FT_DATA = [];
@@ -23,7 +34,6 @@ FT_DATA.gui.display_mode = 'init'; %set display mode back to initial
 FT_DATA.path.template = template_path;
 FT_DATA.template = template;
 FT_DATA.study_name = study_name;
-FT_DATA.subject_name = subject_name;
 
 %update the GUI
 FT.UpdateGUI;

@@ -1,13 +1,13 @@
-function c = LoadFile(id)
+function c = LoadFiles(id)
 
-% FT.study.subject.LoadFile
+% FT.study.subject.LoadFiles
 %
-% Description:
+% Description: load all dataset file associtate with a given subject
 %
-% Syntax: c = FT.study.subject.LoadFile(id)
+% Syntax: c = FT.study.subject.LoadFiles(id)
 %
 % In:
-%       id - the subjects id
+%       id - the subject's id or name
 %
 % Out:
 %       c - a cell of filepaths for the given subject

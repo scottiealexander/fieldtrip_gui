@@ -10,7 +10,7 @@ function GUI()
 %
 % Out: 
 %
-% Updated: 2014-06-27
+% Updated: 2014-10-01
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
@@ -49,13 +49,13 @@ hFileMenu = uimenu(h,'Label','File');
 
 % Study operations
 hStudyMenu = uimenu(hFileMenu,'Label','Study');
-uimenu(hStudyMenu,'Label','Create New','Callback',@(varargin) FT.RunFunction(@FT.study.Create));
+uimenu(hStudyMenu,'Label','Create New','Accelerator','C','Callback',@(varargin) FT.RunFunction(@FT.study.Create));
 uimenu(hStudyMenu,'Label','Load','Accelerator','L','Callback',@(varargin) FT.RunFunction(@FT.study.Load));
 
 % Subject operations
 hSubjMenu = uimenu(hFileMenu,'Label','Subject');
-uimenu(hSubjMenu,'Label','Add New','Callback',@(varargin) FT.RunFunction(@FT.study.subject.Add));
-uimenu(hSubjMenu,'Label','Load','Accelerator','D','Callback',@(varargin) FT.RunFunction(@FT.study.subject.Load));
+uimenu(hSubjMenu,'Label','Add New','Accelerator','A','Callback',@(varargin) FT.RunFunction(@FT.study.subject.Add));
+uimenu(hSubjMenu,'Label','Load','Accelerator','J','Callback',@(varargin) FT.RunFunction(@FT.study.subject.Load));
 
 % % Template operations
 % hTempMenu = uimenu(hFileMenu,'Label','Template');
@@ -66,20 +66,20 @@ uimenu(hSubjMenu,'Label','Load','Accelerator','D','Callback',@(varargin) FT.RunF
 % uimenu(hTempMenu,'Label','Run Current','Callback',@(varargin) FT.RunFunction(@FT.template.Run));
 
 %read in data
-uimenu(hFileMenu,'Label','Load Data','Callback',@FT.io.Gui,'Accelerator','D');
+uimenu(hFileMenu,'Label','Load Data','Accelerator','D',...
+    'Callback',@(varargin) FT.RunFunction(@FT.study.subject.AddFileGUI));
 %save
 uimenu(hFileMenu,'Label','Save Dataset',...
-    'Callback',@(x,y) SaveDataset(x,y,false));
-
+    'Callback',@(varargin) FT.RunFunction(@() FT.io.SaveDataset(false)));
 %save as
-uimenu(hFileMenu,'Label','Save Dataset As...',...
-    'Callback',@(x,y) SaveDataset(x,y,true),'Accelerator','S');
-
+uimenu(hFileMenu,'Label','Save Dataset As...','Accelerator','S',...
+    'Callback',@(varargin) FT.RunFunction(@() FT.io.SaveDataset(true)));
 %clear
-uimenu(hFileMenu,'Label','Clear Dataset','Callback',@ClearDataset);
-
-%quit
-uimenu(hFileMenu,'Label','Quit','Callback',@QuitGUI,'Accelerator','Q');
+uimenu(hFileMenu,'Label','Clear Dataset',...
+    'Callback',@(varargin) FT.RunFunction(@ClearDataset));
+%quit: this should not use RunFunction to help aviod getting stuck in a 
+%error-catch, error-catch loop
+uimenu(hFileMenu,'Label','Quit','Accelerator','Q','Callback',@(varargin) QuitGUI);
 
 % View operations
 hViewMenu = uimenu(h,'Label','View');
@@ -122,7 +122,7 @@ hUpdMenu = uimenu(h,'Label','Update');
 uimenu(hUpdMenu,'Label','Update Toolbox','Callback',@(varargin) FT.Update(false));
 
 %-------------------------------------------------------------------------%
-function ClearDataset(~,~)
+function ClearDataset
     resp = FT.UserInput('Are you sure you want to clear the current dataset?',...
                     0,'button',{'Yes','Cancel'},'title','Clear Dataset?');
     if strcmpi(resp,'yes')
@@ -130,70 +130,14 @@ function ClearDataset(~,~)
     end
 end
 %-------------------------------------------------------------------------%
-function SaveDataset(~,~,saveas)
-    % save the current state of the analysis
-    
-    strPathOut = FT_DATA.path.dataset;
-    
-    % user selected 'save as', data already saved, or no current .set file exists
-    if saveas || FT_DATA.saved || isempty(strPathOut)
-        % the directory of the current .set file or the base directory
-        if ~isempty(strPathOut)
-            strDir = fileparts(strPathOut);
-        else
-            strDir = FT_DATA.path.base_directory;
-        end
-
-        % get the filepath the user wants
-        strPathDef = fullfile(strDir,[FT_DATA.current_dataset '.set']);
-        [strName,strPath] = uiputfile('*.set','Save Analysis As...',strPathDef);
-
-        % construct the file path
-        if ~isequal(strName,0) && ~isequal(strPath,0)
-            strPathOut = fullfile(strPath,strName);            
-        else
-            return; % user selected cancel
-        end
-    end
-    
-    % force extension to be '.set'
-    strPathOut = regexprep(strPathOut,'\.[\w\-\+\.]+$','.set');
-    
-    % get the new dataset path and name
-    FT_DATA.path.dataset = strPathOut;
-    [~,FT_DATA.current_dataset] = fileparts(strPathOut);
-
-    % remove template and gui fields as these can change
-    gui = FT_DATA.gui;
-    FT_DATA.gui = rmfield(FT_DATA.gui,{'hAx','hText','sizText'});
-    template = FT_DATA.template;
-    FT_DATA = rmfield(FT_DATA,'template');
-    template_path = FT_DATA.path.template;
-    FT_DATA.path = rmfield(FT_DATA.path,'template');
-
-    % save data
-    hMsg = FT.UserInput('Saving dataset, plese wait...',1); 
-    FT.io.WriteDataset(strPathOut);
-    if ishandle(hMsg)
-        close(hMsg);
-    end
-
-    % restore template and gui fields
-    FT_DATA.gui = gui;
-    FT_DATA.template = template;
-    FT_DATA.path.template = template_path;
-    
-    FT.UpdateGUI;
-end
-%-------------------------------------------------------------------------%
-function QuitGUI(obj,evt)
+function QuitGUI
     if exist('FT_DATA','var') && isfield(FT_DATA,'gui') && isfield(FT_DATA,'saved')
         % data exists and is unsaved
         if isfield(FT_DATA,'data') && ~isempty(FT_DATA.data) &&  ~FT_DATA.saved
             resp = FT.UserInput('\fontsize{14}\bfThis dataset has unsaved changes.\nWould you like to save them?',1,...
                     'button',{'Yes','No'},'title','Unsaved Changes');
             if strcmpi(resp,'yes')
-                SaveDataset(obj,evt,true);
+                FT.io.SaveDataset(true);
                 if ~FT_DATA.saved
                     return;
                 end
@@ -201,7 +145,7 @@ function QuitGUI(obj,evt)
         end
     end
     fprintf(['*****\nThank you for using the FieldTrip GUI.\n'...
-                 'Cleaning up and ending analysis session...\n*****\n']);
+             'Cleaning up and ending analysis session...\n*****\n']);
     if ishandle(h)
         GUICloseFcn('force');
     end
@@ -220,7 +164,7 @@ function GUICloseFcn(varargin)
     else
         resp = FT.UserInput('Are you sure you want to close the GUI?',1,'button',{'No','Yes'});
         if strcmpi(resp,'yes')
-            QuitGUI([],[]);
+            QuitGUI;
         end
     end
 end

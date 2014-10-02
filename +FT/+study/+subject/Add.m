@@ -2,7 +2,7 @@ function Add
 
 % FT.study.subject.Add
 %
-% Description:
+% Description: add a subject to the current studies list of subjects
 %
 % Syntax: FT.study.subject.Add
 %
@@ -27,7 +27,7 @@ m = FT.study.SubjectMap;
 c = {{'text','string','Please enter a name for the subject:'},...
      {'edit','string','','tag','name','valfun',@CheckName};...
      {'pushbutton','string','Load Dataset'},...
-     {'pushbutton','string','Cancel','validate',false}...
+     {'pushbutton','string','Skip','validate',false}...
     };
 
 w = FT.tools.Win(c,'title','Add Subject','position',[0 0],'grid',false,'focus','name');
@@ -45,8 +45,7 @@ elseif ~isempty(w.res.name)
         %NO data is stored there
         delete(subj_list);
     end    
-    m.Save;
-    FT_DATA.subject_name = w.res.name;
+    m.Save;    
 
     %now get the path to the dataset file
     FT.io.Gui;
@@ -55,6 +54,7 @@ elseif ~isempty(w.res.name)
         FT.study.subject.AddFile(id,FT_DATA.path.dataset);
     end
 
+    FT_DATA.subject_name = w.res.name;
     FT.UpdateGUI;
 end
 

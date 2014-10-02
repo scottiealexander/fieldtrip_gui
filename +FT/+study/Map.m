@@ -2,13 +2,19 @@ classdef Map < handle
 
 % FT.study.Map
 %
-% Description:
+% Description: a quick and simple mapping from string to numbers/strings
+%              possibly read from a parameter:value text file (one per line)
+%              includes: write-on-destruction, key selection GUI
 %
-% Syntax: FT.study.Map
+% Syntax: mp = FT.study.Map(path_file)
 %
 % In:
+%       path_file - the path to a text value containing parameter:value pairs
+%                   one per line, pass the string 'null' to skip file 
+%                   reading / writing
 %
 % Out:
+%       mp - an instance of the FT.study.Map class
 %
 % Updated: 2014-10-01
 % Scottie Alexander
@@ -99,13 +105,17 @@ methods
         end
     end
     %-------------------------------------------------------------------------%
-    function key = KeySelectionGUI(self,key_type)
+    function key = KeySelectionGUI(self,key_type,varargin)
+        opt = FT.ParseOpts(varargin,...
+            'btn1','Load'  ,...
+            'btn2','Cancel' ...
+            );
         c = {{'text','string',['Select a ' key_type ':']},...
              {'listbox','string',self.keys,'tag','item'};...
-             {'pushbutton','string','Load'},...
-             {'pushbutton','string','Cancel'} ...
+             {'pushbutton','string',opt.btn1},...
+             {'pushbutton','string',opt.btn2} ...
             };
-        win = FT.tools.Win(c,'title',['Load ' key_type]);
+        win = FT.tools.Win(c,'title',['Load ' key_type],'focus','item');
         win.Wait;
         if strcmpi(win.res.btn,'load')
             key = self.keys{win.res.item};
