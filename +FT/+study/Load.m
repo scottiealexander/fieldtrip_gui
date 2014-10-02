@@ -18,6 +18,15 @@ function Load
 
 global FT_DATA;
 
+studies_dir = fullfile(FT.tools.BaseDir,'assets','studies');
+study_list = fullfile(studies_dir,'ids.txt');
+
+if ~isdir(studies_dir) || exist(study_list,'file')~=2
+    msg = '[ERROR]: No studies have been created. Please create a study before loading';
+    FT.UserInput(msg,0,'title','No Studies Exist','button','OK');
+    return;
+end
+
 m = FT.study.StudyMap;
 
 name = m.KeySelectionGUI('Study');

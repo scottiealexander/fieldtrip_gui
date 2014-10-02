@@ -17,6 +17,11 @@ function Create
 
 global FT_DATA;
 
+studies_dir = fullfile(FT.tools.BaseDir,'assets','studies');
+if ~isdir(studies_dir)
+    mkdir(studies_dir);
+end
+
 m = FT.study.StudyMap;
 
 c = {{'text','string','Please enter a name for the study:'},...

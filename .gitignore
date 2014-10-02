@@ -1,3 +1,10 @@
+#project wide gitignore file for FieldTrip GUI
+
+#ignore .mat and .set files
 *.mat
+*.set
+*.SET
+
+#ignore user specific studies info
 +FT/assets/studies
 +FT/assets/studies/*
