@@ -1,10 +1,10 @@
-function m = SubjectList
+function m = SubjectMap
 
-% FT.study.SubjectList
+% FT.study.SubjectMap
 %
 % Description: construct a subject map, mapping all subject names to their ids
 %
-% Syntax: m = FT.study.SubjectList
+% Syntax: m = FT.study.SubjectMap
 %
 % In:
 %
