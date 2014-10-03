@@ -19,8 +19,8 @@ global FT_DATA;
 
 %move to the analysis base dir
 strDirCur = pwd;
-if isdir(FT_DATA.path.base_directory)        
-    cd(FT_DATA.path.base_directory);       
+if isdir(FT_DATA.path.base_directory)
+    cd(FT_DATA.path.base_directory);
 end
 
 %user-selected file
