@@ -1,16 +1,18 @@
 function Create
 
-% Create
+% FT.study.Create
 %
-% Description:
+% Description: create a study, a study is just a name that is associated
+%              with a list of subjects, which themselves are simply names
+%              associated with a list of files
 %
-% Syntax: Create
+% Syntax: FT.study.Create
 %
 % In:
 %
 % Out:
 %
-% Updated: 2014-09-29
+% Updated: 2014-10-03
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com

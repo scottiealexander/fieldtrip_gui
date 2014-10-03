@@ -32,31 +32,18 @@ m = FT.study.StudyMap;
 name = m.KeySelectionGUI('Study');
 
 if ~isempty(name)
-    if any(~isemptyfield({'data','power'}))
+    if any(~FT.tools.IsEmptyField({'data','power'}))
         resp = FT.UserInput('Do you want to clear the current dataset?',...
                         0,'button',{'Yes','Cancel'},'title','Clear Dataset?');
         if strcmpi(resp,'yes')
             FT.io.ClearDataset;
         end
     end
-    if ~isemptyfield('study_name')
+    if ~FT.tools.IsEmptyField('study_name')
         if ~strcmp(name,FT_DATA.study_name)
             FT_DATA.subject_name = '';
         end
     end
     FT_DATA.study_name = name;    
     FT.UpdateGUI;
-end
-
-%-----------------------------------------------------------------------------%
-function b = isemptyfield(field)
-    if ~iscell(field)
-        field = {field};
-    end
-    b = false(numel(field),1);
-    for k = 1:numel(field)
-        b(k) = ~isfield(FT_DATA,field{k}) || isempty(FT_DATA.(field{k}));
-    end
-end
-%-----------------------------------------------------------------------------%
 end

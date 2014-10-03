@@ -51,11 +51,13 @@ hFileMenu = uimenu(h,'Label','File');
 hStudyMenu = uimenu(hFileMenu,'Label','Study');
 uimenu(hStudyMenu,'Label','Create New','Accelerator','C','Callback',@(varargin) FT.RunFunction(@FT.study.Create));
 uimenu(hStudyMenu,'Label','Load','Accelerator','L','Callback',@(varargin) FT.RunFunction(@FT.study.Load));
+uimenu(hStudyMenu,'Label','Delete','Callback',@(varargin) FT.RunFunction(@FT.study.Delete));
 
 % Subject operations
 hSubjMenu = uimenu(hFileMenu,'Label','Subject');
 uimenu(hSubjMenu,'Label','Add New','Accelerator','A','Callback',@(varargin) FT.RunFunction(@FT.study.subject.Add));
 uimenu(hSubjMenu,'Label','Load','Accelerator','J','Callback',@(varargin) FT.RunFunction(@FT.study.subject.Load));
+% uimenu(hStudyMenu,'Label','Delete','Callback',@(varargin) FT.RunFunction(@FT.study.subject.Delete));
 
 % % Template operations
 % hTempMenu = uimenu(hFileMenu,'Label','Template');

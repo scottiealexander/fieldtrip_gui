@@ -72,6 +72,19 @@ methods
         end
     end
     %-------------------------------------------------------------------------%
+    function Remove(self,key)
+        b = strcmp(key,self.keys);
+        if any(b)
+            self.keys(b) = [];
+            self.values(b) = [];
+            self.modified = true;
+        end
+    end
+    %-------------------------------------------------------------------------%
+    function b = isempty(self)
+        b = isempty(self.keys);
+    end
+    %-------------------------------------------------------------------------%
     function c = Keys(self)
         c = self.keys;
     end
@@ -106,20 +119,30 @@ methods
     end
     %-------------------------------------------------------------------------%
     function key = KeySelectionGUI(self,key_type,varargin)
-        opt = FT.ParseOpts(varargin,...
-            'btn1','Load'  ,...
-            'btn2','Cancel' ...
+        opt = FT.ParseOpts(varargin,...            
+            'btn1'    , 'Load'  ,...
+            'btn2'    , 'Cancel' ...
             );
-        c = {{'text','string',['Select a ' key_type ':']},...
-             {'listbox','string',self.keys,'tag','item'};...
-             {'pushbutton','string',opt.btn1},...
-             {'pushbutton','string',opt.btn2} ...
-            };
-        win = FT.tools.Win(c,'title',['Load ' key_type],'focus','item');
-        win.Wait;
-        if strcmpi(win.res.btn,'load')
-            key = self.keys{win.res.item};
+        if ~isempty(self.keys)
+            c = {{'text','string',['Select a ' key_type ' to ' opt.btn1 ':']},...
+                 {'listbox','string',self.keys,'tag','item'};...
+                 {'pushbutton','string',opt.btn1},...
+                 {'pushbutton','string',opt.btn2} ...
+                };
+
+            win = FT.tools.Win(c,'title',[opt.btn1 key_type],'focus','item');
+            win.Wait;
+            if strcmpi(win.res.btn,opt.btn1)
+                key = self.keys{win.res.item};
+            else
+                key = [];
+            end
         else
+            c = {{'text','string',['No ' key_type ' currently exists!']};...
+                 {'pushbutton','string','OK'}...
+                };
+            win = FT.tools.Win(c,'title',['No ' key_type ' exists']);
+            win.Wait;
             key = [];
         end
     end
