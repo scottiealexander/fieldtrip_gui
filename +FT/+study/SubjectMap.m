@@ -11,7 +11,7 @@ function m = SubjectMap
 % Out:
 %       m - a subject map, mapping subject names to ids
 %
-% Updated: 2014-10-01
+% Updated: 2014-10-03
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com

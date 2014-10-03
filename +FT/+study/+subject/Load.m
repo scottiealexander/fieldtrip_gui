@@ -18,7 +18,7 @@ function Load
 global FT_DATA;
 
 if ~isfield(FT_DATA,'study_name') || isempty(FT_DATA.study_name)
-    msg = '[ERROR]: No study has been loaded. Please load a study before loading a subject';
+    msg = '[ERROR]: No study has been loaded. Please load a study before loading a subject.';
     FT.UserInput(msg,0,'title','No Study Loaded','button','OK');
     return;
 end

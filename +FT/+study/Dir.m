@@ -25,6 +25,8 @@ study_dir = '';
 if isempty(varargin)
     if isfield(FT_DATA,'study_name') && ~isempty(FT_DATA.study_name)
         study = FT_DATA.study_name;
+    else
+        return;
     end
 elseif ischar(varargin{1}) && ~isempty(varargin{1})
     study = varargin{1};

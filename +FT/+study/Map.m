@@ -16,7 +16,7 @@ classdef Map < handle
 % Out:
 %       mp - an instance of the FT.study.Map class
 %
-% Updated: 2014-10-01
+% Updated: 2014-10-03
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
@@ -130,7 +130,7 @@ methods
                  {'pushbutton','string',opt.btn2} ...
                 };
 
-            win = FT.tools.Win(c,'title',[opt.btn1 key_type],'focus','item');
+            win = FT.tools.Win(c,'title',[opt.btn1 ' ' key_type],'focus','item');
             win.Wait;
             if strcmpi(win.res.btn,opt.btn1)
                 key = self.keys{win.res.item};
@@ -138,10 +138,12 @@ methods
                 key = [];
             end
         else
-            c = {{'text','string',['No ' key_type ' currently exists!']};...
-                 {'pushbutton','string','OK'}...
+            msg = ['No ' lower(key_type) ' currently exists. Please create a ',...
+                   lower(key_type) ' before trying to ' lower(opt.btn1) '.'];
+            c = {{'text','string',msg};...
+                 {'pushbutton','string','OK','tag','ok_btn'}...
                 };
-            win = FT.tools.Win(c,'title',['No ' key_type ' exists']);
+            win = FT.tools.Win(c,'title',['No ' key_type ' exists'],'focus','ok_btn');
             win.Wait;
             key = [];
         end
