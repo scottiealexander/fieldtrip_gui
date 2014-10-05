@@ -75,7 +75,12 @@ function [b,val] = Validate(~,varargin)
     baselinewin = [tstart tend];
     
     % Get the trial time window
-    time = FT.tools.GetParameter('data','time');
+    if iscell(FT_DATA.data)
+        time = FT_DATA.data{1}.time;
+    else
+        time = FT_DATA.data.time
+    end
+    
     if iscell(time)
         time = time{1};
     end

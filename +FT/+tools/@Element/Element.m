@@ -10,7 +10,7 @@ classdef Element < handle
 %
 % Out:
 %
-% Updated: 2014-06-23
+% Updated: 2014-10-04
 % Scottie Alexander
 %
 % Please send bug reports to: scottiealexander11@gmail.com
@@ -27,6 +27,7 @@ properties
     opt;
     tag = '';
     valfun;
+    listboxmax = 8;
 end
 %PROPERTIES-------------------------------------------------------------------%
 
@@ -127,6 +128,15 @@ methods
     function [w,h] = GetSize(self,varargin)
         w = self.pos(3);
         h = self.pos(4);
+    end
+    %-------------------------------------------------------------------------%
+    function [w,h] = ReSize(self)
+        if strcmpi(self.type,'text')
+            self.InitTextPosition;
+        else
+            self.InitUIPosition;
+        end
+        [w,h] = self.GetSize;
     end
     %-------------------------------------------------------------------------%
     function out = Response(self)
@@ -250,17 +260,38 @@ methods (Access=private)
     %-------------------------------------------------------------------------%
     function h = GetHeight(self)
         switch self.type
-        case 'checkbox'            
-            h = 1.5;        
+        case 'checkbox'
+            h = 1.5;
         case {'edit','listbox'}
+            n = self.GetLen(false);
+            n = n(1);
             fsiz = get(self.h,'FontSize');
-            h = (self.len(1) * (fsiz/16)) + 2;            
+            if n > self.listboxmax
+                n = self.listboxmax;
+            end
+            h = (n * (fsiz/8.6)) + .25;
         otherwise
             h = get(self.h,'Position');
             h = h(4);
         end
     end
     %-------------------------------------------------------------------------%
+    function len = GetLen(self,init)
+        len = [1 5];
+        if init
+            tmp = self.string;
+        else
+            tmp = get(self.h,'string');    
+        end
+        if ~isempty(tmp)
+            if iscell(tmp)
+                len = [numel(tmp) max(cellfun(@numel,tmp))];
+            else                
+                len = [1 numel(tmp)];
+            end
+        end
+    end
+    %-------------------------------------------------------------------------%    
     function pos = Axes2Fig(self,pos)
     %function to convert data units (i.e extent) within an axes to figure units
         pAx  = self.GetPosition(self.ax,'pixels');
@@ -283,33 +314,25 @@ methods (Access=private)
     end
     %-------------------------------------------------------------------------%
     function def = AddDefaultValues(self,s)
-        def = { 'FontName' , 'Monospaced' ,... %it appears that this needs to be 'Courier'
-                'FontSize' , 14           ,... %in order to achieve the desired layout on Linux 
+        def = { 'FontName' , 'Monospaced' ,...
+                'FontSize' , 14           ,...
+                'FontUnits', 'points'     ,...
                 'Units'    , 'pixels'     ,...
                 'Position' , self.pos     ,...
                 'Parent'   , self.fig      ...
-              }; 
-        default_len = [1 5];
+              };
+
         switch self.type
             case {'edit','checkbox','listbox'}
                 def = [def {'BackgroundColor',[1 1 1]}];
                 if iscell(self.string)
-                    def = [def {'Min',0,'Max',2}];
-                    default_len = [numel(self.string) max(cellfun(@numel,self.string))];
-                elseif ~isempty(self.string)
-                    default_len = [1 numel(self.string)];                
+                    def = [def {'Min',0,'Max',1}];
                 end
             case 'text'
-                def = [def {'BackgroundColor',get(self.fig,'Color')}]; %get(self.fig,'Color')
+                def = [def {'BackgroundColor',get(self.fig,'Color')}];
         end
-        % If the user hasn't provided a valid size use the default or
-        % automatically determined size
-        if isnan(self.len(1)) || ~isnumeric(self.len(1))
-            self.len(1) = default_len(1);
-        end
-        if isnan(self.len(2)) || ~isnumeric(self.len(2))
-            self.len(2) = default_len(2);
-        end
+
+        self.len = self.GetLen(true);
         
         def = self.pvpair2struct(def);
         fields = fieldnames(s);

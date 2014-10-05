@@ -174,7 +174,11 @@ methods
             val = self.el{k}.GetProp(field);
         end
     end
-    %-------------------------------------------------------------------------%    
+    %-------------------------------------------------------------------------%
+    function ReSize(self)
+        self.AddElements(false);
+    end
+    %-------------------------------------------------------------------------%
     function delete(self)
         if isvalid(self) && ishandle(self.h)
             close(self.h);
@@ -228,10 +232,15 @@ methods (Access=private)
                     'Tag',self.id,'Resize','off','CloseRequestFcn',@self.FetchResult,...
                     'KeyPressFcn',@self.KeyPress);
        
-        self.AddElements;
+        self.AddElements(true);
     end
     %-------------------------------------------------------------------------%
-    function AddElements(self)
+    function AddElements(self,varargin)
+        if ~isempty(varargin) && islogical(varargin{1})
+            el_init = varargin{1};            
+        else
+            el_init = true;
+        end
         left  = Inf;
         right = -Inf;
         height = 0;
@@ -239,10 +248,14 @@ methods (Access=private)
         for kR = 1:self.nrow            
             for kC = 1:max(self.ncol)                
                 halign = self.GetHAlignment(kC,self.ncol(kR));
-                if ~isempty(self.content{kR,kC})                    
-                    pos = self.GetElementPosition(kR,kC);                    
-                    self.el{kR,kC} = FT.tools.Element(self,pos,self.content{kR,kC},'halign',halign);
-                    [width(kR,kC),height(kR,kC)] = self.el{kR,kC}.GetSize;
+                if ~isempty(self.content{kR,kC})
+                    if el_init
+                        pos = self.GetElementPosition(kR,kC);                    
+                        self.el{kR,kC} = FT.tools.Element(self,pos,self.content{kR,kC},'halign',halign);
+                        [width(kR,kC),height(kR,kC)] = self.el{kR,kC}.GetSize;
+                    else                        
+                        [width(kR,kC),height(kR,kC)] = self.el{kR,kC}.ReSize;
+                    end
                 else
                     self.el{kR,kC} = {};
                 end

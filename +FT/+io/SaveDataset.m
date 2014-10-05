@@ -63,6 +63,8 @@ if ishandle(hMsg)
     close(hMsg);
 end
 
+FT_DATA.saved = true;
+
 % restore template and gui fields
 FT_DATA.gui = gui;
 FT_DATA.template = template;

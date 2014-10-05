@@ -48,12 +48,7 @@ for kF = 1:numel(cFieldDisp)
     strField = regexprep(strField,'(\<[a-z])','${upper($1)}');
 
     %get the contents of the field from the FT_DATA struct
-    % strContent = ExtractField(cFieldDisp{kF});
-    if iscell(cFieldDisp{kF})
-        strContent = getfield(FT_DATA,cFieldDisp{kF}{:});
-    elseif ischar(cFieldDisp{kF})
-        strContent = FT_DATA.(cFieldDisp{kF});
-    end
+    strContent = ExtractField(cFieldDisp{kF});
 
     %format it pretty
     strContent = strrep(tostring(strContent),'_','\_');
@@ -65,10 +60,22 @@ for kF = 1:numel(cFieldDisp)
 end
 
 drawnow;
-
+%-------------------------------------------------------------------------%
+function v = ExtractField(field)
+    v = '';
+    if FT.tools.IsFieldPath(field)
+        if iscellstr(field)
+            v = getfield(FT_DATA,field{:});
+        elseif ischar(field)
+            v = FT_DATA.(field);
+        end
+    end
+end
 %-------------------------------------------------------------------------%
 function s = tostring(s)
-    if isnumeric(s)
+    if isempty(s)
+        s = 'no';
+    elseif isnumeric(s)
         s = num2str(s);
     elseif islogical(s)
         s = FT.tools.Ternary(s,'yes','no');

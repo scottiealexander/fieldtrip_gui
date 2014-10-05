@@ -1,14 +1,15 @@
-function val = GetParameter(domain,field)
+function val = GetParameter(field,varargin)
 
 % FT.tools.GetParameter
 %
-% Description: get parameters for baseline correcting segmented data
+% Description: search the FT_DATA struct for a parameter
 %
-% Syntax: val = FT.tools.GetParameter(domain,field)
+% Syntax: val = FT.tools.GetParameter(field,<options>)
 %
 % In: 
-%       domain - the domain to search (i.e. sub-field of FT_DATA)
-%       field  - the field of interest
+%       field - the field of interest
+%   options:
+%       sub   - a sub-field of FT_DATA to search within
 %
 % Out:
 %       val - the value of field if found, otherwise an empty matrix
@@ -20,27 +21,61 @@ function val = GetParameter(domain,field)
 
 global FT_DATA;
 
-val = [];
-if isfield(FT_DATA,domain)
-	if iscell(FT_DATA.(domain))
-		val = SearchCell(FT_DATA.(domain));
-	elseif isstruct(FT_DATA.(domain))
-		val = SearchStruct(FT_DATA.(domain));	
-	end
-end
+opt = FT.ParseOpts(varargin,...
+    'sub', '' ...
+    );
+
+% val = [];
+% if ~isempty(opt.sub)
+%     if ischar(opt.sub) && isfield(FT_DATA,opt.sub)
+%         domain = FT_DATA.(opt.sub);        
+%     else
+            
+%     end
+% else
+% end
+
+% if iscell(FT_DATA.(opt.sub))
+%         val = SearchCell(FT_DATA.(opt.sub));
+%     elseif isstruct(FT_DATA.(opt.sub))
+%         val = SearchStruct(FT_DATA.(opt.sub));   
+%     end
+% end
+
+val = risky_isfield(field);
 
 %-----------------------------------------------------------------------------%
+function b = risky_isfield(c)    
+    if ischar(c)
+        b = isfield(FT_DATA,c);
+    elseif iscellstr(c)
+        b = true;
+        field_path =  '';
+        for k = 1:numel(c)
+            cmd = ['isfield(FT_DATA' field_path ',''' c{k} ''')'];
+            if ~eval(cmd)
+                b = false;
+                break;
+            else
+                field_path = [field_path '.(''' c{k} ''')'];
+            end
+        end        
+    else
+        b = false;
+    end
+end
+%-----------------------------------------------------------------------------%
 function val = SearchCell(c)
-	val = [];
-	k = 1;
-	while isempty(val) && k <= numel(c)
-		if iscell(c{k})
-			val = SearchCell(c{k});
-		elseif isstruct(c{k})
-			val = SearchStruct(c{k});
-		end
-		k = k+1;
-	end
+    val = [];
+    k = 1;
+    while isempty(val) && k <= numel(c)
+        if iscell(c{k})
+            val = SearchCell(c{k});
+        elseif isstruct(c{k})
+            val = SearchStruct(c{k});
+        end
+        k = k+1;
+    end
 end
 %-----------------------------------------------------------------------------%
 function val = SearchStruct(s)        
