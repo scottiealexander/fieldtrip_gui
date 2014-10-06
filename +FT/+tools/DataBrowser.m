@@ -1,4 +1,4 @@
-function [marks] = DataBrowser(time,data,group_by,n,lChan,lTrial)
+function varargout = DataBrowser(time,data,group_by,n,lChan,lTrial)
 % FT.tools.DataBrowser
 %
 % Description: plot time series data and allow the user to mark channels or
@@ -101,42 +101,60 @@ ww = wDims(3); wh = wDims(4);
 set(f,'Position',round([ww*.25,wh*.1,ww*.5,wh*.8]));
 
 % Set the coloring scheme for plotting multiple data series simultaneously
-set(f,'DefaultAxesColorOrder',[0,0,1;0,.5,0;1,0,0;0,.75,.75;.75,0,.75;.75,.75,0;.25,.25,.25;1,.5,0;0,1,0]);
-% set(f,'DefaultAxesColorOrder',[0,0,1]);
+% set(f,'DefaultAxesColorOrder',[0,0,1;0,.5,0;1,0,0;0,.75,.75;.75,0,.75;.75,.75,0;.25,.25,.25;1,.5,0;0,1,0]);
 
 hAx = axes; % handle to plot axis object
 set(f,'DeleteFcn',@FigDeleteFcn);
 set(f,'KeyPressFcn',@FigKeyFcn);
 
 c = {% Channel Browsing
-     {'text','string','Chan:'},...
-	 {'edit','string',num2str(chan),'tag','channel'};...
+     {'text','string',' Chan:'},...
+	 {'edit','string',num2str(chan),'tag','channel'},...
 	 {'pushbutton','string','Prev','Callback',@PrevC},...
      {'pushbutton','string','Next','Callback',@NextC};...
      % Trial Browsing
      {'text','string','Trial:'},...
-	 {'edit','string',num2str(trial),'tag','trial'};...
+	 {'edit','string',num2str(trial),'tag','trial'},...
 	 {'pushbutton','string','Prev','Callback',@PrevT},...
      {'pushbutton','string','Next','Callback',@NextT};...
-     % Navigation
-     {'text','string',' Navigation'},{'text','string',''};...
-     {'pushbutton','string','+ V.','Callback',@MagV},...
-     {'pushbutton','string','- V.','Callback',@MinV};...
-     {'pushbutton','string','+ H.','Callback',@MagH,                    'ToolTipString','Shortcut: +'},...
-	 {'pushbutton','string','- H.','Callback',@MinH,                    'ToolTipString','Shortcut: -'};...
-     {'pushbutton','string','<','Callback',@Backward,                   'ToolTipString','Shortcut: <'},...
-	 {'pushbutton','string','>','Callback',@Forward,                    'ToolTipString','Shortcut: >'};...
+     % Amplitude Zooming
+     {'text','string',' Ampl Zoom:'},...
+     {'text','string',''},...
+     {'pushbutton','string','+','Callback',@MagV},...
+     {'pushbutton','string','-','Callback',@MinV};...
+     % Time Zooming
+     {'text','string',' Time Zoom:'},...
+     {'text','string',''},...
+     {'pushbutton','string','+','Callback',@MagH,'ToolTipString','Shortcut: +'},...
+	 {'pushbutton','string','-','Callback',@MinH,'ToolTipString','Shortcut: -'};...
+     % Scrolling
+     {'pushbutton','string','<<','Callback',@(x,y) Backward(x,y,1)},...
+     {'pushbutton','string','<','Callback',@(x,y) Backward(x,y,.1),'ToolTipString','Shortcut: <'},...
+	 {'pushbutton','string','>','Callback',@(x,y) Forward(x,y,.1),'ToolTipString','Shortcut: >'},...
+	 {'pushbutton','string','>>','Callback',@(x,y) Forward(x,y,1)};...
      % Marking
+     {'text','string',''},...
      {'pushbutton','string',' Mark All','Callback',@Toggle},...
-     {'checkbox','tag','mark','Callback',@Mark,                         'ToolTipString','Shortcut: Space'};...     
-     % Plot & Exit
-     {'pushbutton','string','Cancel','tag','cancel','validate',false,   'ToolTipString','Shortcut: Escape'},...
+     {'checkbox','tag','mark','Callback',@Mark,'ToolTipString','Shortcut: Space'},...
      {'text','string',''};...
-     {'pushbutton','string','Plot','Callback',@Plot,                    'ToolTipString','Shortcut: Return'},...
-	 {'pushbutton','string','Done','validate',false}...
+     % Main Commands
+     {'text','string',''},...
+     {'pushbutton','string','Plot','Callback',@Plot,'ToolTipString','Shortcut: Return'},...
+     {'pushbutton','string','Close','validate',false,'ToolTipString','Shortcut: Escape'},...
+	 {'pushbutton','string','Apply','validate',false}...
 	};
+if (nargout < 1)
+    c{7,4} = {'text','string',''};
+    c(6,:) = [];
+end
+if (nTrial == 1)
+    c(2,:) = [];
+end
+if (nChan == 1)
+    c(1,:) = [];
+end
 
-w = FT.tools.Win(c,'position',[-ww*.25-100 0],'focus','cancel'); % user input/control window
+w = FT.tools.Win(c,'position',[-ww*.25-100 0],'focus','close','title','Plot Control'); % user input/control window
 set(w.h,'KeyPressFcn',@FigKeyFcn);
 ResetLimits();
 UpdatePlot();
@@ -148,11 +166,14 @@ if ishandle(f)
     close(f);
 end
 
-if ~strcmpi(w.res.btn,'done')
-    marks = [];
+if ~strcmpi(w.res.btn,'apply')
+    varargout{1} = [];
+else
+    varargout{1} = marks;
 end
 
 %-------------------------------------------------------------------------%
+% So closing the figure closes the plot control window
 function FigDeleteFcn(~,~)
     if ishandle(w.h)
         close(w.h);
@@ -161,7 +182,7 @@ function FigDeleteFcn(~,~)
 end
 %-------------------------------------------------------------------------%
 function ResetLimits()
-    span = 4*std_avg; % reset the spacing of the series
+%     span = 4*std_avg; % reset the spacing of the series
     ylim(hAx,[-(n+.5)*span,(n+.5)*span]);
     xlim(hAx,[time(1),min(time(end),time(1)+10)]);
 end
@@ -178,24 +199,44 @@ function UpdatePlot()
         succ = min(n,nChan-chan);
         range = pred:succ;
         
+        % Color all channels blue except the current, which is red
+        defColOrd = zeros(numel(range),3); defColOrd(:,3) = 1;
+        defColOrd(range == 0,:) = [1,0,0];
+        set(f,'DefaultAxesColorOrder',defColOrd);
+        
         % Plot the channels spaced along the y-axis of a single plot
         plot(hAx,time,data(range+chan,:,trial)-span*range'*ones(1,N));
         title(hAx,['Trial: ' lTrial{trial}]);
-        legend(hAx,lChan{range+chan});
+        
+        % Add a legend of text boxes
+        xlegend = atmp(2);
+        for kR = 1:numel(range)
+            text(xlegend,-span*range(kR),[' ' lChan{range(kR)+chan}],'parent',hAx,'color',defColOrd(kR,:));
+        end
     else % ...or nearby trials
         % Don't attempt to plot trials outside the valid range
         pred = -min(n,trial-1);
         succ = min(n,nTrial-trial);
         range = pred:succ;
         
+        % Color all trials blue except the current, which is red
+        defColOrd = zeros(numel(range),3); defColOrd(:,3) = 1;
+        defColOrd(range == 0,:) = [1,0,0];
+        set(f,'DefaultAxesColorOrder',defColOrd);
+        
         % Plot the trials spaced along the y-axis of a single plot
         plot(hAx,time,permute(data(chan,:,range+trial),[3,2,1])-span*range'*ones(1,N));
         title(hAx,['Channel: ' lChan{chan}]);
-        legend(hAx,lTrial{range+trial});
+        
+        % Add a legend of text boxes
+        xlegend = atmp(2);
+        for kR = 1:numel(range)
+            text(xlegend,-span*range(kR),[' ' lTrial{range(kR)+trial}],'parent',hAx,'color',defColOrd(kR,:));
+        end
     end
     
     % Plot labels and restore the current plot limits
-    xlabel(hAx,'time'); ylabel(hAx,'Amplitude (mV)');
+    xlabel(hAx,'time'); ylabel(hAx,'Amplitude (\muV)');
     axis(hAx,atmp);
     
     % Update checkbox to reflect the state of the current channel or trial
@@ -253,26 +294,30 @@ end
 % Plot the trial and channel indicated by the user with the edit boxes
 function Plot(~,~)
     % Read trial # input by user
-    tr = w.GetElementProp('trial','string');
-    tr = round(str2double(tr));
-    
-    % Make sure it is within the valid range of trials
-    if (tr < 1) || (nTrial < tr)
-        tr = min(max(tr,1),nTrial);
-        w.SetElementProp('trial','string',num2str(tr));
+    if (nTrial > 1)
+        tr = w.GetElementProp('trial','string');
+        tr = round(str2double(tr));
+
+        % Make sure it is within the valid range of trials
+        if (tr < 1) || (nTrial < tr)
+            tr = min(max(tr,1),nTrial);
+            w.SetElementProp('trial','string',num2str(tr));
+        end
+        trial = tr;
     end
-    trial = tr;
     
     % Read channel # input by user
-    ch = w.GetElementProp('channel','string');
-    ch = round(str2double(ch));
-    
-    % Make sure it is within the valid range of channels
-    if (ch < 1) || (nChan < ch)
-        ch = min(max(ch,1),nChan);
-        w.SetElementProp('channel','string',num2str(ch));
+    if (nChan > 1)
+        ch = w.GetElementProp('channel','string');
+        ch = round(str2double(ch));
+
+        % Make sure it is within the valid range of channels
+        if (ch < 1) || (nChan < ch)
+            ch = min(max(ch,1),nChan);
+            w.SetElementProp('channel','string',num2str(ch));
+        end
+        chan = ch;
     end
-    chan = ch;
     
     % Reset the spacing of series to the default and update the plot
     ResetLimits();
@@ -286,45 +331,43 @@ end
 % Magnify the vertical axis
 function MagV(~,~)
     limits = ylim(hAx);
-    ylim(hAx,limits+diff(limits)*[.1,-.1]-mean(limits));
-    
-    % Update the plot but maintain the spacing of the series in the window
-    span = span*0.8;
-    UpdatePlot();
+    ylim(hAx,limits+diff(limits)*[.1,-.1]);
+    UpdatePlot
 end
 
 % Minify the vertical axis
 function MinV(~,~)
     limits = ylim(hAx);
-    ylim(hAx,limits+diff(limits)*[-.1,.1]-mean(limits));
-    
-    % Update the plot but maintain the spacing of the series in the window
-    span = span*1.2;
-    UpdatePlot();
+    ylim(hAx,limits+diff(limits)*[-.1,.1]);
+    UpdatePlot
 end
 
 % Magnify the time axis
 function MagH(~,~)
     limits = xlim(hAx);
     xlim(hAx,limits+diff(limits)*[.1,-.1]);
+    UpdatePlot;
 end
 
 % Minify the time axis
 function MinH(~,~)
     limits = xlim(hAx);
     xlim(hAx,limits+diff(limits)*[-.1,.1]);
+    UpdatePlot;
 end
 
 % Scroll backward along the time axis
-function Backward(~,~)
+function Backward(~,~,amount)
     limits = xlim(hAx);
-    xlim(hAx,limits-diff(limits)*.1);
+    xlim(hAx,limits-diff(limits)*amount);
+    UpdatePlot
 end
 
 % Scroll forward along the time axis
-function Forward(~,~)
+function Forward(~,~,amount)
     limits = xlim(hAx);
-    xlim(hAx,limits+diff(limits)*.1);
+    xlim(hAx,limits+diff(limits)*amount);
+    UpdatePlot
 end
 
 %-------------------------------------------------------------------------%
@@ -352,7 +395,9 @@ function Toggle(~,~)
 end
 
 %-------------------------------------------------------------------------%
-function FigKeyFcn(~,evt)
+%                           KEYBOARD SHORTCUTS                            %
+%-------------------------------------------------------------------------%
+function FigKeyFcn(obj,evt)
     switch lower(evt.Key)        
         case 'rightarrow'
             if group_chan
@@ -385,9 +430,9 @@ function FigKeyFcn(~,evt)
                 case '-'
                     MinH;
                 case '<'
-                    Backward;
+                    Backward(obj,evt,.1);
                 case '>'
-                    Forward;
+                    Forward(obj,evt,.1);
                 otherwise
                     % other
             end

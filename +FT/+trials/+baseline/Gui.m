@@ -91,7 +91,7 @@ function [b,val] = Validate(~,varargin)
     if any(isnan(baselinewin)) || baselinewin(1) > baselinewin(2)
         b = false;
         val = ['\bf[\color{yellow}WARNING\color{black}]: Invalid value(s) given.\n\n',...
-            'Start and end times MUST be numeric, and Start must come before End.'];
+            'Start and end times must be numeric, and Start must come before End.'];
     % Baseline window extends beyond the trial window
     elseif (baselinewin(1) < min(time) || baselinewin(2) > max(time))
         b = false;
