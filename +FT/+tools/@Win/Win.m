@@ -1,16 +1,52 @@
 classdef Win < handle
 
-% Win
+% FT.tools.Win
 %
-% Description:
+% Description: a class that wraps basic GUI building
 %
-% Syntax:
+% Syntax: win = FT.tools.Win(c,<options>)
+%
+% Methods:
+%       Wait, SetFocus, GetElementProp, SetElementProp
 %
 % In:
+%       c - a Win layout specification made up of a cell of cells
+%           ***see example below***
+%   options:
+%       title    - ('Win') a title for the figure window
+%       grid     - (false) use strict grid spacing for elements
+%       focus    - ('') the 'tag' of the element to give focus to
+%       position - ([0,0]) the position of the figure window (in PIXELS)
+%                   relative to the center of the screen (center=[0,0])
 %
 % Out:
+%       win - an instance of the FT.tools.Win class
 %
-% Updated: 2014-06-25
+% Example:
+%       %this is a very simple example
+%       %see FT.tools.Win.Test for a more complete one
+%
+%       c = {{'text','string','A "row" with text & edit elements:'},...
+%            {'edit','string','','tag','input'};... % <= see below for how a 'tag' is used to extract content
+%            {'text','string','A "row" with text & checkbox elements:'},...
+%            {'checkbox','tag','chkbox'};,...
+%            {'text','string','This row only has text...'},...
+%            {};... % <= this empty cell is needed so the outer cell 'c' conforms to matlab spec
+%            {'text','string','A listbox:'},...
+%            {'listbox','string',{'item 1','item 2'},'tag','lstbox'};...
+%            {'pushbutton','string','Button 1'},...
+%            {'pushbutton','string','Button 2'}...
+%           };
+%       win = FT.tools.Win(c,'title','Title','focus','input','grid',false);
+%       win.Wait;              %wait for the user to finish interacting
+%       btn = win.res.btn;     %the string of the button the user selected
+%       chk = win.res.chkbox;  %the state of the checkbox
+%       item = win.res.lstbox; %the index of the item the user selected
+%
+% See also:
+%       FT.tools.Win.Test
+%
+% Updated: 2014-10-03
 % Scottie Alexander
 %
 % Please send bug reports to: scottiealexander11@gmail.com
@@ -74,6 +110,10 @@ methods
         self.InitFigure;
 
         self.SetFocus(self.opt.focus);
+
+        pause(.1);
+
+        drawnow;
     end
     %-------------------------------------------------------------------------%
     function Wait(self)

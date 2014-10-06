@@ -68,9 +68,11 @@ FT_DATA.gui = gui;
 FT_DATA.template = template;
 FT_DATA.path.template = template_path;
 
-%if a 'subject' is loaded, add the output path to that subject's file list
-if isfield(FT_DATA,'subject_name') && ~isempty(FT_DATA.subject_name)
-    FT.study.subject.AddFile(FT_DATA.subject_name,strPathOut);
+%if a 'study' and a 'subject' is loaded, add the output path to that subject's file list
+if isfield(FT_DATA,'study_name') && ~isempty(FT_DATA.study_name)
+    if isfield(FT_DATA,'subject_name') && ~isempty(FT_DATA.subject_name)
+        FT.study.subject.AddFile(FT_DATA.subject_name,strPathOut);
+    end
 end
 
 FT.UpdateGUI;
