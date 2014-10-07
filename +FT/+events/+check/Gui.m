@@ -25,8 +25,8 @@ function Gui()
 %       Done - apply all changes and close the browser
 %       Cancel - discard all changes and close the browser
 %
-% Updated: 2014-08-25
-% Peter Horak
+% Updated: 2014-10-07
+% Scottie Alexander
 
 global FT_DATA;
 
@@ -43,6 +43,11 @@ end
 % Stimulus channel
 range = FT_DATA.data.sampleinfo;
 channel = strcmpi(FT_DATA.pulse_evts.channel,FT_DATA.data.label);
+if ~any(channel)
+    msg = '[ERROR]: Failed to find the stimulus channel, was it removed?';
+    FT.UserInput(msg,0,'title','Missing stim channel','button','OK');
+    return;
+end
 data = [zeros(1,range(1)-1),FT_DATA.data.trial{1}(channel,:)]; % stimulus channel only
 sample = 1:size(data,2);
 %%% sample = [1:(range(1)-1),FT_DATA.data.time{1}*FT_DATA.data.fsample];

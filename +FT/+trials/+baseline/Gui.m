@@ -12,8 +12,10 @@ function varargout = Gui(varargin)
 %
 % See also: FT.trials.baseline.Run
 %
-% Updated: 2014-06-27
+% Updated: 2014-10-07
 % Scottie Alexander
+
+global FT_DATA;
 
 %make sure we are ready to run
 if ~nargout
