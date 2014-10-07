@@ -11,7 +11,7 @@ function UpdateGUI()
 %
 % Out: 
 %
-% Updated: 2014-10-01
+% Updated: 2014-10-06
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
@@ -73,9 +73,7 @@ function v = ExtractField(field)
 end
 %-------------------------------------------------------------------------%
 function s = tostring(s)
-    if isempty(s)
-        s = 'no';
-    elseif isnumeric(s)
+    if isnumeric(s)
         s = num2str(s);
     elseif islogical(s)
         s = FT.tools.Ternary(s,'yes','no');

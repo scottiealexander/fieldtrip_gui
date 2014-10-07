@@ -26,7 +26,7 @@ classdef TSPlot < handle
 %
 % Methods: 
 %
-% Updated: 2013-12-11
+% Updated: 2014-10-06
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
@@ -61,6 +61,8 @@ methods
             'legend' , {}       ,...
             'w'      , 800      ,...
             'h'      , 600      ,...
+            'x'      , 0        ,...
+            'y'      , 0        ,...
             'parent' , []       ,...
             'axes'   , []        ...
             );        
@@ -86,7 +88,7 @@ methods
             ts.data.err = ToCell(ts.opt.error);
         end
         
-        pFig = GetFigPosition(ts.opt.w,ts.opt.h);
+        pFig = GetFigPosition(ts.opt.w,ts.opt.h,'xoffset',ts.opt.x,'yoffset',ts.opt.y);
         
         if isempty(ts.opt.parent)
             ts.hF = figure('Units','pixels','OuterPosition',pFig,...

@@ -9,14 +9,14 @@ function ClearDataset()
 %
 % Out: 
 %
-% Updated: 2014-10-01
+% Updated: 2014-10-06
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
 
 global FT_DATA;
 
-if ~FT.tools.IsEmptyField('saved') && ~FT_DATA.saved
+if any(~FT.tools.IsEmptyField({'data','power'})) && ~FT_DATA.saved
     msg = 'The current dataset has unsaved changes, would you like to save them?';
     resp = FT.UserInput(msg,1,'title','Usaved changes','button',{'Yes','No'});
     if strcmpi(resp,'yes')

@@ -134,7 +134,7 @@ methods
                 if self.validate
                     [b,val] = self.el{k}.Validate;
                     if ~b
-                        self.validate = false;  
+                        self.validate = false;
                         hErr = warndlg(val,'Invalid Input');
                         hMsg = findobj(hErr,'Type','text');
                         set(hMsg,'FontSize',12,'Interpreter','tex');
@@ -155,7 +155,13 @@ methods
     end
     %-------------------------------------------------------------------------%
     function BtnPush(self,obj,validate)
-        self.res.btn = get(obj,'String');
+        if ishandle(obj)
+            self.res.btn = get(obj,'String');
+        elseif ischar(obj)
+            self.res.btn = obj;
+        else
+            self.res.btn = '';
+        end
         self.validate = validate;
         self.FetchResult;
     end
@@ -177,6 +183,20 @@ methods
     %-------------------------------------------------------------------------%
     function ReSize(self)
         self.AddElements(false);
+    end
+    %-------------------------------------------------------------------------%
+    function Close(self,varargin)
+        val = false;
+        obj = '';
+        if ~isempty(varargin)
+            if ishandle(varargin{1}) || ischar(varargin{1})
+                obj = varargin{1};
+            end
+            if numel(varargin) > 1 && islogical(varargin{2})
+                val = varargin{2};
+            end
+        end
+        self.BtnPush(obj,val);
     end
     %-------------------------------------------------------------------------%
     function delete(self)

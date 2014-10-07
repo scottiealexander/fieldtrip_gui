@@ -18,7 +18,7 @@ function hFIG = PlotCtrl(hFIG,cList,fUpdate,varargin)
 % Out:
 %       hFIG - the handle to the figure being controlled
 %
-% Updated: 2014-03-29
+% Updated: 2014-10-06
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
@@ -46,7 +46,7 @@ else
 end
 
 %get the size and position for the figure
-pCtrl = GetFigPosition(200,600,'xoffset',pFig(1)-250,'yoffset',pFig(2),'reference','absolute');
+pCtrl = GetFigPosition(200,600,'xoffset',pFig(1)-210,'yoffset',pFig(2),'reference','absolute');
 
 set(hFIG,'KeyPressFcn',@KeyCtrl);
 

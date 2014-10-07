@@ -10,7 +10,7 @@ function PlotERP(varargin)
 %
 % Out: 
 %
-% Updated: 2013-12-13
+% Updated: 2014-10-06
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
@@ -22,7 +22,7 @@ if ~FT.tools.Validate('plot_avg','done',{'average'})
     return;
 end
 
-pFig = GetFigPosition(800,600);
+pFig = GetFigPosition(800,600,'xoffset',100);
 hF = figure('Units','pixels','OuterPosition',pFig,...
             'Name','Average ERP','NumberTitle','off','MenuBar','none',...
             'Color',[1 1 1]);
@@ -41,7 +41,7 @@ function PlotOne(strChan)
         'xlabel','time (sec)',...
         'ylabel','Amplitude (\muV)',...
         'zeros' , true,...
-        'legend',cLabel,...
+        'legend',cLabel,...        
         'parent',hF);
 end
 %------------------------------------------------------------------------------%

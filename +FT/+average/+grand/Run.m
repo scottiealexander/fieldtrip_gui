@@ -15,69 +15,69 @@ function me = Run(params)
 % Scottie Alexander
 %
 % See also: FT.average.grand.Gui
-
+dbstop if error;
 global FT_DATA
 me = [];
 
-try
+% try
     FT.io.ClearDataset;
 
     all_data = cellfun(@FT.average.grand.Fetch,params.files,'uni',false);
     all_labels = GetDataField('label');
-    all_times = GetDataField('time');
+    time = GetDataField('time');
     all_names = GetDataField('epoch_names');
 
-    b = cellfun(@(x) isequal(x,all_times{1}),all_times(2:end),'uni',true);
+    b = cellfun(@(x) isequal(x,time{1}),time(2:end),'uni',true);
     if ~all(b)
         msg = '[ERROR]: Time is not consistent accross datasets!';
         FT.UserInput(msg,0,'title','Inconsistent Data','button','OK');
         return;
     end
+    time = time{1};
 
-    bChan = cellfun(@IsCommonChannel,all_labels{1});
-
-    if ~any(bChan)        
+    chan_use = CommonElements(all_labels);
+    if isempty(chan_use)
         msg = '[ERROR]: No common labels could be detected across subjects!';
         FT.UserInput(msg,0,'title','Inconsistent Data','button','OK');
         return;
     end
+    
+    epoch_names = CommonElements(all_names);
+    if isempty(epoch_names)
+        msg = '[ERROR]: No common condition names could be found across subjects!';
+        FT.UserInput(msg,0,'title','Inconsistent Data','button','OK');
+        return;
+    end
 
-    cCommonLabel = all_labels{1}(bChan);
+    siz_data = [numel(chan_use) numel(time) numel(all_data)];
 
-    %FINISH ME%
-    % bEpoch = cellfun(@(x))
-
-
-    cFields = fieldnames(s.data);
-
-    ExtractChannelData;
-
-    s.label = cCommonLabel;
-
-    s.data = s.data;
-    [data,epoch] = deal(cell(numel(cFields),1));
-    for k = 1:numel(cFields)
-        tmp = s.data.(cFields{k});
-        tmp = reshape(tmp,1,1,nFile);
-        tmp = cat(3,tmp{:});
-        data{k}.avg = nanmean(tmp,3);
-        data{k}.err = nanstderr(tmp,3);
-        data{k}.label = s.label;
-        data{k}.time  = s.time;
-        data{k}.fsample = 1/median(diff(s.time));
-        epoch{k}.name = cFields{k};
+    nepoch = numel(epoch_names);
+    [data,epoch] = deal(cell(nepoch,1));
+    for ke = 1:nepoch
+        data{ke}.avg = nan(siz_data);
+        for kf = 1:numel(all_data)
+            bepoch = strcmpi(epoch_names{ke},all_names{kf});
+            [~,kchan] = ismember(chan_use,all_labels{kf});
+            data{ke}.avg(:,:,kf) = all_data{kf}.data{bepoch}.avg(kchan,:);
+        end
+        data{ke}.err = nanstderr(data{ke}.avg,3);
+        data{ke}.avg = nanmean(data{ke}.avg,3);        
+        data{ke}.label = chan_use;
+        data{ke}.time  = time;
+        data{ke}.fsample = 1/median(diff(time));
+        epoch{ke}.name = epoch_names{ke};
     end
 
     FT_DATA.data = data;
     FT_DATA.epoch = epoch;
     FT_DATA.done.average = true;
-catch me
-end
+% catch me
+% end
 
 % update display fields
 FT_DATA.gui.display_mode = 'averaged';
 % new dataset name (because cleared the last one)
-FT_DATA.current_dataset = 'GrandAverage';
+FT_DATA.current_dataset = [FT_DATA.study_name ': Grand Average'];
 % mark data as not saved
 FT_DATA.saved = false;
 
@@ -106,8 +106,12 @@ function ExtractChannelData
 	end
 end
 %-----------------------------------------------------------------------------%
-function b = IsCommonChannel(strChan)
-	b = all(cellfun(@(x) any(strcmp(strChan,x)),all_labels));
+function ref = CommonElements(c)
+    ref = c{1};
+    for k = 2:numel(c)
+        b = ismember(ref,c{k});
+        ref = ref(b);
+    end
 end
 %-----------------------------------------------------------------------------%
 function x = nanstderr(x,dim)

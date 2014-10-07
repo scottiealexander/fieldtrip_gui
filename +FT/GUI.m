@@ -10,7 +10,7 @@ function GUI()
 %
 % Out: 
 %
-% Updated: 2014-10-01
+% Updated: 2014-10-06
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
@@ -78,7 +78,7 @@ uimenu(hFileMenu,'Label','Save Dataset As...','Accelerator','S',...
     'Callback',@(varargin) FT.RunFunction(@() FT.io.SaveDataset(true)));
 %clear
 uimenu(hFileMenu,'Label','Clear Dataset',...
-    'Callback',@(varargin) FT.RunFunction(@ClearDataset));
+    'Callback',@(varargin) FT.RunFunction(@FT.io.ClearDataset));
 %quit: this should not use RunFunction to help aviod getting stuck in a 
 %error-catch, error-catch loop
 uimenu(hFileMenu,'Label','Quit','Accelerator','Q','Callback',@(varargin) QuitGUI);
@@ -123,14 +123,6 @@ uimenu(hAnaMenu,'Label','Find Peaks & Valleys','Callback',@(varargin) FT.RunFunc
 hUpdMenu = uimenu(h,'Label','Update');
 uimenu(hUpdMenu,'Label','Update Toolbox','Callback',@(varargin) FT.Update(false));
 
-%-------------------------------------------------------------------------%
-function ClearDataset
-    resp = FT.UserInput('Are you sure you want to clear the current dataset?',...
-                    0,'button',{'Yes','Cancel'},'title','Clear Dataset?');
-    if strcmpi(resp,'yes')
-        FT.io.ClearDataset;
-    end
-end
 %-------------------------------------------------------------------------%
 function QuitGUI
     if exist('FT_DATA','var') && isfield(FT_DATA,'gui') && isfield(FT_DATA,'saved')
