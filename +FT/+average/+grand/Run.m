@@ -22,23 +22,32 @@ me = [];
 try
     FT.io.ClearDataset;
 
-    cPathERP = params.files;
-    nFile    = numel(cPathERP);
+    all_data = cellfun(@FT.average.grand.Fetch,params.files,'uni',false);
+    all_labels = GetDataField('label');
+    all_times = GetDataField('time');
+    all_names = GetDataField('epoch_names');
 
-    s.files  = cPathERP;
-    s.data 	 = struct;
-    s.label  = cell(nFile,1);
-    s.time   = [];
-
-    cellfun(@GetData,cPathERP,reshape(num2cell(1:nFile),size(cPathERP)));
-
-    bCommon = cellfun(@IsCommonChannel,s.label{1});
-
-    if ~any(bCommon)	
-        error('No common labels could be detected across subjects!');
+    b = cellfun(@(x) isequal(x,all_times{1}),all_times(2:end),'uni',true);
+    if ~all(b)
+        msg = '[ERROR]: Time is not consistent accross datasets!';
+        FT.UserInput(msg,0,'title','Inconsistent Data','button','OK');
+        return;
     end
 
-    cCommonLabel = s.label{1}(bCommon);
+    bChan = cellfun(@IsCommonChannel,all_labels{1});
+
+    if ~any(bChan)        
+        msg = '[ERROR]: No common labels could be detected across subjects!';
+        FT.UserInput(msg,0,'title','Inconsistent Data','button','OK');
+        return;
+    end
+
+    cCommonLabel = all_labels{1}(bChan);
+
+    %FINISH ME%
+    % bEpoch = cellfun(@(x))
+
+
     cFields = fieldnames(s.data);
 
     ExtractChannelData;
@@ -77,35 +86,17 @@ FT.tools.AddHistory('grand_average',params);
 FT_DATA.done.grand_average = isempty(me);
 
 %-----------------------------------------------------------------------------%
-function GetData(strPath,kFile)
-	ifo = load(strPath,'-mat');
-
-	if isempty(fieldnames(s.data))
-		cFields = cellfun(@(x) x.name,ifo.epoch,'uni',false);
-		s.data  = cell2struct(repmat({cell(nFile,1)},numel(cFields),1),cFields,1);
-	end
-
-	for kA = 1:numel(ifo.epoch)
-		strCond = ifo.epoch{kA}.name;
-		if isfield(s.data,strCond)
-			s.data.(strCond){kFile} = ifo.data{kA}.avg;
-		else
-			error('Condition names do not match between files!');
-		end
-		if isempty(s.time)
-			s.time = ifo.data{kA}.time;
-		else
-			if ~isequal(s.time,ifo.data{kA}.time)
-				error('Sample times do not match between files!');
-			end
-		end
-		s.label{kFile} = ifo.data{kA}.label;		
-	end
+function v = GetDataField(field,varargin)
+    uni = false;
+    if ~isempty(varargin) && islogical(varargin{1})
+        uni = varargin{1};
+    end
+    v = cellfun(@(x) x.(field),all_data,'uni',uni);
 end
 %-----------------------------------------------------------------------------%
 function ExtractChannelData	
 	for kA = 1:nFile
-		[bChan,iChan] = ismember(cCommonLabel,s.label{kA});
+		[bChan,iChan] = ismember(cCommonLabel,all_labels{kA});
         if ~all(bChan)
             error('Common Labels are not all common (this should never happen)');
         end
@@ -116,7 +107,7 @@ function ExtractChannelData
 end
 %-----------------------------------------------------------------------------%
 function b = IsCommonChannel(strChan)
-	b = all(cellfun(@(x) any(strcmp(strChan,x)),s.label));
+	b = all(cellfun(@(x) any(strcmp(strChan,x)),all_labels));
 end
 %-----------------------------------------------------------------------------%
 function x = nanstderr(x,dim)

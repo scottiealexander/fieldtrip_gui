@@ -4,13 +4,15 @@ function SaveDataset(saveas)
 %
 % Description:
 %
-% Syntax: FT.io.SaveDataset
+% Syntax: FT.io.SaveDataset(saveas)
 %
 % In:
+%       saveas - true to prompt the user for a filepath, false to use the
+%                current dataset's filepath
 %
 % Out:
 %
-% Updated: 2014-10-01
+% Updated: 2014-10-06
 % Scottie Alexander
 
 %URRGGG... this needs some serious work...
@@ -54,6 +56,8 @@ FT_DATA = rmfield(FT_DATA,'template');
 template_path = FT_DATA.path.template;
 FT_DATA.path = rmfield(FT_DATA.path,'template');
 
+FT_DATA.saved = true;
+
 % save data
 hMsg = FT.UserInput('Saving dataset, plese wait...',1);
 
@@ -62,8 +66,6 @@ FT.io.WriteDataset(strPathOut);
 if ishandle(hMsg)
     close(hMsg);
 end
-
-FT_DATA.saved = true;
 
 % restore template and gui fields
 FT_DATA.gui = gui;
