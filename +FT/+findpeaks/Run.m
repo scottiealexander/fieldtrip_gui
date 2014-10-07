@@ -63,7 +63,7 @@ try
             end
         else
             %multiple files
-            cPathOut = cellfun(@(x) fullfile(strDirOut,[x '-' FT_DATA.epoch{1}.name '-' FT_DATA.current_dataset '.csv']),fieldnames(STAT),'uni',false);
+            cPathOut = cellfun(@(x) fullfile(strDirOut,[x '-' FT_DATA.epoch{k}.name '-' FT_DATA.current_dataset '.csv']),fieldnames(STAT),'uni',false);
             fprintf('[INFO]: Writing files:\n%s\n',FT.Join(cPathOut,10));
             b = cellfun(@(x,y) FT.io.WriteStruct(STAT.(x),'output',y),fieldnames(STAT),cPathOut);
             if ~all(b)

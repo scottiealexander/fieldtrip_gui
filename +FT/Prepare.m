@@ -9,12 +9,12 @@ function varargout = Prepare(varargin)
 % In: 
 %   options:
 %       type - ('all') one of:
-%                       'all' : prepare everything
-%                       'path': only prepare the Matlab search path for
-%                               fieldtrip
-%                       'data': only prepare (init from scratch) the FT_DATA 
-%                               struct (***THIS WILL OVERWITE ANY EXISTING
-%                               DATA***)
+%              'all' : prepare everything
+%              'path': only prepare the Matlab search path for
+%                      fieldtrip
+%              'data': only prepare (init from scratch) the FT_DATA 
+%                      struct (***THIS WILL OVERWITE ANY EXISTING
+%                      DATA***)
 %
 % Out: 
 %
@@ -58,8 +58,8 @@ if any(strcmpi(opt.type,{'all','data'}))
                              'baseline_trials',false,...
                              'reject_trials',false,...
                              'tfd',false,...
-                             'average',false...                             
-                             ),...
+                             'average',false,...
+                             'grand_average',false),...
          'history'  , struct()...
          );
     FT_DATA.template = {};
