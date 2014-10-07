@@ -11,15 +11,15 @@ function me = Run(params)
 % Out:  me - an empty matrix if processing finished with out error,
 %            otherwise a MException object caught from the error
 %
-% Updated: 2014-03-30
+% Updated: 2014-10-07
 % Scottie Alexander
 %
 % See also: FT.average.grand.Gui
-dbstop if error;
-global FT_DATA
+
+global FT_DATA;
 me = [];
 
-% try
+try
     FT.io.ClearDataset;
 
     all_data = cellfun(@FT.average.grand.Fetch,params.files,'uni',false);
@@ -49,17 +49,30 @@ me = [];
         return;
     end
 
+    switch lower(params.fmt)
+        case 'subject-wise'
+            data_field = 'avg';
+        case 'trial-wise'
+            data_field = 'raw';
+        otherwise
+            me = MException('Average.Grand:InvalidFormat','Invalid averaging format specified');
+            return
+    end
+
     siz_data = [numel(chan_use) numel(time) numel(all_data)];
 
+    ndata = numel(all_data);
     nepoch = numel(epoch_names);
     [data,epoch] = deal(cell(nepoch,1));
     for ke = 1:nepoch
-        data{ke}.avg = nan(siz_data);
-        for kf = 1:numel(all_data)
+        data{ke}.avg = cell(ndata,1);
+        for kf = 1:ndata
             bepoch = strcmpi(epoch_names{ke},all_names{kf});
             [~,kchan] = ismember(chan_use,all_labels{kf});
-            data{ke}.avg(:,:,kf) = all_data{kf}.data{bepoch}.avg(kchan,:);
+            data{ke}.avg{kf} = all_data{kf}.data{bepoch}.(data_field)(kchan,:,:);
         end
+        data{ke}.avg = reshape(data{ke}.avg,1,1,[]);
+        data{ke}.avg = cat(3,data{ke}.avg{:});
         data{ke}.err = nanstderr(data{ke}.avg,3);
         data{ke}.avg = nanmean(data{ke}.avg,3);        
         data{ke}.label = chan_use;
@@ -71,13 +84,15 @@ me = [];
     FT_DATA.data = data;
     FT_DATA.epoch = epoch;
     FT_DATA.done.average = true;
-% catch me
-% end
+catch me
+end
 
 % update display fields
 FT_DATA.gui.display_mode = 'averaged';
+
 % new dataset name (because cleared the last one)
 FT_DATA.current_dataset = [FT_DATA.study_name ': Grand Average'];
+
 % mark data as not saved
 FT_DATA.saved = false;
 
@@ -92,18 +107,6 @@ function v = GetDataField(field,varargin)
         uni = varargin{1};
     end
     v = cellfun(@(x) x.(field),all_data,'uni',uni);
-end
-%-----------------------------------------------------------------------------%
-function ExtractChannelData	
-	for kA = 1:nFile
-		[bChan,iChan] = ismember(cCommonLabel,all_labels{kA});
-        if ~all(bChan)
-            error('Common Labels are not all common (this should never happen)');
-        end
-		for kB = 1:numel(cFields)
-			s.data.(cFields{kB}){kA} = s.data.(cFields{kB}){kA}(iChan,:);
-		end
-	end
 end
 %-----------------------------------------------------------------------------%
 function ref = CommonElements(c)
