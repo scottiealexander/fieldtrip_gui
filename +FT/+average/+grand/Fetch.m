@@ -68,7 +68,7 @@ d.epoch_names = cellfun(@(x) x.name,d.epoch,'uni',false);
 function v = LoadVar(path_file,varname)
     try
         v = getfield(load(path_file,'-mat',varname),varname);
-    catch me
+    catch
         v = [];
     end
 end

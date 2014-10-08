@@ -23,6 +23,12 @@ try
     FT.io.ClearDataset;
 
     all_data = cellfun(@FT.average.grand.Fetch,params.files,'uni',false);
+    MEs = cellfun(@(x) isa(x,'MException'),all_data);
+    if any(MEs)
+        msg = ['[ERROR]: Could not load file(s) ' strjoin(params.files(MEs))];
+        FT.UserInput(msg,0,'title','Problem Reading Files','button','OK');
+        return;
+    end
     all_labels = GetDataField('label');
     time = GetDataField('time');
     all_names = GetDataField('epoch_names');
@@ -59,7 +65,7 @@ try
             return
     end
 
-    siz_data = [numel(chan_use) numel(time) numel(all_data)];
+%     siz_data = [numel(chan_use) numel(time) numel(all_data)];
 
     ndata = numel(all_data);
     nepoch = numel(epoch_names);

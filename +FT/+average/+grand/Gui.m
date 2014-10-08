@@ -18,8 +18,6 @@ function Gui
 %
 % Please report bugs to: scottiealexander11@gmail.com
 
-global FT_DATA;
-
 if FT.tools.IsEmptyField('study_name')
     msg = '[ERROR]: No study has been loaded. Pleas load a study before averaging!';
     FT.UserInput(msg,0,'title','No study loaded','button','ok');
@@ -33,7 +31,7 @@ BLANK = '              ';
 
 c = {... %select datasets
      {'text','string','Datasets:'},...
-     {'listbox','string',BLANK,'tag','sets','max',2};,... %max > 1 allows multi selection
+     {'listbox','string',BLANK,'tag','sets'};... %max > 1 allows multi selection
      {'pushbutton','string','Add','Callback',@(varargin) SetOps('add')},...
      {'pushbutton','string','Remove','Callback',@(varargin) SetOps('rm')};...
      ... %select format
@@ -48,7 +46,7 @@ win = FT.tools.Win(c,'title','Grand Average','grid',false);
 win.Wait;
 
 %-----------------------------------------------------------------------------%
-function DoPlot(obj,varargin)
+function DoPlot(~,varargin)
     kplot = win.GetElementProp('sets','value');
     keys = fmap.keys;
     if ~isempty(kplot) && fmap.Count > 0
@@ -76,23 +74,23 @@ function SetOps(action)
             fname = [name filesep fname];
             fmap(fname) = fpath;
         end
-        ksel = [reshape(ksel,1,[]) fmap.Count];
+%         ksel = [reshape(ksel,1,[]) fmap.Count];
+        ksel = fmap.Count;
     case 'rm'        
         keys = fmap.keys;
-        if ~isempty(ksel) && ksel > 0 && ksel <= numel(keys)
+        if ~isempty(ksel) && (1 <= ksel) && (ksel <= numel(keys))
             fmap.remove(keys(ksel));
         end
         ksel = fmap.Count;
     otherwise
         %should never happen...
     end    
-    if ksel(1)
+    if ksel
         win.SetElementProp('sets','string',fmap.keys);        
     else
         ksel = 1;
         win.SetElementProp('sets','string',BLANK);
     end
-    win.SetElementProp('sets','max',numel(ksel));
     win.SetElementProp('sets','value',ksel);
     win.ReSize;
     win.SetFocus('sets');

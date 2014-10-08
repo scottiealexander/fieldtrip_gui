@@ -80,7 +80,7 @@ function [b,val] = Validate(~,varargin)
     if iscell(FT_DATA.data)
         time = FT_DATA.data{1}.time;
     else
-        time = FT_DATA.data.time
+        time = FT_DATA.data.time;
     end
     
     if iscell(time)
