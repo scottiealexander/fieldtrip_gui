@@ -16,7 +16,7 @@ function Add
 % Please report bugs to: scottiealexander11@gmail.com
 
 global FT_DATA;
-if ~isfield(FT_DATA,'study_name') || isempty(FT_DATA.study_name)
+if ~isfield(FT_DATA,'study_name') || isempty(FT_DATA.study_name)z
     msg = '[ERROR]: No study has been loaded. Please load a study before adding a subject';
     FT.UserInput(msg,0,'title','No Study Loaded','button','OK');
     return;
@@ -69,8 +69,10 @@ end
 %-----------------------------------------------------------------------------%
 function AddSubject(name,auto)
 
-    if isfield(FT_DATA.path,'dataset')
+    if isfield(FT_DATA.path,'dataset') && ~isempty(FT_DATA.path.dataset)
         filepath = FT_DATA.path.dataset;
+    elseif isfield(FT_DATA.path,'raw_file') && ~isempty(FT_DATA.path.raw_file)
+        filepath = FT_DATA.path.raw_file;
     else
         %user canceled from FT.io.Gui, so we can't load or add a file,
         %but we should still considered the subject as created

@@ -1,4 +1,4 @@
-function SaveDataset(saveas)
+function SaveDataset(saveas,saveasfile)
 
 % FT.io.SaveDataset
 %
@@ -22,22 +22,26 @@ strPathOut = FT_DATA.path.dataset;
 
 % user selected 'save as', data already saved, or no current .set file exists
 if saveas || FT_DATA.saved || isempty(strPathOut)
-    % the directory of the current .set file or the base directory
-    if ~isempty(strPathOut)
-        strDir = fileparts(strPathOut);
-    else
-        strDir = FT_DATA.path.base_directory;
-    end
+    if (nargin >= 2) && ~isempty(saveasfile) && ischar(saveasfile)
+        strPathOut = saveasfile;
+    else % let the user select the filepath with a GUI
+        % the directory of the current .set file or the base directory
+        if ~isempty(strPathOut)
+            strDir = fileparts(strPathOut);
+        else
+            strDir = FT_DATA.path.base_directory;
+        end
 
-    % get the filepath the user wants
-    strPathDef = fullfile(strDir,[FT_DATA.current_dataset '.set']);
-    [strName,strPath] = uiputfile('*.set','Save Dataset As...',strPathDef);
+        % get the filepath the user wants
+        strPathDef = fullfile(strDir,[FT_DATA.current_dataset '.set']);
+        [strName,strPath] = uiputfile('*.set','Save Dataset As...',strPathDef);
 
-    % construct the file path
-    if ~isequal(strName,0) && ~isequal(strPath,0)
-        strPathOut = fullfile(strPath,strName);            
-    else
-        return; % user selected cancel
+        % construct the file path
+        if ~isequal(strName,0) && ~isequal(strPath,0)
+            strPathOut = fullfile(strPath,strName);            
+        else
+            return; % user selected cancel
+        end
     end
 end
 

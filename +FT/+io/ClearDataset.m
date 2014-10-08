@@ -16,13 +16,13 @@ function ClearDataset()
 
 global FT_DATA;
 
-if any(~FT.tools.IsEmptyField({'data','power'})) && ~FT_DATA.saved
-    msg = 'The current dataset has unsaved changes, would you like to save them?';
-    resp = FT.UserInput(msg,1,'title','Usaved changes','button',{'Yes','No'});
-    if strcmpi(resp,'yes')
-        FT.io.SaveDataset(true);
-    end
-end
+% if any(~FT.tools.IsEmptyField({'data','power'})) && ~FT_DATA.saved
+%     msg = 'The current dataset has unsaved changes, would you like to save them?';
+%     resp = FT.UserInput(msg,1,'title','Usaved changes','button',{'Yes','No'});
+%     if strcmpi(resp,'yes')
+%         FT.io.SaveDataset(true);
+%     end
+% end
 
 %grab the fields that we will still need
 gui  = FT_DATA.gui;

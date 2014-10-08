@@ -65,6 +65,8 @@ if ~isempty(item)
             end
             if del_study
                 FT_DATA.study_name = '';
+                FT_DATA.template = [];
+                FT_DATA.path.template = '';
             end
             FT_DATA.subject_name = '';
         end
