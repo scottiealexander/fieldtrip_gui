@@ -31,7 +31,7 @@ BLANK = '              ';
 
 c = {... %select datasets
      {'text','string','Datasets:'},...
-     {'listbox','string',BLANK,'tag','sets'};... %max > 1 allows multi selection
+     {'listbox','string',BLANK,'tag','sets','max',2};... %max > 1 allows multi selection
      {'pushbutton','string','Add','Callback',@(varargin) SetOps('add')},...
      {'pushbutton','string','Remove','Callback',@(varargin) SetOps('rm')};...
      ... %select format
@@ -74,23 +74,25 @@ function SetOps(action)
             fname = [name filesep fname];
             fmap(fname) = fpath;
         end
-%         ksel = [reshape(ksel,1,[]) fmap.Count];
-        ksel = fmap.Count;
+        ksel = 1:fmap.Count;
     case 'rm'        
         keys = fmap.keys;
-        if ~isempty(ksel) && (1 <= ksel) && (ksel <= numel(keys))
-            fmap.remove(keys(ksel));
+        for k = 1:numel(ksel)
+            if (1 <= ksel(k)) && (ksel(k) <= numel(keys))
+                fmap.remove(keys(ksel(k)));
+            end
         end
         ksel = fmap.Count;
     otherwise
         %should never happen...
     end    
-    if ksel
+    if ksel(1)
         win.SetElementProp('sets','string',fmap.keys);        
     else
         ksel = 1;
         win.SetElementProp('sets','string',BLANK);
     end
+    win.SetElementProp('sets','max',numel(ksel));
     win.SetElementProp('sets','value',ksel);
     win.ReSize;
     win.SetFocus('sets');
