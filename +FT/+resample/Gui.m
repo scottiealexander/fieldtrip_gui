@@ -10,8 +10,8 @@ function Gui(varargin)
 %
 % Out: 
 %
-% Updated: 2014-06-23
-% Peter Horak
+% Updated: 2014-10-09
+% Scottie Alexander
 %
 % See also: FT.resample.Run
 %
@@ -28,7 +28,7 @@ params = struct;
 
 c = {...
     {'text','String','New Sampling Rate [Hz]:'},...
-    {'edit','size',5,'tag','fr','valfun',{'inrange',1,FT_DATA.data.fsample-1,true}};...
+    {'edit','tag','fr','valfun',{'inrange',1,FT_DATA.data.fsample-1,true}};...
     {'pushbutton','String','Run'},...
     {'pushbutton','String','Cancel','validate',false};...
     };

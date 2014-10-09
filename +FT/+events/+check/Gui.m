@@ -2,7 +2,7 @@ function Gui()
 % FT.events.check.Gui
 %
 % Description: allow the user to manually check the position and value of
-% events that were translated from pulses on the stimulus channel
+%              events that were translated from pulses on the stimulus channel
 %
 % Syntax: FT.events.check.Gui()
 %
@@ -25,8 +25,10 @@ function Gui()
 %       Done - apply all changes and close the browser
 %       Cancel - discard all changes and close the browser
 %
-% Updated: 2014-10-07
+% Updated: 2014-10-09
 % Scottie Alexander
+%
+% Please send bug reports to: scottiealexander11@gmail.com
 
 global FT_DATA;
 
@@ -110,7 +112,7 @@ c = {% Event Browsing
      {'text','string','Type:'},...
      {'edit','string','','tag','type','Callback',@(varargin) UpdatePlot('')};...
      {'text','string','Value:'},...
-     {'edit','size',5,'string',num2str(ft_events(event).value),'tag','val','Callback',@(varargin) UpdatePlot('')};...
+     {'edit','string',num2str(ft_events(event).value),'tag','val','Callback',@(varargin) UpdatePlot('')};...
      % Navigation
      {'text','string',' Navigation'},{'text','string',''};...
      {'pushbutton','string','+','Callback',@(varargin) UpdatePlot('mag'),           'ToolTipString','Shortcut: +'},...

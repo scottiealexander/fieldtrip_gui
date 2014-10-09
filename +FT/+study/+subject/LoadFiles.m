@@ -12,7 +12,7 @@ function c = LoadFiles(id)
 % Out:
 %       c - a cell of filepaths for the given subject
 %
-% Updated: 2014-10-01
+% Updated: 2014-10-08
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
@@ -25,6 +25,7 @@ if fid > 0
     fclose(fid);
     c = regexp(str,'\n','split');
     c = c(~cellfun(@isempty,c));
+    c = c(cellfun(@(x) exist(x,'file')==2,c));
     c = reshape(c,[],1);
 else
     %subject doesn't yet have a filelist

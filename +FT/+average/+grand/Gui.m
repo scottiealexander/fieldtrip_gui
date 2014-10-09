@@ -70,9 +70,21 @@ function SetOps(action)
         name = FT.study.subject.Select;
         if ~isempty(name)
             fpath = FT.study.subject.SelectFile(name);
+            if ~isempty(fpath)
+                [b,msg] = FT.average.grand.Verify(fpath);
+                if ~b
+                    msg = ['[ERROR]: ' msg];
+                    FT.UserInput(msg,0,'title','Invalid dataset','button','OK');
+                    return;
+                end
+            else
+                return;    
+            end
             [~,fname] = fileparts(fpath);
             fname = [name filesep fname];
             fmap(fname) = fpath;
+        else
+            return;
         end
         ksel = 1:fmap.Count;
     case 'rm'        

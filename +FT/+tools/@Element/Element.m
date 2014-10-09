@@ -1,16 +1,31 @@
 classdef Element < handle
 
-% Element
+% FT.tools.Element
 %
-% Description:
+% Description: a wrapper class for uicontrol objects
+%              ***[NOTE]***: a user should never interact directly with this
+%              class, only with the containing FT.tools.Win instance
 %
-% Syntax:
+% Syntax: el = FT.tools.Element(win,pos,ifo,<options>)
 %
 % In:
+%       win - the parent FT.tools.Win instance
+%       pos - the approx. position for this element in pixels relative to the
+%             containing figure
+%       ifo - the element info struct (see FT.tools.Win)
+%   options:
+%       haligh - ('center') the horizontal alignment for this element relative
+%                to it's containing rect
+%       valigh - ('center') the vertical alignment for this element relative
+%                to it's containing rect
 %
 % Out:
+%       el - an instance of the Element class
 %
-% Updated: 2014-10-04
+% See also:
+%       FT.tools.Win, FT.tools.Win.Test
+%
+% Updated: 2014-10-09
 % Scottie Alexander
 %
 % Please send bug reports to: scottiealexander11@gmail.com
@@ -22,12 +37,14 @@ properties
     fig;
     ax; 
     string = '';
-    len = [nan nan];
-    pos = zeros(1,4);   
+    dpi;
+    pos = zeros(1,4);
+    len = 5;
     opt;
     tag = '';
     valfun;
     listboxmax = 8;
+    fontsize = .2;
 end
 %PROPERTIES-------------------------------------------------------------------%
 
@@ -42,22 +59,19 @@ methods
             'halign', 'center' ,...
             'valign', 'center'  ...
             );
-
+        self.dpi = get(0,'ScreenPixelsPerInch');
         self.fig = win.h;
-        self.pos = p;
+        self.pos = p ./ self.dpi;
         self.type = lower(s.type);
         
-        if isfield(s,'size')
-            if numel(s.size) == 1
-                s.size = [nan s.size];
-            end
-            self.len = s.size;
-            s = rmfield(s,'size');
+        if isfield(s,'len')
+            self.len = s.len(1);
+            s = rmfield(s,'len');
         end
 
         if isfield(s,'string')
             if ischar(s.string) && strcmpi(s.string,'default')                
-                s.string = ['\' s.string];
+                s.string = ['\' s.string];            
             end
             self.string = s.string;
         end     
@@ -101,6 +115,7 @@ methods
             'halign' , self.opt.halign,...
             'valign' , self.opt.valign ...
             );
+        rect = rect./self.dpi;
         pos = self.pos;
         pos(1) = self.GetLeft(rect(1),rect(3));
         pos(2) = self.GetBottom(rect(2),rect(4));
@@ -110,8 +125,8 @@ methods
     function SetProp(self,field,val)
         if isprop(self.h,field)
             set(self.h,field,val);
-        elseif isprop(self,field)
-            self.(field) = val;
+        elseif isprop(self,field)            
+            self.(field) = val;            
         end
     end
     %-------------------------------------------------------------------------%
@@ -126,8 +141,8 @@ methods
     end
     %-------------------------------------------------------------------------%
     function [w,h] = GetSize(self,varargin)
-        w = self.pos(3);
-        h = self.pos(4);
+        w = self.pos(3)*self.dpi;
+        h = self.pos(4)*self.dpi;
     end
     %-------------------------------------------------------------------------%
     function [w,h] = ReSize(self)
@@ -187,21 +202,15 @@ methods (Access=private)
         self.pos = pos;
     end
     %-------------------------------------------------------------------------%
-    function InitTextPosition(self)
-        ext = get(self.h,'Extent');
+    function InitTextPosition(self)        
         p = get(self.h,'Position');
-        p(3:4) = ext(3:4);
+        [p(3), p(4)] = self.Extent;
         self.SetPosition(p);
     end
     %-------------------------------------------------------------------------%
-    function InitUIPosition(self)
-        set(self.h,'Units','characters');
-        p = get(self.h,'Position');
-        p(3) = self.GetWidth;
-        p(4) = self.GetHeight;
-        set(self.h,'Position',p);
-        set(self.h,'Units','pixels');
-        p = get(self.h,'Position');
+    function InitUIPosition(self)        
+        p = get(self.h,'Position');        
+        [p(3), p(4)] = self.Extent;
         p(1) = self.GetLeft(p(1),p(3));
         p(2) = self.GetBottom(p(2),p(4));
         self.SetPosition(p);
@@ -235,91 +244,76 @@ methods (Access=private)
         end
     end
     %-------------------------------------------------------------------------%
-    function w = GetWidth(self)
-        switch self.type
-        case 'edit'
-            fsiz = get(self.h,'FontSize');
-            if isempty(self.string)                
-                w = (5 * (fsiz/8)) + 2.5;                
-            else                
-                ext = get(self.h,'Extent');
-                w = ext(3) + (fsiz/3);           
-            end
-        case 'pushbutton'
-            w = get(self.h,'Extent');
-            w = w(3)+2;
-        case 'listbox'
-            w = get(self.h,'Extent');
-            w = w(3)+3;
-        case 'checkbox'
-            w = 3.5;
-        otherwise
-            error('Das ist foul...');
-        end
-    end
-    %-------------------------------------------------------------------------%
-    function h = GetHeight(self)
-        switch self.type
-        case 'checkbox'
-            h = 1.5;
-        case {'edit','listbox'}
-            n = self.GetLen(false);
-            n = n(1);
-            fsiz = get(self.h,'FontSize');
-            if n > self.listboxmax
-                n = self.listboxmax;
-            end
-            h = (n * (fsiz/8.6)) + .25;
-        otherwise
-            h = get(self.h,'Position');
-            h = h(4);
-        end
-    end
-    %-------------------------------------------------------------------------%
-    function len = GetLen(self,init)
-        len = [1 5];
-        if init
-            tmp = self.string;
+    function [wd,ht] = Extent(self)
+        if isprop(self.h,'Extent')
+            ext = get(self.h,'Extent');
         else
-            tmp = get(self.h,'string');    
+            ext = [0 0];    
         end
-        if ~isempty(tmp)
-            if iscell(tmp)
-                len = [numel(tmp) max(cellfun(@numel,tmp))];
-            else                
-                len = [1 numel(tmp)];
+        switch lower(self.type)
+        case 'listbox'            
+            [wd,ht] = self.GetListExtent;
+            wd = wd+self.fontsize; %add a char in width for the scroll bar
+        case 'checkbox'
+            wd = .22;
+            ht = .22;
+        case 'pushbutton'
+            wd = ext(3)*1.1;
+            ht = ext(4)*1.2;
+        case 'edit'
+            if isempty(self.string)
+                wd = self.len*self.fontsize;
+                ht = self.fontsize*1.75;
+            else
+                wd = ext(3)*1.1;
+                ht = ext(4)*1.2;                
             end
+        otherwise            
+            wd = ext(3);
+            ht = ext(4);            
         end
-    end
-    %-------------------------------------------------------------------------%    
-    function pos = Axes2Fig(self,pos)
-    %function to convert data units (i.e extent) within an axes to figure units
-        pAx  = self.GetPosition(self.ax,'pixels');
-        yLim = get(self.ax,'YLim');
-        yExt = yLim(2)-yLim(1);
-        xLim = get(self.ax,'XLim');
-        xExt = xLim(2)-xLim(1);
-            
-        pos(1) = pAx(1)+((pos(1)-xLim(1))/xExt)*pAx(3);
-        pos(2) = pAx(2)+((pos(2)-yLim(1))/yExt)*pAx(4);
-        pos(3) = (pos(3)/yExt) * pAx(3);
-        pos(4) = (pos(4)/yExt) * pAx(4);
     end
     %-------------------------------------------------------------------------%
-    function out = Fig2Axes(self,pos)
-    %functon to convert figure units to axes data units
-        pAx = self.GetPosition(self.ax,'pixels');
-        out(1) = (pos(1) - pAx(1)) / pAx(3);
-        out(2) = (pos(2) - pAx(2)) / pAx(4);
+    function [wd,ht] = GetListExtent(self)
+        c = get(self.h,'String');
+        if ~iscell(c)
+            c = {c};
+        end
+        nc = numel(c);
+        ht = nan(nc,1);
+        wd = -inf;
+        for k = 1:nc
+            tmp = uicontrol(...
+                'Style'     , 'text'        ,...
+                'Units'     , 'inches'      ,...
+                'FontName'  , 'Monospaced'  ,...
+                'FontUnits' , 'inches'      ,...
+                'FontSize'  , self.fontsize ,...
+                'String'    , c{k}          ,...
+                'Visible'   , 'off'         ,...
+                'Parent'    , self.fig       ...
+                );
+            ext = get(tmp,'Extent');
+            wd = max([ext(3) wd]);
+            ht(k) = ext(4);
+            if k > 1
+                ht(k) = ht(k)*.8;
+            end
+            delete(tmp);
+        end
+        if nc > self.listboxmax
+            ht = ht(1:self.listboxmax);
+        end
+        ht = nansum(ht);
     end
     %-------------------------------------------------------------------------%
     function def = AddDefaultValues(self,s)
-        def = { 'FontName' , 'Monospaced' ,...
-                'FontSize' , 14           ,...
-                'FontUnits', 'points'     ,...
-                'Units'    , 'pixels'     ,...
-                'Position' , self.pos     ,...
-                'Parent'   , self.fig      ...
+        def = { 'Units'     , 'inches'      ,...
+                'FontUnits' , 'inches'      ,...
+                'FontName'  , 'Monospaced'  ,...
+                'FontSize'  , self.fontsize ,...                
+                'Position'  , self.pos      ,...
+                'Parent'    , self.fig       ...
               };
 
         switch self.type
@@ -330,9 +324,7 @@ methods (Access=private)
                 end
             case 'text'
                 def = [def {'BackgroundColor',get(self.fig,'Color')}];
-        end
-
-        self.len = self.GetLen(true);
+        end        
         
         def = self.pvpair2struct(def);
         fields = fieldnames(s);
@@ -434,3 +426,25 @@ methods (Static=true)
 end
 %STATIC METHODS---------------------------------------------------------------%
 end
+
+% function pos = Axes2Fig(self,pos)
+% %function to convert data units (i.e extent) within an axes to figure units
+%     pAx  = self.GetPosition(self.ax,'pixels');
+%     yLim = get(self.ax,'YLim');
+%     yExt = yLim(2)-yLim(1);
+%     xLim = get(self.ax,'XLim');
+%     xExt = xLim(2)-xLim(1);
+        
+%     pos(1) = pAx(1)+((pos(1)-xLim(1))/xExt)*pAx(3);
+%     pos(2) = pAx(2)+((pos(2)-yLim(1))/yExt)*pAx(4);
+%     pos(3) = (pos(3)/yExt) * pAx(3);
+%     pos(4) = (pos(4)/yExt) * pAx(4);
+% end
+% %-------------------------------------------------------------------------%
+% function out = Fig2Axes(self,pos)
+% %functon to convert figure units to axes data units
+%     pAx = self.GetPosition(self.ax,'pixels');
+%     out(1) = (pos(1) - pAx(1)) / pAx(3);
+%     out(2) = (pos(2) - pAx(2)) / pAx(4);
+% end
+% %-------------------------------------------------------------------------%

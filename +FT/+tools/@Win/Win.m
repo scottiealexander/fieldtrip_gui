@@ -270,7 +270,7 @@ methods (Access=private)
                 halign = self.GetHAlignment(kC,self.ncol(kR));
                 if ~isempty(self.content{kR,kC})
                     if el_init
-                        pos = self.GetElementPosition(kR,kC);                    
+                        pos = self.GetElementPosition(kR,kC);
                         self.el{kR,kC} = FT.tools.Element(self,pos,self.content{kR,kC},'halign',halign);
                         [width(kR,kC),height(kR,kC)] = self.el{kR,kC}.GetSize;
                     else                        
@@ -314,8 +314,7 @@ methods (Access=private)
                         width_use = width(kR,kC);
 
                         %always use the max height of a row to get a centered vertical alignment                    
-                        height_use = mx_height(kR);
-                        % height_use = height(kR,kC);
+                        height_use = mx_height(kR);                        
                     else
                         halign = self.el{kR,kC}.opt.halign;
                         width_use = mx_width(kC);
