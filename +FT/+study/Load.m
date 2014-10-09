@@ -42,6 +42,8 @@ if ~isempty(name)
     if ~FT.tools.IsEmptyField('study_name')
         if ~strcmp(name,FT_DATA.study_name)
             FT_DATA.subject_name = '';
+            FT_DATA.template = [];
+            FT_DATA.path.template = '';
         end
     end
     FT_DATA.study_name = name;    

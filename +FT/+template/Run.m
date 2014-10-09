@@ -90,7 +90,7 @@ for i = 1:nFiles
     for j = 1:tSteps
         op = strsplit(steps{j}.operation,'_');
         if strcmpi('save',op{1})
-            FT.io.WriteDataset(fullfile(steps{j}.params.path,[tempName...
+            FT.io.SaveDataset(true,fullfile(steps{j}.params.path,[tempName...
                 '-' steps{j}.params.name '-' strName '.set']));
         elseif numel(op) == 1
             me = FT.(op{1}).Run(steps{j}.params);

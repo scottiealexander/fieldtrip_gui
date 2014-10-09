@@ -59,13 +59,13 @@ uimenu(hSubjMenu,'Label','Add New','Accelerator','A','Callback',@(varargin) FT.R
 uimenu(hSubjMenu,'Label','Load','Accelerator','J','Callback',@(varargin) FT.RunFunction(@FT.study.subject.Load));
 uimenu(hSubjMenu,'Label','Delete','Callback',@(varargin) FT.RunFunction(@() FT.study.Delete('subject')));
 
-% % Template operations
-% hTempMenu = uimenu(hFileMenu,'Label','Template');
-% uimenu(hTempMenu,'Label','Create New','Callback',@(varargin) FT.RunFunction(@FT.template.Create));
-% uimenu(hTempMenu,'Label','Edit Current','Callback',@(varargin) FT.RunFunction(@FT.template.Edit));
-% uimenu(hTempMenu,'Label','Save Current','Callback',@(varargin) FT.RunFunction(@FT.template.Save));
-% uimenu(hTempMenu,'Label','Load Existing','Callback',@(varargin) FT.RunFunction(@FT.template.Load));
-% uimenu(hTempMenu,'Label','Run Current','Callback',@(varargin) FT.RunFunction(@FT.template.Run));
+% Template operations
+hTempMenu = uimenu(hFileMenu,'Label','Template');
+uimenu(hTempMenu,'Label','Create New','Callback',@(varargin) FT.RunFunction(@FT.template.Create));
+uimenu(hTempMenu,'Label','Edit Current','Callback',@(varargin) FT.RunFunction(@FT.template.Edit));
+uimenu(hTempMenu,'Label','Save Current','Callback',@(varargin) FT.RunFunction(@FT.template.Save));
+uimenu(hTempMenu,'Label','Load Existing','Callback',@(varargin) FT.RunFunction(@FT.template.Load));
+uimenu(hTempMenu,'Label','Run Current','Callback',@(varargin) FT.RunFunction(@FT.template.Run));
 
 %read in data
 uimenu(hFileMenu,'Label','Load Data','Accelerator','D',...

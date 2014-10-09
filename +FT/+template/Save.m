@@ -6,7 +6,7 @@ if isempty(FT_DATA.template) || isempty(FT_DATA.path.template)
      FT.UserInput('No loaded template to run!',1,'title','Notice','button',{'OK'});
      return;
 end
-    
+
 %user selects file
 strPathDef = FT_DATA.path.template;%default
 [strName,strPath] = uiputfile('*.template','Save Template',strPathDef);

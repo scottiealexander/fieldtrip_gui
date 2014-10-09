@@ -50,6 +50,9 @@ elseif ~isempty(w.res.name)
     mkdir(study_dir);
     m.Save;
     FT_DATA.study_name = w.res.name;
+    FT_DATA.subject_name = '';
+    FT_DATA.template = [];
+    FT_DATA.path.template = '';
 
     FT.UpdateGUI;
 end
