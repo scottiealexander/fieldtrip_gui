@@ -252,9 +252,19 @@ methods (Access=private)
             ext = [0 0];    
         end
         switch lower(self.type)
-        case 'listbox'            
-            [wd,ht] = self.GetListExtent;
-            wd = wd+self.fontsize; %add a char in width for the scroll bar
+        case 'listbox'
+            if isempty(self.string)
+                if self.len
+                    len = self.len;
+                else
+                    len = self.def_len;    
+                end
+                wd = len*self.fontsize;
+                ht = self.fontsize*1.75;
+            else
+                [wd,ht] = self.GetListExtent;
+                wd = wd+self.fontsize; %add a char in width for the scroll bar
+            end
         case 'checkbox'
             wd = .22;
             ht = .22;
