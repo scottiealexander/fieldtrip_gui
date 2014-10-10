@@ -257,16 +257,18 @@ methods (Access=private)
         case 'checkbox'
             wd = .22;
             ht = .22;
-        case 'pushbutton'
-            wd = ext(3)*1.1;
-            ht = ext(4)*1.2;
-        case 'edit'
+        case {'edit','pushbutton'}
             if isempty(self.string)
                 wd = self.len*self.fontsize;
                 ht = self.fontsize*1.75;
             else
-                wd = ext(3)*1.1;
-                ht = ext(4)*1.2;                
+                if numel(self.string) < 3
+                    scale = 1.75;
+                else
+                    scale = 1.1;
+                end
+                wd = ext(3)*scale;
+                ht = ext(4)*1.2;
             end
         otherwise            
             wd = ext(3);

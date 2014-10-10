@@ -46,7 +46,7 @@ classdef Win < handle
 % See also:
 %       FT.tools.Win.Test
 %
-% Updated: 2014-10-03
+% Updated: 2014-10-09
 % Scottie Alexander
 %
 % Please send bug reports to: scottiealexander11@gmail.com
@@ -127,7 +127,7 @@ methods
         end
     end
     %-------------------------------------------------------------------------%
-    function FetchResult(self,varargin)
+    function varargout = FetchResult(self,varargin)
         b = true;
         for k = 1:numel(self.el)
             if ~isempty(self.el{k}) && ~isempty(self.el{k}.tag)
@@ -149,8 +149,10 @@ methods
                 end
             end
         end
-        if b
+        if ~nargout && b
             delete(self.h);
+        elseif nargout
+            varargout{1} = b;
         end
     end
     %-------------------------------------------------------------------------%
@@ -354,7 +356,7 @@ methods (Access=private)
         switch lower(evt.Key)
            case 'w'
                if ismember('control',evt.Modifier)
-                   self.FetchResult;
+                   self.Close;
                end
            otherwise
         end

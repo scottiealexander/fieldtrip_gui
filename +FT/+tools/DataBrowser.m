@@ -30,8 +30,11 @@ function varargout = DataBrowser(time,data,group_by,n,lChan,lTrial)
 %       Plot - plot the channel and trial specified in the input boxes
 %       Exit - close the data browser and return the marks
 %
-% Updated: 2014-07-18
+% Updated: 2014-10-09
 % Peter Horak
+
+%Updates
+%   2014-10-09: give the figure a better title than 'figure 2', make figure wider
 
 marks = [];
 
@@ -95,10 +98,10 @@ std_avg = std_avg/numel(data(:,1,:));
 span = 4*std_avg; % spacing (offset) of time series plotted in the same figure
 
 % Create the plot (data viewer) and set its dimensions
-f = figure();
+f = figure('NumberTitle','off','Name','Data Browser');
 wDims = get(0,'ScreenSize');
 ww = wDims(3); wh = wDims(4);
-set(f,'Position',round([ww*.25,wh*.1,ww*.5,wh*.8]));
+set(f,'Position',round([ww*.25,wh*.1,ww*.7,wh*.8]));
 
 % Set the coloring scheme for plotting multiple data series simultaneously
 % set(f,'DefaultAxesColorOrder',[0,0,1;0,.5,0;1,0,0;0,.75,.75;.75,0,.75;.75,.75,0;.25,.25,.25;1,.5,0;0,1,0]);
@@ -118,7 +121,7 @@ c = {% Channel Browsing
 	 {'pushbutton','string','Prev','Callback',@PrevT},...
      {'pushbutton','string','Next','Callback',@NextT};...
      % Amplitude Zooming
-     {'text','string',' Ampl Zoom:'},...
+     {'text','string',' Amplitude Zoom:'},...
      {'text','string',''},...
      {'pushbutton','string','+','Callback',@MagV},...
      {'pushbutton','string','-','Callback',@MinV};...
@@ -200,7 +203,8 @@ function UpdatePlot()
         range = pred:succ;
         
         % Color all channels blue except the current, which is red
-        defColOrd = zeros(numel(range),3); defColOrd(:,3) = 1;
+        defColOrd = zeros(numel(range),3);
+        defColOrd(:,3) = 1;
         defColOrd(range == 0,:) = [1,0,0];
         set(f,'DefaultAxesColorOrder',defColOrd);
         

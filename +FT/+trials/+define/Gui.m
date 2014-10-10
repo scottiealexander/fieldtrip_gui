@@ -10,7 +10,7 @@ function Gui()
 %
 % Out: 
 %
-% See also: FT.filter.Run
+% See also: FT.trials.define.Run
 %
 % Updated: 2014-10-09
 % Scottie Alexander
@@ -41,57 +41,23 @@ c = {{'text','string','Time-lock Event:'},...
      {'edit','string','','enable','on','tag','post','valfun',@ValidateTimes};...
      {'text','string','Condition Name:'},...
      {'edit','string',types{1},'tag','name','valfun',@ValidateName};...
-     {'pushbutton','string','Define Condition','tag','define','validate',true},...
-     {'text','string',''};...
+     {'pushbutton','string','Define Condition','tag','define','validate',true,'Callback',@DefineCond},...
+     {};...
      {'pushbutton','string','Done','validate',true},...
      {'pushbutton','string','Cancel','validate',false}...
 	};
 
 i = 0;
-while true
-    win = FT.tools.Win(c,'title','Define Trials','grid',false,'focus','type');
-    win.Wait;
-    
-    if strcmpi('cancel',win.res.btn);
-        return;
-    elseif strcmpi('done',win.res.btn)
-        params = params(1:i);
-        if (i == 0)
-            return; % no trials defined
-        end
-        break;
-    else
-        % Get trial parameters for an event
-        type = types{win.res.type};
-        pre = win.res.pre;
-        post = win.res.post;
-        name = win.res.name;
-        if isempty(name)
-            name = type;
-        end
-        i = i+1;
-        params(i) = struct('type',type,'pre',pre,'post',post,'name',name);
-        
-        % Remove the event from the list of available ones
-        c{1,2}{3} = setdiff(c{1,2}{3},c{1,2}{3}(win.res.type)); % (listbox->string)
-        types = setdiff(types,types(win.res.type));
+win = FT.tools.Win(c,'title','Define Trials','grid',false,'focus','type');
+win.Wait;
 
-        % Use parameters from this event as the default for the next
-        c{2,2}{5} = num2str(pre); % (pre->string)
-        c{3,2}{5} = num2str(post); % (post->string)
-        c{2,2}{7} = 'off';
-        c{3,2}{7} = 'off';
-        
-        % No more trials to define, either return the paremters or cancel
-        if isempty(types)
-            c = {{'text','string',''},...
-                 {'text','string','All events have trial definitions.'};...
-                 {'pushbutton','string','Done','tag','type','validate',true},...
-                 {'pushbutton','string','Cancel','validate',false}};
-        else
-            c{4,2}{5} = types{1};
-        end
-    end
+if strcmpi('cancel',win.res.btn);
+    return;
+elseif strcmpi('done',win.res.btn)
+    params = params(1:i);
+    if (i == 0)
+        return; % no trials defined
+    end    
 end
 
 hMsg = FT.UserInput('Defining trials...',1);
@@ -106,6 +72,45 @@ FT.ProcessError(me);
 
 FT.UpdateGUI;
 
+%-------------------------------------------------------------------------%
+function DefineCond(obj,varargin)
+    %we shouldn't have to set validate list this here...
+    win.validate = true;
+    b = win.FetchResult;    
+    if b
+        type = types{win.res.type};
+        pre = win.res.pre;
+        post = win.res.post;
+        name = win.res.name;
+        if isempty(name)
+            name = type;
+        end
+        i = i+1;
+        params(i) = struct('type',type,'pre',pre,'post',post,'name',name);
+
+        strList(win.res.type) = [];
+        types(win.res.type) = [];
+        win.SetElementProp('type','String',strList);    
+        win.SetElementProp('pre','Enable','off');
+        win.SetElementProp('post','Enable','off');
+
+        if isempty(types)
+            CloseWin;
+        else
+            win.SetElementProp('name','String',types{1});
+        end
+    end
+end
+%-------------------------------------------------------------------------%
+function CloseWin
+    c = {{'text','string',''},...
+         {'text','string','All events have trial definitions.'};...
+         {'pushbutton','string','OK','tag','ok','validate',false},...
+         {}};
+    win.Close;
+    w = FT.tools.Win(c,'title','Define Trials: Finished','grid',false,'focus','ok');
+    w.Wait;
+end
 %-------------------------------------------------------------------------%
 function ListCallback(varargin)
     k = win.GetElementProp('type','Value');
@@ -122,7 +127,7 @@ function [b,val] = ValidateName(str,varargin)
     end
 end
 %-------------------------------------------------------------------------%
-function [b,val] = ValidateTimes(str,varargin)
+function [b,val] = ValidateTimes(str,varargin)    
     t_pre = str2double(win.GetElementProp('pre','string'));
     t_post = str2double(win.GetElementProp('post','string'));
     
@@ -133,7 +138,7 @@ function [b,val] = ValidateTimes(str,varargin)
         val = 'Trial length must be greater than zero.';
     else
         b = true;
-        val = str2double(str);
+        val = str2double(str);        
     end
 end
 %-------------------------------------------------------------------------%
