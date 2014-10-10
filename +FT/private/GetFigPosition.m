@@ -21,7 +21,7 @@ function p = GetFigPosition(w,h,varargin)
 %       p - the position of the figure as a 1x4 position vector in the order:
 %           [left,bottom,width,height]
 %
-% Updated: 2014-05-09
+% Updated: 2014-10-10
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
@@ -37,7 +37,7 @@ opt = FT.ParseOpts(varargin,...
 if isempty(SCREEN_SIZE)
     ROOT_UNITS = get(0,'Units');
     set(0,'Units','pixels');
-    SCREEN_SIZE = get(0,'ScreenSize');
+    SCREEN_SIZE = get(0,'ScreenSize')-60; %little bit of padding....
     set(0,'Units',ROOT_UNITS);
 end
 

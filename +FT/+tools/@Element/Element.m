@@ -25,7 +25,7 @@ classdef Element < handle
 % See also:
 %       FT.tools.Win, FT.tools.Win.Test
 %
-% Updated: 2014-10-09
+% Updated: 2014-10-10
 % Scottie Alexander
 %
 % Please send bug reports to: scottiealexander11@gmail.com
@@ -39,12 +39,13 @@ properties
     string = '';
     dpi;
     pos = zeros(1,4);
-    len = 5;
+    len = 0;
     opt;
     tag = '';
     valfun;
     listboxmax = 8;
     fontsize = .2;
+    def_len = 5;
 end
 %PROPERTIES-------------------------------------------------------------------%
 
@@ -259,15 +260,24 @@ methods (Access=private)
             ht = .22;
         case {'edit','pushbutton'}
             if isempty(self.string)
-                wd = self.len*self.fontsize;
+                if self.len
+                    nchar = self.len;
+                else
+                    nchar = self.def_len;    
+                end
+                wd = nchar*self.fontsize;
                 ht = self.fontsize*1.75;
             else
-                if numel(self.string) < 3
-                    scale = 1.75;
+                if self.len > 0
+                    wd = self.len*self.fontsize;
                 else
-                    scale = 1.1;
+                    if numel(self.string) < 4
+                        scale = 1.75;
+                    else
+                        scale = 1.1;
+                    end
+                    wd = ext(3)*scale;                    
                 end
-                wd = ext(3)*scale;
                 ht = ext(4)*1.2;
             end
         otherwise            

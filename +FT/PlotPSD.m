@@ -10,7 +10,7 @@ function PlotPSD()
 %
 % Out: 
 %
-% Updated: 2014-01-13
+% Updated: 2014-10-10
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
@@ -61,8 +61,8 @@ h = figure('Units','pixels','Position',pFig,'Name','Spectrogram',...
 %smoothing
 f = fspecial('gaussian',[10 10], 3);
 
-FT.PlotCtrl(h,cLabel,@PlotOne);
-uiwait(h);
+[~,hctrl] = FT.PlotCtrl(h,cLabel,@PlotOne);
+uiwait(hctrl);
 
 %-----------------------------------------------------------------------------%
 function PlotOne(strChan)	

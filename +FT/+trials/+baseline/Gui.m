@@ -12,7 +12,7 @@ function varargout = Gui(varargin)
 %
 % See also: FT.trials.baseline.Run
 %
-% Updated: 2014-10-09
+% Updated: 2014-10-10
 % Scottie Alexander
 %
 % Please send bug reports to: scottiealexander11@gmail.com
