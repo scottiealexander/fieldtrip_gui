@@ -1,4 +1,10 @@
 function Edit()
+% FT.template.Edit
+%
+% Description: view (and remove) steps in the current template
+%
+% Updated: 2014-10-13
+% Peter Horak
 
 global FT_DATA;
 
@@ -7,10 +13,7 @@ if isempty(FT_DATA.template) || isempty(FT_DATA.path.template)
      return;
 end
 
-% % View template
-% cOps = cellfun(@(x) [' + ' x.operation],FT_DATA.template,'uni',false);
-% FT.UserInput(['Steps:\n' strjoin(cOps,'\n')],1,'title',FT_DATA.path.template,'button',{'Done'});
-
+% Only list the operation in each step (don't show the parameters)
 cOps = cellfun(@(x) x.operation,FT_DATA.template,'uni',false);
 nOps = numel(cOps);
 nums = regexprep(num2str(1:nOps),' *','\n');

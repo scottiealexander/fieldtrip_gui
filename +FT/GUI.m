@@ -48,16 +48,11 @@ FT.UpdateGUI;
 hFileMenu = uimenu(h,'Label','File');
 
 % Study operations
-hStudyMenu = uimenu(hFileMenu,'Label','Study');
-uimenu(hStudyMenu,'Label','Create New','Accelerator','N','Callback',@(varargin) FT.RunFunction(@FT.study.Create));
-uimenu(hStudyMenu,'Label','Load','Accelerator','L','Callback',@(varargin) FT.RunFunction(@FT.study.Load));
-uimenu(hStudyMenu,'Label','Delete','Callback',@(varargin) FT.RunFunction(@() FT.study.Delete('study')));
-
-% Subject operations
-hSubjMenu = uimenu(hFileMenu,'Label','Subject');
-uimenu(hSubjMenu,'Label','Add New','Accelerator','A','Callback',@(varargin) FT.RunFunction(@FT.study.subject.Add));
-uimenu(hSubjMenu,'Label','Load','Accelerator','J','Callback',@(varargin) FT.RunFunction(@FT.study.subject.Load));
-uimenu(hSubjMenu,'Label','Delete','Callback',@(varargin) FT.RunFunction(@() FT.study.Delete('subject')));
+hManageMenu = uimenu(hFileMenu,'Label','Manage');
+uimenu(hManageMenu,'Label','Studies','Callback',@(varargin) FT.RunFunction(@() FT.organize.Manage('study')));
+uimenu(hManageMenu,'Label','Templates','Callback',@(varargin) FT.RunFunction(@() FT.organize.Manage('template')));
+uimenu(hManageMenu,'Label','Subjects','Callback',@(varargin) FT.RunFunction(@() FT.organize.Manage('subject')));
+uimenu(hManageMenu,'Label','Datasets','Callback',@(varargin) FT.RunFunction(@() FT.organize.Manage('dataset')));
 
 % Template operations
 hTempMenu = uimenu(hFileMenu,'Label','Template');
@@ -68,8 +63,8 @@ uimenu(hTempMenu,'Label','Load Existing','Callback',@(varargin) FT.RunFunction(@
 uimenu(hTempMenu,'Label','Run Current','Callback',@(varargin) FT.RunFunction(@FT.template.Run));
 
 %read in data
-uimenu(hFileMenu,'Label','Load Data','Accelerator','D',...
-    'Callback',@(varargin) FT.RunFunction(@FT.study.subject.AddFileGUI));
+uimenu(hFileMenu,'Label','Load Data','Accelerator','L',...
+    'Callback',@(varargin) FT.RunFunction(@FT.io.Gui));
 %save
 uimenu(hFileMenu,'Label','Save Dataset',...
     'Callback',@(varargin) FT.RunFunction(@() FT.io.SaveDataset(false)));

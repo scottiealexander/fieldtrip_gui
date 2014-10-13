@@ -117,10 +117,10 @@ methods
             'valign' , self.opt.valign ...
             );
         rect = rect./self.dpi;
-        pos = self.pos;
-        pos(1) = self.GetLeft(rect(1),rect(3));
-        pos(2) = self.GetBottom(rect(2),rect(4));
-        self.SetPosition(pos);
+        p = self.pos;
+        p(1) = self.GetLeft(rect(1),rect(3));
+        p(2) = self.GetBottom(rect(2),rect(4));
+        self.SetPosition(p);
     end
     %-------------------------------------------------------------------------%
     function SetProp(self,field,val)
@@ -252,9 +252,19 @@ methods (Access=private)
             ext = [0 0];    
         end
         switch lower(self.type)
-        case 'listbox'            
-            [wd,ht] = self.GetListExtent;
-            wd = wd+self.fontsize; %add a char in width for the scroll bar
+        case 'listbox'
+            if isempty(self.string)
+                if self.len
+                    emptylen = self.len;
+                else
+                    emptylen = self.def_len;
+                end
+                wd = emptylen*self.fontsize;
+                ht = self.fontsize*1.75;
+            else
+                [wd,ht] = self.GetListExtent;
+                wd = wd+self.fontsize; %add a char in width for the scroll bar
+            end
         case 'checkbox'
             wd = .22;
             ht = .22;

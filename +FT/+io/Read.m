@@ -1,4 +1,4 @@
-function Read(strPath)
+function params = Read(strPath)
 
 % FT.io.Read
 %
@@ -16,6 +16,8 @@ function Read(strPath)
 % Scottie Alexander
 %
 % Please report bugs to: scottiealexander11@gmail.com
+
+global FT_DATA;
 
 sep = filesep;
 if sep == '\'
@@ -44,6 +46,8 @@ if ishandle(hMsg)
 end
 
 if ~isa(me,'MException')
+    FT_DATA.organization.addnode('dataset',params.full);
+    
     %process events? important if the data is from an edf file...
     if params.raw
         if strcmpi(params.ext,'edf')
@@ -64,6 +68,7 @@ else
     
     % clear everything
     FT.io.ClearDataset;
+    params = [];
 end
 
 %update the display

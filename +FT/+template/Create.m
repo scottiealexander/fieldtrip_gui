@@ -1,9 +1,15 @@
 function Create()
+% FT.template.Create
+%
+% Description: create a new template from the current analysis history
+%
+% Updated: 2014-10-13
+% Peter Horak
 
 global FT_DATA
 
 % Find step when last file was read and start template there
-kStart = find(cellfun(@(x) strcmpi(x.operation,'io'),FT_DATA.history),1,'first');
+kStart = find(cellfun(@(x) strcmpi(x.operation,'io'),FT_DATA.history),1,'last');
 
 % Could not find step when data was loaded
 if isempty(kStart)
@@ -11,6 +17,7 @@ if isempty(kStart)
 else
     FT_DATA.template = FT_DATA.history(kStart:end);
     FT_DATA.path.template = 'new.template';
+    FT_DATA.organization.clearfrom('template'); % no current template file
 end
 
 FT.UpdateGUI;

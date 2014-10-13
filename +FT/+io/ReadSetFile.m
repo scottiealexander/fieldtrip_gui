@@ -65,6 +65,9 @@ tmp_gui = FT_DATA.gui;
 template = FT_DATA.template;
 template_path = FT_DATA.path.template;
 
+%save current organization
+org = FT_DATA.organization;
+
 %merge with the FT_DATA struct
 for k = 1:numel(cFields)
     FT_DATA.(cFields{k}) = sTmp.(cFields{k});
@@ -77,6 +80,9 @@ FT_DATA.gui.sizText = tmp_gui.sizText;
 FT_DATA.gui.screen_size = tmp_gui.screen_size;
 FT_DATA.gui.display_fields = tmp_gui.display_fields;
 
-%replace template params
+%replace organizaton
+FT_DATA.organization = org;
+
+%replace template
 FT_DATA.template = template;
 FT_DATA.path.template = template_path;

@@ -63,12 +63,13 @@ drawnow;
 %-------------------------------------------------------------------------%
 function v = ExtractField(field)
     v = '';
-    if FT.tools.IsFieldPath(field)
+    try
         if iscellstr(field)
             v = getfield(FT_DATA,field{:});
         elseif ischar(field)
             v = FT_DATA.(field);
         end
+    catch
     end
 end
 %-------------------------------------------------------------------------%

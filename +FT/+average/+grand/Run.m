@@ -97,8 +97,9 @@ end
 FT_DATA.gui.display_mode = 'averaged';
 
 % new dataset name (because cleared the last one)
-FT_DATA.current_dataset = [FT_DATA.study_name ': Grand Average'];
-
+FT_DATA.organization.clearfrom('type');
+FT_DATA.organization.addnode('subject','grand_average');
+                    
 % mark data as not saved
 FT_DATA.saved = false;
 

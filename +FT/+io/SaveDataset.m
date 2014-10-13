@@ -52,9 +52,11 @@ strPathOut = regexprep(strPathOut,'\.[\w\-\+\.]+$','.set');
 FT_DATA.path.dataset = strPathOut;
 [~,FT_DATA.current_dataset] = fileparts(strPathOut);
 
-% remove template and gui fields as these can change
+% remove gui ,organization, and template fields as these can change
 gui = FT_DATA.gui;
 FT_DATA.gui = rmfield(FT_DATA.gui,{'hAx','hText','sizText'});
+org = FT_DATA.organization;
+FT_DATA = rmfield(FT_DATA,'organization');
 template = FT_DATA.template;
 FT_DATA = rmfield(FT_DATA,'template');
 template_path = FT_DATA.path.template;
@@ -71,17 +73,13 @@ if ishandle(hMsg)
     close(hMsg);
 end
 
-% restore template and gui fields
+% restore gui ,organization, and templat
 FT_DATA.gui = gui;
+FT_DATA.organization = org;
 FT_DATA.template = template;
 FT_DATA.path.template = template_path;
 
-%if a 'study' and a 'subject' is loaded, add the output path to that subject's file list
-if isfield(FT_DATA,'study_name') && ~isempty(FT_DATA.study_name)
-    if isfield(FT_DATA,'subject_name') && ~isempty(FT_DATA.subject_name)
-        FT.study.subject.AddFile(FT_DATA.subject_name,strPathOut);
-    end
-end
+FT_DATA.organization.addnode('dataset',strPathOut);
 
 FT.UpdateGUI;
 
