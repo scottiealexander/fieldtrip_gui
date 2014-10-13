@@ -1,4 +1,34 @@
 classdef SNode < handle
+% SNode (originally stood for Study/Subject Node)
+%
+% Description:
+%   SNode defines a class for node objects. The nodes are designed for use
+% in constructing a tree hierarchy to represent the organization of
+% studies, templates, subjects, and datasets in an analysis.
+%   The SNode class provides methods for adding and removing children. It
+% also supports converting a tree of nodes to a tree of structs and back.
+% This is to facilitate saving SNodes as structs, so that the saved file
+% can be read without having access to the SNode class definition.
+%   The class descends from the handle class so that references to nodes
+% can be created. However, note that using this feature to create cyclical
+% graphs may result in tostruct() and gettype() failing to complete
+% execution.
+%
+% Constructors:
+%   SNode(type,name)- create a node with the given type and name
+%   SNode(struct)   - create a tree of nodes from a stree of structs
+%
+% Methods:
+%   addchild(SNode) - add the given node as a child
+%	removechild(SNode)  - remove child nodes matching the given one
+%	myeq(SNode)     - compare the type and name attributes of two nodes
+%	tostruct()      - convert the node and its decendents to a tree of structs
+%	gettype(type)   - return all decendent leaves of a given type
+%
+% Updated: 2014-10-13
+% Peter Horak
+
+%-------------------------------------------------------------------------%
     properties(GetAccess=public,SetAccess=private)
         type = '';
         name = '';
@@ -15,6 +45,7 @@ classdef SNode < handle
             elseif (nargin == 1) && isstruct(varargin{1})
                 s = varargin{1};
                 self = FT.organize.SNode(s.type,s.name);
+                % recursively convert child structs to SNodes
                 for i = 1:numel(s.children)
                     self.addchild(FT.organize.SNode(s.children(i)));
                 end
@@ -28,25 +59,28 @@ classdef SNode < handle
         function added = addchild(self,node)
             added = node;
             if isempty(self.children)
+                % if there are no children, add the node as the first child
                 self.children = node;
             else
                 b = node.myeq(self.children);
                 if any(b)
+                    % a matching child already exists, return it
                     added = self.children(find(b,1,'first'));
                 else
+                    % otherwise, append the node as a new child
                     self.children(end+1) = node;
                 end
             end
         end
 %-------------------------------------------------------------------------%
-        % Removes and returns any child nodes with the name and type of the
-        % given node. Returns empty if no children are removed
+        % Removes and returns any child nodes with the name and type as the
+        % given node. Returns an empty array if no children are removed
         function removed = removechild(self,child)
             removed = [];
             if ~isempty(self.children)
-                b = child.myeq(self.children);
+                b = child.myeq(self.children); % matching children
                 removed = self.children(b);
-                self.children = self.children(~b);
+                self.children = self.children(~b); % remove the matches
             end
         end
 %-------------------------------------------------------------------------%
@@ -55,22 +89,23 @@ classdef SNode < handle
             bEq = strcmp({self.name},{other.name}) & strcmp({self.type},{other.type});
         end
 %-------------------------------------------------------------------------%
-        % Returns the nodes as a tree of nested structs
+        % Returns the node and its descendants as a tree of nested structs
         function s = tostruct(self)
             schildren = arrayfun(@(c) c.tostruct,self.children);
             s = struct('type',self.type,'name',self.name,'children',schildren);
         end
 %-------------------------------------------------------------------------%
-        % Returns a cell array of "paths" for nodes of a given type
+        % Returns a cell array of "paths" for nodes of a given type. The
+        % path is a cell of node names traversed to reach the target nodes.
         function cStr = gettype(self,type)
             if strcmp(self.type,type)
                 % if the node is of the given type, return its name
                 cStr = {self.name};
             elseif isempty(self.children)
-                % if the node is a leaf but not the given type, return {}
+                % if the node is a leaf but not of the given type, return {}
                 cStr = {};
             else
-                % otherwise, preappend its name to the result children.tocstr
+                % otherwise, recursively continue to its children
                 cStr = arrayfun(@(n) cellfun(@(cstr) cat(2,{self.name},cstr),n.gettype(type),'uni',false),self.children,'uni',false);
                 cStr = cat(1,cStr{:});
             end
@@ -78,19 +113,3 @@ classdef SNode < handle
 %-------------------------------------------------------------------------%
     end
 end
-
-%{
-clear all
-n1 = FT.organize.SNode('study','pct');
-n2 = FT.organize.SNode('subj','es');
-n3 = FT.organize.SNode('subj','sb');
-n4 = FT.organize.SNode('file','/path/data1.edf');
-n5 = FT.organize.SNode('file','/path/data2.edf');
-n1.addchild(n2);
-n1.addchild(n3);
-n2.addchild(n4);
-n2.addchild(n5);
-n3.addchild(n5);
-root = FT.organize.SNode('root','analysis');
-root.addchild(n1);
-%}

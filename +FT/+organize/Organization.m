@@ -1,5 +1,39 @@
 classdef Organization < handle
-    
+% Organization
+%
+% Description:
+%   Organization keeps track of the organization of studies, subjects,
+% templates, and datasets using SNodes. It arranges the nodes in a
+% predefined (hard-coded) hierarchy. There is a single root node to which
+% studies can be added. Studies then contain child nodes representing
+% templates and subjects. The subject nodes in turn have dataset nodes as
+% children. The template and dataset nodes are leafs (no children) and
+% their names correspond to filepaths. The study and subject names are
+% user-defined but are required to be unique among siblings.
+
+%------------------------Organization Hierarchy --------------------------%
+% root
+%  + studies
+%     - templates
+%     + subjects
+%        - datasets
+%-------------------------------------------------------------------------%
+%
+% Constructors:
+%   Organization()  - finds or creates a persistent file for the organization
+%
+% Methods:
+%   getcurr()  - returns a struct of current node names
+%	edit(type) - runs a GUI manage nodes of a given type
+%   addnode(type,name)  - add a node with a given type and name
+%   getdatasets() - returns all dataset nodes associated with a study
+%   clearfrom(start)    - clear current nodes at and below the start type
+%   getparenttype(type) - get the parent node type of the given node type
+%
+% Updated: 2014-10-13
+% Peter Horak
+
+%-------------------------------------------------------------------------%
     properties(GetAccess=public,SetAccess=private)
         file_path % path of file for saving the state of the tree
         % pointers to the current node at each level in the hierarchy
@@ -12,15 +46,16 @@ classdef Organization < handle
     
     methods
 %-------------------------------------------------------------------------%
-        % Constructor, initializes the root node
+        % Constructor, initializes the root node of the organization tree
         function self = Organization()
             self.file_path = fullfile(FT.tools.BaseDir,'assets','tree.mat');
+            % load the persistant tree from file or create it
             if exist(self.file_path,'file')
                 load(self.file_path,'-mat','stree');
                 self.root = FT.organize.SNode(stree);
             else
                 self.root = FT.organize.SNode('root','analysis');
-                self.savetree
+                self.savetree % write the new tree to file
             end
         end
 %-------------------------------------------------------------------------%
@@ -201,15 +236,7 @@ classdef Organization < handle
                     self.study = [];
             end
         end
-%-------------------------------------------------------------------------%
-    end
 
-    methods(Access=private)
-        % Save the analysis organization tree
-        function savetree(self)
-            stree = self.root.tostruct;
-            save(self.file_path,'stree');
-        end
     end
 %-------------------------------------------------------------------------%
     methods(Static=true,Access=private)
@@ -225,6 +252,14 @@ classdef Organization < handle
                 otherwise
                     parent = '';
             end
+        end
+    end
+%-------------------------------------------------------------------------%
+    methods(Access=private)
+        % Save the analysis organization tree
+        function savetree(self)
+            stree = self.root.tostruct; %#ok
+            save(self.file_path,'stree');
         end
     end
 %-------------------------------------------------------------------------%
