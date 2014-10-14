@@ -31,19 +31,19 @@ strList = cellfun(@(x) [x ' (' num2str(sum(strcmpi(x,events.type))) ')'],types,'
 
 % Create struct array for holding trial definitions
 cTmp = cell(numel(types),1); % empty placeholder
-params = struct('type',cTmp,'pre',cTmp,'post',cTmp,'name',cTmp);
+params = struct('types',cTmp,'pre',cTmp,'post',cTmp,'name',cTmp);
 
 c = {{'text','string','Time-lock Event:'},...
-     {'listbox','string',strList,'tag','type','callback',@ListCallback};...
+     {'listbox','string',strList,'tag','type','max',numel(types)};...
      {'text','string','Time Before (s):'},...
      {'edit','string','','enable','on','tag','pre','valfun',@ValidateTimes};...
      {'text','string','Time After (s):'},...
      {'edit','string','','enable','on','tag','post','valfun',@ValidateTimes};...
      {'text','string','Condition Name:'},...
-     {'edit','string',types{1},'tag','name','valfun',@ValidateName};...
+     {'edit','string','','tag','name','valfun',@ValidateName};...
      {'pushbutton','string','Define Condition','tag','define','validate',true,'Callback',@DefineCond},...
      {};...
-     {'pushbutton','string','Done','validate',true},...
+     {'pushbutton','string','Done','validate',false},...
      {'pushbutton','string','Cancel','validate',false}...
 	};
 
@@ -73,12 +73,12 @@ FT.ProcessError(me);
 FT.UpdateGUI;
 
 %-------------------------------------------------------------------------%
-function DefineCond(obj,varargin)
+function DefineCond(varargin)
     %we shouldn't have to set validate list this here...
     win.validate = true;
     b = win.FetchResult;    
     if b
-        type = types{win.res.type};
+        type = types(win.res.type);
         pre = win.res.pre;
         post = win.res.post;
         name = win.res.name;
@@ -86,44 +86,24 @@ function DefineCond(obj,varargin)
             name = type;
         end
         i = i+1;
-        params(i) = struct('type',type,'pre',pre,'post',post,'name',name);
-
-        strList(win.res.type) = [];
-        types(win.res.type) = [];
-        win.SetElementProp('type','String',strList);    
+        s = struct('types',[],'pre',pre,'post',post,'name',name);
+        s.types = type;
+        params(i) = s;
+        
         win.SetElementProp('pre','Enable','off');
         win.SetElementProp('post','Enable','off');
-
-        if isempty(types)
-            CloseWin;
-        else
-            win.SetElementProp('name','String',types{1});
-        end
+        win.SetElementProp('name','string','');
     end
 end
 %-------------------------------------------------------------------------%
-function CloseWin
-    c = {{'text','string',''},...
-         {'text','string','All events have trial definitions.'};...
-         {'pushbutton','string','OK','tag','ok','validate',false},...
-         {}};
-    win.Close;
-    w = FT.tools.Win(c,'title','Define Trials: Finished','grid',false,'focus','ok');
-    w.Wait;
-end
-%-------------------------------------------------------------------------%
-function ListCallback(varargin)
-    k = win.GetElementProp('type','Value');
-    win.SetElementProp('name','string',types{k});
-end
-%-------------------------------------------------------------------------%
-function [b,val] = ValidateName(str,varargin)
-    if ~any(strcmpi(str,{params(1:i).name}))
-        b = true;
-        val = str;
-    else
+function [b,str] = ValidateName(str,varargin)
+    b = true;
+    if isempty(str)
         b = false;
-        val = 'Condition name has already been used. Pick a unique condition name';
+        str = 'Condition name must be specified.';
+    elseif any(strcmpi(str,{params(1:i).name}))
+        b = false;
+        str = 'Condition name has already been used. Pick a unique condition name';
     end
 end
 %-------------------------------------------------------------------------%

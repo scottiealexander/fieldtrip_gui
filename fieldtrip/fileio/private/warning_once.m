@@ -196,7 +196,7 @@ end
 % Edited: 2013-08-05 Scottie Alexander
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for k = 1:numel(stack)
-    stack(k).name = regexprep(stack(k).name,'\W','_');
+    stack(k).name = regexprep(stack(k).name,'\W','A');
 end
 
 fname = horzcat(stack(end).name);

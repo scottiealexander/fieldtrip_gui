@@ -28,14 +28,15 @@ global FT_DATA;
 
 %get the field from the event struct that we are interested in
 evt = FT.ReStruct(FT_DATA.event);
-evt_types = evt.type;
+evt_types = evt.type(:);
 
 % Convert pre/post times from seconds to samples
 sOpt.pre   = ceil(sOpt.pre*FT_DATA.data.fsample);
 sOpt.post  = ceil(sOpt.post*FT_DATA.data.fsample);
 
 % Find all events of the given type
-kEvt = find(strcmpi(sOpt.type,evt_types));
+kEvt = arrayfun(@(type) find(strcmpi(type,evt_types)),sOpt.types,'uni',false);
+kEvt = cat(1,kEvt{:});
 nEvt = numel(kEvt);
 
 % Create trials for these events
