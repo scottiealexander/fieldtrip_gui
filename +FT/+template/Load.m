@@ -19,16 +19,16 @@ if (nargin < 1) || ~exist(strPath,'file')
 
     %user selects file
     [strName,strPath] = uigetfile('*.template','Load Template');
-
+    
+    %move back to the original directory
+    cd(strDirCur);
+    
     %construct the file path
     if isequal(strName,0) || isequal(strPath,0)
         return %user selected cancel
     else
         strPath = fullfile(strPath,strName);
     end
-
-    %move back to the original directory
-    cd(strDirCur);
 end
 
 %load the template

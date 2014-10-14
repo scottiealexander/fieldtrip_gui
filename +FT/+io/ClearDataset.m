@@ -30,12 +30,11 @@ opt = FT.ParseOpts(varargin,...
 
 %grab the fields that we will still need
 gui  = FT_DATA.gui;
-% base = FT_DATA.path.base_directory;
+base = FT_DATA.path.base_directory;
 if ~opt.cleartemplate
     template_path = FT_DATA.path.template;
     template = FT_DATA.template;
 end
-% study_name = FT_DATA.study_name;
 organization = FT_DATA.organization;
 
 %renew the FT_DATA struct
@@ -45,12 +44,11 @@ FT.Prepare('type','data');
 %add the fields back in
 FT_DATA.gui = gui;
 FT_DATA.gui.display_mode = 'init'; %set display mode back to initial
-% FT_DATA.path.base_directory = base;
+FT_DATA.path.base_directory = base;
 if ~opt.cleartemplate
     FT_DATA.path.template = template_path;
     FT_DATA.template = template;
 end
-% FT_DATA.study_name = study_name;
 FT_DATA.organization = organization;
 
 %update the GUI

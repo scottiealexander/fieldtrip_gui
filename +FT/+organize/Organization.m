@@ -211,18 +211,23 @@ classdef Organization < handle
         % same name, type, and parent. Either way, make the node in this
         % position the current.
         function b = addnode(self,type,name)
+            % node with target name and type
+            sn = FT.organize.SNode(type,name);
+
             % find the current node at the level above the given type
             parent = self.getparenttype(type);
             b = ~isempty(parent) && ~isempty(self.(parent));
             
+            % if the parent exists, add the new node as a child in the tree
             if b 
                 % Attempt to add a new node
-                sn = FT.organize.SNode(type,name);
                 sn_added = self.(parent).addchild(sn);
                 % Make the matching (added or existing) node the current
                 self.clearfrom(type)
                 self.(type) = sn_added;
                 self.savetree
+            else % otherwise, make the node current though not in the tree
+                self.(type) = sn;
             end
         end
 %-------------------------------------------------------------------------%
