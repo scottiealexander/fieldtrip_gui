@@ -27,9 +27,10 @@ function evt = Pulse2Event(data,fs,varargin)
 % Please report bugs to: scottiealexander11@gmail.com
 
 opt = FT.ParseOpts(varargin,...
-    'width'    , 50 ,...
-    'interval' , 50 ,...
-    'max_pulse', 8   ...
+    'width'       , 50   ,...
+    'interval'    , 100  ,...
+    'max_pulse'   , 8    ,...
+    'evt_at_start', false ...
     );
 
 opt.width = opt.width/1000;
@@ -91,8 +92,12 @@ for k = 1:numel(kP)
                 %find the next point where the stim channel < 0, put the marker there
                 kEvt = kP(k)+kPeak(end)+find(dTmp(kPeak(end):end) < 80,1,'first');
                 if ~isempty(kEvt)
-                    evt.sample(end+1,1) = kEvt-ceil((opt.width+opt.interval)*numel(kPeak)*fs);
-%                     evt.sample(end+1,1) = kEvt;
+                    %put time-lock event at start/end of pulse train
+                    if opt.evt_at_start
+                        evt.sample(end+1,1) = kEvt-ceil((opt.width+opt.interval)*numel(kPeak)*fs);
+                    else
+                        evt.sample(end+1,1) = kEvt;
+                    end
                     evt.value(end+1,1) = numel(kPeak);
                     kLast = kEvt;
                 end
