@@ -49,10 +49,10 @@ hFileMenu = uimenu(h,'Label','File');
 
 % Study operations
 hManageMenu = uimenu(hFileMenu,'Label','Manage');
-uimenu(hManageMenu,'Label','Studies','Callback',@(varargin) FT.RunFunction(@() FT.organize.Manage('study')));
-uimenu(hManageMenu,'Label','Templates','Callback',@(varargin) FT.RunFunction(@() FT.organize.Manage('template')));
-uimenu(hManageMenu,'Label','Subjects','Callback',@(varargin) FT.RunFunction(@() FT.organize.Manage('subject')));
-uimenu(hManageMenu,'Label','Datasets','Callback',@(varargin) FT.RunFunction(@() FT.organize.Manage('dataset')));
+uimenu(hManageMenu,'Label','Studies','Accelerator','S','Callback',@(varargin) FT.RunFunction(@() FT.organize.Manage('study')));
+uimenu(hManageMenu,'Label','Templates','Accelerator','T','Callback',@(varargin) FT.RunFunction(@() FT.organize.Manage('template')));
+uimenu(hManageMenu,'Label','Subjects','Accelerator','J','Callback',@(varargin) FT.RunFunction(@() FT.organize.Manage('subject')));
+uimenu(hManageMenu,'Label','Datasets','Accelerator','D','Callback',@(varargin) FT.RunFunction(@() FT.organize.Manage('dataset')));
 
 % Template operations
 hTempMenu = uimenu(hFileMenu,'Label','Template');

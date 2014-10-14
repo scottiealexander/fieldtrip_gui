@@ -2,14 +2,19 @@ classdef Organization < handle
 % Organization
 %
 % Description:
-%   Organization keeps track of the organization of studies, subjects,
-% templates, and datasets using SNodes. It arranges the nodes in a
-% predefined (hard-coded) hierarchy. There is a single root node to which
+%   A class to keep track of the organization of studies, subjects,
+% templates, and datasets using a tree of SNodes. It arranges the nodes in
+% a predefined (hard-coded) hierarchy. There is a single root node to which
 % studies can be added. Studies then contain child nodes representing
-% templates and subjects. The subject nodes in turn have dataset nodes as
-% children. The template and dataset nodes are leafs (no children) and
+% templates or subjects. The subject nodes in turn have dataset nodes as
+% children. The template and dataset nodes are leaves (no children) and
 % their names correspond to filepaths. The study and subject names are
-% user-defined but are required to be unique among siblings.
+% user-defined but are required to be unique among siblings. The ascii art
+% below illustrates the heirarchy of SNodes within the organization class.
+%   The class also keeps track of a single current SNode for each level in
+% the hierarchy. The class properties are references to these nodes. The
+% root level always has the same current node, but the references for other
+% levels may be empty if there is no corresponding current node.
 
 %------------------------Organization Hierarchy --------------------------%
 % root
@@ -35,7 +40,7 @@ classdef Organization < handle
 
 %-------------------------------------------------------------------------%
     properties(GetAccess=public,SetAccess=private)
-        file_path % path of file for saving the state of the tree
+        file_path % path to file for saving the state of the tree
         % pointers to the current node at each level in the hierarchy
         root
         study = [];
@@ -59,7 +64,9 @@ classdef Organization < handle
             end
         end
 %-------------------------------------------------------------------------%
-        % Returns the current study, subject, and file names in a struct
+        % Returns the current study, template, subject, and dataset names.
+        % The template and dataset node names are shortened to their
+        % respective file names and extensions (removing their paths).
         function s = getcurr(self)
             s = struct('study','','template','','subject','','dataset','');
             if ~isempty(self.study)
@@ -67,28 +74,28 @@ classdef Organization < handle
             end
             if ~isempty(self.template)
                 [~,name,ext] = fileparts(self.template.name);
-                s.template = [name ext];
+                s.template = [name ext]; % filepath -> filename.ext
             end
             if ~isempty(self.subject)
                 s.subject = self.subject.name;
             end
             if ~isempty(self.dataset)
                 [~,name,ext] = fileparts(self.dataset.name);
-                s.dataset = [name ext];
+                s.dataset = [name ext]; % filepath -> filename.ext
             end
         end
 %-------------------------------------------------------------------------%
-        % Create, delete, or load (i.e. make current) nodes at the
-        % organizational level (study/subject/datast) specified by type
+        % Allow the user to add (create), delete, or load (make current)
+        % nodes at the organizational level specified by type using a GUI.
         function rv_action = edit(self,type)
-            rv_action = 'done';
+            rv_action = 'done'; % default action returned to Manage.m
             
             % Find the parent node type (level in hierarchy)
             parent = self.getparenttype(type);
-            if isempty(parent), return, end
+            if isempty(parent), return, end % problem: unrecognized type
             
             % Move the parent level up until there is a current node
-            % pointer for its level
+            % for its level in the hierarchy
             while isempty(self.(parent))
                 type = parent;
                 parent = self.getparenttype(type);
@@ -96,20 +103,22 @@ classdef Organization < handle
                 rv_action = 'notdone';
             end
             
-            % Cell of strings of child node names
+            % Child nodes of the parent
             children = self.(parent).children;
             inds = []; names = [];
             if ~isempty(children)
-                names = {children.name};
-                types = {children.type};
+                names = {children.name}; % cell of child node names
+                types = {children.type}; % cell of child node types
+                % only look at child nodes of the target type
                 inds = find(strcmpi(type,types));
                 names = names(inds);
             end
             
-            % Disable listbox and buttons if there are no child nodes
+            % Disable listbox and some buttons if there are no child nodes
             enable = FT.tools.Ternary(isempty(names),'off','on');
             
-            % Set the listbox to highlight the current
+            % Set the listbox to highlight the current node of the given
+            % type if there is one and it's in the list of child names
             val = 1;
             if ~isempty(self.(type))
                 val = find(strcmp(self.(type).name,names),1,'first');
@@ -125,19 +134,17 @@ classdef Organization < handle
                  {'edit','string','','tag','newName','valfun',@(str) CheckName(str,names)};...
                  {'pushbutton','string','Add'},...
                  {'pushbutton','string','Done','validate',false}};
-            % disable the new name window for nodes of type dataset
+            % Disable the new name field for nodes whose names are file paths
             if ismember(type,{'dataset','template'})
                 c{3,2}(6:7) = {'enable','off'};
             end
-
+            % Display the GUI
             win = FT.tools.Win(c,'title',sprintf('%s Manager',upper(type)),'grid',false,'focus','item');
             win.Wait;
             
-            action = win.res.btn;
-            
-            if strcmpi(action,'add') % type, win.res.newName
-                % Add a new node to the organization. If it's a dataset or
-                % template, load the corresponding files
+            % Add a new node to the organization. If it's a dataset or a
+            % template, load the corresponding files.
+            if strcmpi(win.res.btn,'add')
                 if strcmpi(type,'dataset')
                     FT.io.Gui;
                 elseif strcmpi(type,'template')
@@ -146,27 +153,29 @@ classdef Organization < handle
                     FT.io.ClearDataset('cleartemplate',strcmpi(type,'study'));
                     self.addnode(type,win.res.newName);
                 end
-                
-            elseif strcmpi(action,'delete') % type, parent, win.res.child
-                % Clear the current node pointer if it's the one to be removed
+            
+            % Remove the selected node from the organization.
+            elseif strcmpi(win.res.btn,'delete')
+                % clear the current node if it's the one to be removed
                 current = self.(parent).children(inds(win.res.child));
                 if (self.(type) == current)
                     self.clearfrom(type)
                     FT.io.ClearDataset('cleartemplate',ismember(type,{'study','template'}));
                 end
 
-                % Remove the child node with the given name
-                sn = FT.organize.SNode(type,names{inds(win.res.child)});
+                % remove the child node with the given name from the tree
+                sn = FT.organize.SNode(type,names{win.res.child});
                 self.(parent).removechild(sn);
                 self.savetree
                 
-            elseif strcmpi(action,'load') % type, parent, win.res.child
-                % If the current node is the one specified to load, do
-                % nothing, but if it's not make updates to the analysis.
+            % Make sure the loaded dataset, current template, and current
+            % nodes match the one specified to load.
+            elseif strcmpi(win.res.btn,'load')
                 current = self.(parent).children(inds(win.res.child));
+                % check if the specified node is already the current
                 if (self.(type) == current)
                     % do nothing
-                else
+                else % otherwise, update the analysis to match the target node
                     self.clearfrom(type);
                     self.(type) = current;
                     if strcmpi(type,'dataset')
@@ -179,15 +188,18 @@ classdef Organization < handle
                 end
             end
             
-            if ~any(strcmpi(action,{'add','delete','load'}))
+            % If no action was performed, assume the user is done
+            if ~any(strcmpi(win.res.btn,{'add','delete','load'}))
                 rv_action = 'done';
-            elseif strcmpi(action,'delete')
+            % If the user deleted a node, assume s/he isn't done yet
+            elseif strcmpi(win.res.btn,'delete')
                 rv_action = 'notdone';
             end
-                
-            FT.UpdateGUI;
-
+            % Otherwise, go with the default return action set earlier
+            
+            % Validate new node names entered through the GUI
             function [b,name] = CheckName(name,names)
+                % the name should be non-empty and unique
                 b = ~isempty(name) && ~any(strcmp(name,names));
                 if ~b
                     name = 'Please choose a different study name.';
@@ -199,12 +211,15 @@ classdef Organization < handle
         % same name, type, and parent. Either way, make the node in this
         % position the current.
         function b = addnode(self,type,name)
+            % find the current node at the level above the given type
             parent = self.getparenttype(type);
-            b = ~isempty(parent) && ~isempty(self.(parent));% && exist(name,'file');
+            b = ~isempty(parent) && ~isempty(self.(parent));
             
             if b 
+                % Attempt to add a new node
                 sn = FT.organize.SNode(type,name);
                 sn_added = self.(parent).addchild(sn);
+                % Make the matching (added or existing) node the current
                 self.clearfrom(type)
                 self.(type) = sn_added;
                 self.savetree
@@ -214,12 +229,14 @@ classdef Organization < handle
         % Get the paths of all the datasets associated with a study
         function cStr = getdatasets(self)
             cStr = {};
+            % if there is a current study... 
             if ~isempty(self.study)
+                % return all its descendent nodes of type dataset
                 cStr = self.study.gettype('dataset');
             end
         end
 %-------------------------------------------------------------------------%
-        % Clear all current node pointers below a point in the hierarchy
+        % Clear all current node pointers below a level in the hierarchy
         function clearfrom(self,start)
             switch lower(start)
                 case 'dataset'
@@ -234,13 +251,15 @@ classdef Organization < handle
                     self.subject = [];
                     self.template = [];
                     self.study = [];
+                % root should never be cleared, so the option is not given
             end
         end
 
     end
 %-------------------------------------------------------------------------%
     methods(Static=true,Access=private)
-        % Get the parent node type of the given node type
+        % Get the parent node type of the given type - i.e. the type of
+        % nodes one level above nodes of the given type in the hierarchy.
         function parent = getparenttype(type)
             switch lower(type)
                 case 'dataset'
@@ -256,7 +275,7 @@ classdef Organization < handle
     end
 %-------------------------------------------------------------------------%
     methods(Access=private)
-        % Save the analysis organization tree
+        % Save the analysis organization tree to file
         function savetree(self)
             stree = self.root.tostruct; %#ok
             save(self.file_path,'stree');

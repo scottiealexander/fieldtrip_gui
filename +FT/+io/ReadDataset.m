@@ -35,6 +35,9 @@ try
     % Update base dir to reflect the most recently loaded file
     FT_DATA.path.base_directory = params.path;
     
+    % Add the loaded dataset to the current subject (if possible)
+    FT_DATA.organization.addnode('dataset',params.full);
+    
     % Update gui display fields
     if params.raw || strcmpi(FT_DATA.gui.display_mode,'init')
 	    FT_DATA.gui.display_mode = 'preproc';

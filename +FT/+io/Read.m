@@ -46,8 +46,6 @@ if ishandle(hMsg)
 end
 
 if ~isa(me,'MException')
-    FT_DATA.organization.addnode('dataset',params.full);
-    
     %process events? important if the data is from an edf file...
     if params.raw
         if strcmpi(params.ext,'edf')
