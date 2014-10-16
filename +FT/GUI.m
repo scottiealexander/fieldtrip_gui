@@ -80,7 +80,7 @@ uimenu(hFileMenu,'Label','Quit','Accelerator','Q','Callback',@(varargin) QuitGUI
 
 % View operations
 hViewMenu = uimenu(h,'Label','View');
-uimenu(hViewMenu,'Label','Data Info','Callback',@(varargin) FT.RunFunction(@FT.DataSummery));
+uimenu(hViewMenu,'Label','Data Info','Callback',@(varargin) FT.RunFunction(@FT.DataSummary));
 uimenu(hViewMenu,'Label','Plot Time Series','Callback',@(varargin) FT.RunFunction(@FT.PlotData));
 uimenu(hViewMenu,'Label','Plot Average ERP','Callback',@(varargin) FT.RunFunction(@FT.PlotERP));
 uimenu(hViewMenu,'Label','ERP Image','Callback',@(varargin) FT.RunFunction(@FT.ERPImage));

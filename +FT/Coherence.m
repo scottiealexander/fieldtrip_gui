@@ -18,7 +18,7 @@ function Coherence()
 global FT_DATA;
 
 %make sure we are ready to run
-if ~FT.tools.Validate('coherence','done',{'segment_trials'})
+if ~FT.tools.Validate('coherence','done',{'segment_trials'},'todo',{'grand_average'})
     return;
 end
 

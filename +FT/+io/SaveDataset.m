@@ -27,13 +27,15 @@ if saveas || FT_DATA.saved || isempty(strPathOut)
     else % let the user select the filepath with a GUI
         % the directory of the current .set file or the base directory
         if ~isempty(strPathOut)
-            strDir = fileparts(strPathOut);
+            strPathDef = strPathOut;
+        elseif ~isempty(FT_DATA.path.raw_file)
+            [strDir,strName] = fileparts(FT_DATA.path.raw_file);
+            strPathDef = fullfile(strDir,[strName '.set']);
         else
-            strDir = FT_DATA.path.base_directory;
+            strPathDef = fullfile(FT_DATA.path.base_directory,'datset.set');
         end
 
         % get the filepath the user wants
-        strPathDef = fullfile(strDir,[FT_DATA.current_dataset '.set']);
         [strName,strPath] = uiputfile('*.set','Save Dataset As...',strPathDef);
 
         % construct the file path
@@ -50,7 +52,6 @@ strPathOut = regexprep(strPathOut,'\.[\w\-\+\.]+$','.set');
 
 % get the new dataset path and name
 FT_DATA.path.dataset = strPathOut;
-[~,FT_DATA.current_dataset] = fileparts(strPathOut);
 
 % remove gui ,organization, and template fields as these can change
 gui = FT_DATA.gui;
@@ -65,7 +66,7 @@ FT_DATA.path = rmfield(FT_DATA.path,'template');
 FT_DATA.saved = true;
 
 % save data
-hMsg = FT.UserInput('Saving dataset, plese wait...',1);
+hMsg = FT.UserInput('Saving dataset, please wait...',1);
 
 FT.io.WriteDataset(strPathOut);
 

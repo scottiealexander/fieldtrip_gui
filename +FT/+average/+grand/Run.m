@@ -107,6 +107,12 @@ FT_DATA.saved = false;
 FT.tools.AddHistory('grand_average',params);
 FT_DATA.done.grand_average = isempty(me);
 
+% these steps had to have been done in the original datasets in order to
+% grand average
+FT_DATA.done.define_trials = true;
+FT_DATA.done.segment_trials = true;
+FT_DATA.done.average = true;
+
 %-----------------------------------------------------------------------------%
 function v = GetDataField(field,varargin)
     uni = false;

@@ -1,10 +1,10 @@
-function DataSummery(varargin)
+function DataSummary(varargin)
 
-% FT.DataSummery
+% FT.DataSummary
 %
 % Description: display a summery of the data in a UserInput figure
 %
-% Syntax: FT.DataSummery
+% Syntax: FT.DataSummary
 %
 % In: 
 %
@@ -47,7 +47,6 @@ end
 str = ['\bf% ---- File Info ---- %\rm' 10];
 str = [str 'Original File: ' TxCol(FT_DATA.path.raw_file) 10];
 str = [str 'Dataset File: ' TxCol(FT_DATA.path.dataset) 10];
-str = [str 'Dataset Name: ' TxCol(FT_DATA.current_dataset) 10 10];
 
 %data info
 str = [str '\bf% ---- Data Info ---- %\rm' 10];
@@ -80,7 +79,7 @@ str = [str 'Trial Rejection: ' Bool2Str(FT_DATA.done.reject_trials) 10];
 %more to come
 
 %display the summery
-FT.UserInput(str,1,'button','OK','title','Data Summery','wrap',false);
+FT.UserInput(str,1,'button','OK','title','Data Summary','wrap',false);
 
 %------------------------------------------------------------------------------%
 function s = Bool2Str(b)

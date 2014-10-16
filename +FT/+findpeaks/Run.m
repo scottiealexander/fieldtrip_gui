@@ -31,8 +31,16 @@ try
     
     for k = 1:numel(FT_DATA.data)
         % --- OUTPUT PATH --- %
+        if ~isempty(FT_DATA.path.dataset)
+            [~,current_dataset] = fileparts(FT_DATA.path.dataset);
+        elseif ~isemtpy(FT_DATA.path.raw_file)
+            [~,current_dataset] = fileparts(FT_DATA.path.raw_file);
+        else
+            current_dataset = '';
+        end
+            
         if bSingle
-            strPathOut = fullfile(strDirOut,[FT_DATA.current_dataset '-' FT_DATA.epoch{k}.name '-peak_stats.csv']);
+            strPathOut = fullfile(strDirOut,[current_dataset '-' FT_DATA.epoch{k}.name '-peak_stats.csv']);
 
             %add channel labels
             STAT.channel = FT_DATA.data{k}.label;
@@ -62,8 +70,8 @@ try
                 FT.ProcessError(me);
             end
         else
-            %multiple files
-            cPathOut = cellfun(@(x) fullfile(strDirOut,[x '-' FT_DATA.epoch{k}.name '-' FT_DATA.current_dataset '.csv']),fieldnames(STAT),'uni',false);
+            %multiple files            
+            cPathOut = cellfun(@(x) fullfile(strDirOut,[x '-' FT_DATA.epoch{k}.name '-' current_dataset '.csv']),fieldnames(STAT),'uni',false);
             fprintf('[INFO]: Writing files:\n%s\n',FT.Join(cPathOut,10));
             b = cellfun(@(x,y) FT.io.WriteStruct(STAT.(x),'output',y),fieldnames(STAT),cPathOut);
             if ~all(b)

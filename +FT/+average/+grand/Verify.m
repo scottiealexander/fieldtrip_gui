@@ -27,21 +27,24 @@ if ~any(strcmpi(ext,{'.mat','.set'}))
     return; % invalid file format
 end
 
-s = whos('-file',path_file);
-if ~all(ismember({'done','epoch','data'},{s(:).name}))
-    return; % invalid file contents
-end
+% % very slow for large files, is there an alternative?
+% s = whos('-file',path_file,'done','epoch','data');
+% if ~all(ismember({'done','epoch','data'},{s(:).name}))
+%     return; % invalid file contents
+% end
+try
+    done = LoadVar(path_file,'done');
+    if isempty(done) || ~isfield(done,'average') || ~done.average    
+        return; % dataset has not been averaged
+    end
 
-done = LoadVar(path_file,'done');
-if isempty(done) || ~isfield(done,'average') || ~done.average    
-    return; % dataset has not been averaged
+    epoch = LoadVar(path_file,'epoch');
+    if isempty(epoch)
+        return; % segmentation information could not be found
+    end
+catch
+    return;
 end
-
-epoch = LoadVar(path_file,'epoch');
-if isempty(epoch)
-    return; % segmentation information could not be found
-end
-
 b = true;
 
 %-----------------------------------------------------------------------------%

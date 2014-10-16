@@ -20,9 +20,7 @@ me = [];
 
 try
     % clear old data if needed
-    FT.io.ClearDataset;    
-    
-    FT_DATA.current_dataset = params.name;
+    FT.io.ClearDataset;
     
     if ~params.raw  
         FT.io.ReadSetFile(params.full);
