@@ -34,7 +34,7 @@ nItem = numel(cList);
 jump_pcent = .1;
 
 if (isempty(hFIG) || ~ishandle(hFIG))
-    pFig  = GetFigPosition(800,600);
+    pFig  = FT.tools.GetFigPosition(800,600);
     hFIG  = figure('Name','Plot','Units','pixels','Position',pFig,...
                'NumberTitle','off','MenuBar','none','Color',[1 1 1]);    
     bShow = false;
@@ -47,7 +47,7 @@ else
 end
 
 %get the size and position for the figure
-pCtrl = GetFigPosition(200,600,'xoffset',pFig(1)-210,'yoffset',pFig(2),'reference','absolute');
+pCtrl = FT.tools.GetFigPosition(200,600,'xoffset',pFig(1)-210,'yoffset',pFig(2),'reference','absolute');
 
 set(hFIG,'KeyPressFcn',@KeyCtrl);
 

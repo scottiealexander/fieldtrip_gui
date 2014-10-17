@@ -23,12 +23,12 @@ end
 
 cLabel = FT_DATA.data{1}.label;
 
-pFig = GetFigPosition(600,400);
+pFig = FT.tools.GetFigPosition(600,400);
 hF = figure('Units','pixels','OuterPosition',pFig,...
             'Name','ERP Image','NumberTitle','off','MenuBar','none',...
             'Color',[1 1 1],'KeyPressFcn',@KeyPress);
 
-FT.PlotCtrl(hF,cLabel,@PlotOne);
+FT.view.PlotCtrl(hF,cLabel,@PlotOne);
 
 %------------------------------------------------------------------------------%
 function PlotOne(strChan)
@@ -56,7 +56,7 @@ function PlotOne(strChan)
     end
 
     time = FT_DATA.data{1}.time{1};
-    [kT,xT] = GetAxLabels(time,6);
+    [kT,xT] = FT.tools.GetAxLabels(time,6);
 
     if time(1) < 0
        kL = find(time>=0,1,'first');

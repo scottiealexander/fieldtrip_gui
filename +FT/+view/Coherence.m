@@ -30,7 +30,7 @@ GetParameters;
 
 if bRun && b
     cfg.channel    = FT_DATA.data{1}.label(kChan);
-    cfg.channelcmb = PairElements(cfg.channel);
+    cfg.channelcmb = FT.tools.PairElements(cfg.channel);
     cfg.trackcallinfo = false;
     
     hMsg = FT.UserInput('Calculating coherence...',1);
@@ -52,7 +52,7 @@ if bRun && b
     
     hAX = NaN(numel(COH),1);
     kChan = 1;
-    pMain = GetFigPosition(800,600);
+    pMain = FT.tools.GetFigPosition(800,600);
     h = figure('Name','Coherence: ','Units','pixels','Position',pMain,'NumberTitle','off',...
                'MenuBar','none');
     PlotCoherence;
@@ -83,7 +83,7 @@ function GetParameters
     FS = FT_DATA.data{1}.fsample;
     
     %get the size and position for the figure
-    pFig = GetFigPosition(400,200);    
+    pFig = FT.tools.GetFigPosition(400,200);    
 
     %main figure
     h = figure('Units','pixels','OuterPosition',pFig,...

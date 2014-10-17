@@ -34,10 +34,11 @@ end
 
 setlabels = cell(size(datasets)); % list entries
 setpaths = cellfun(@(set) set{end},datasets,'uni',false); % file paths only
+subjects = cellfun(@(set) set{end-1},datasets,'uni',false); % dataset subjects only
 % Put list entries in the format "[SUBJECT] > [FILENAME.EXT]"
 for i = 1:numel(setlabels)
     [~,name,ext] = fileparts(setpaths{i});
-    setlabels{i} = [datasets{i}{end-1} ' > ' name ext];
+    setlabels{i} = [subjects{i} ' > ' name ext];
 end
 
 fmt = {'Subject-wise','Trial-wise'};
@@ -61,12 +62,13 @@ function DoPlot(~,varargin)
     kplot = win.GetElementProp('sets','value');
     if ~isempty(kplot)
         param.files = setpaths(kplot);
+        param.subjects = subjects(kplot);
         param.fmt = lower(fmt{win.GetElementProp('fmt','value')});
         me = FT.average.grand.Run(param);
         if isa(me,'MException')
             FT.ProcessError(me);
             return;
-        else
+        elseif isempty(me)
             FT.UpdateGUI;            
             FT.PlotERP;            
         end

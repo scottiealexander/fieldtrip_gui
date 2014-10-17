@@ -17,7 +17,7 @@ function me = Run(params)
 % See also: FT.average.grand.Gui
 
 global FT_DATA;
-me = [];
+me = 1;
 
 try
     FT.io.ClearDataset;
@@ -61,7 +61,7 @@ try
         case 'trial-wise'
             data_field = 'raw';
         otherwise
-            me = MException('Average.Grand:InvalidFormat','Invalid averaging format specified');
+            me = MException('GrandAverage:InvalidFormat','Invalid averaging format specified');
             return
     end
 
@@ -90,15 +90,21 @@ try
     FT_DATA.data = data;
     FT_DATA.epoch = epoch;
     FT_DATA.done.average = true;
+    me = [];
 catch me
 end
 
 % update display fields
 FT_DATA.gui.display_mode = 'averaged';
 
-% new dataset name (because cleared the last one)
-FT_DATA.organization.clearfrom('type');
-FT_DATA.organization.addnode('subject','grand_average');
+% if averaging accross multiple subjects, create a new subject
+% (grand_average) for the result
+subjects = unique(params.subjects);
+if (numel(subjects) == 1)
+    FT_DATA.organization.addnode('subject',subjects{1});
+else
+    FT_DATA.organization.addnode('subject','Grand Average');
+end
                     
 % mark data as not saved
 FT_DATA.saved = false;

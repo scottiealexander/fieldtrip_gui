@@ -53,7 +53,7 @@ data = cellfun(@(x) mean(x,4),FT_DATA.power.data,'uni',false);
 
 wFig = numel(FT_DATA.power.data)*FT.tools.Inch2Px(5);
 hFig = FT.tools.Inch2Px(6);
-pFig = GetFigPosition(wFig,hFig,'xoffset',FT.tools.Inch2Px(1));
+pFig = FT.tools.GetFigPosition(wFig,hFig,'xoffset',FT.tools.Inch2Px(1));
 h = figure('Units','pixels','Position',pFig,'Name','Spectrogram',...
 		   ...'Menubar','none',...
            'NumberTitle','off');
@@ -61,7 +61,7 @@ h = figure('Units','pixels','Position',pFig,'Name','Spectrogram',...
 %smoothing
 f = fspecial('gaussian',[10 10], 3);
 
-[~,hctrl] = FT.PlotCtrl(h,cLabel,@PlotOne);
+[~,hctrl] = FT.view.PlotCtrl(h,cLabel,@PlotOne);
 uiwait(hctrl);
 
 %-----------------------------------------------------------------------------%
@@ -85,7 +85,7 @@ function PlotOne(strChan)
 	cMin = min(cellfun(@(x) min(reshape(x,[],1)),d));
 	
 	%position for each axes
-	axPos = GetAxPosition(h,numel(d),'pad',75,'v_pad',30);
+	axPos = FT.tools.GetAxPosition(h,numel(d),'pad',75,'v_pad',30);
 
 	for k = 1:numel(d)		
         
@@ -96,8 +96,8 @@ function PlotOne(strChan)
 		image(flipud(d{k}),'CDataMapping','scaled','Parent',hAx);
 
 		%set x and y labels
-		[xT,xTL] = GetAxLabels(FT_DATA.power.time,7,'round',-1);
-		[yT,yTL] = GetAxLabels(FT_DATA.power.centers,10,'round',0);
+		[xT,xTL] = FT.tools.GetAxLabels(FT_DATA.power.time,7,'round',-1);
+		[yT,yTL] = FT.tools.GetAxLabels(FT_DATA.power.centers,10,'round',0);
         
         %in case the data is NaN
         if isnan(cMin) || isnan(cMax)

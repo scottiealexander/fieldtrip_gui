@@ -32,7 +32,7 @@ if saveas || FT_DATA.saved || isempty(strPathOut)
             [strDir,strName] = fileparts(FT_DATA.path.raw_file);
             strPathDef = fullfile(strDir,[strName '.set']);
         else
-            strPathDef = fullfile(FT_DATA.path.base_directory,'datset.set');
+            strPathDef = fullfile(FT_DATA.path.base_directory,'datafile.set');
         end
 
         % get the filepath the user wants

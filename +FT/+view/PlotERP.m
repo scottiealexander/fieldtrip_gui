@@ -22,12 +22,12 @@ if ~FT.tools.Validate('plot_avg','done',{'average'})
     return;
 end
 
-pFig = GetFigPosition(800,600,'xoffset',100);
+pFig = FT.tools.GetFigPosition(800,600,'xoffset',100);
 hF = figure('Units','pixels','OuterPosition',pFig,...
             'Name','Average ERP','NumberTitle','off','MenuBar','none',...
             'Color',[1 1 1]);
 
-FT.PlotCtrl(hF,FT_DATA.data{1}.label,@PlotOne);
+FT.view.PlotCtrl(hF,FT_DATA.data{1}.label,@PlotOne);
 uiwait(hF);
 
 %------------------------------------------------------------------------------%

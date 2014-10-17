@@ -54,14 +54,16 @@ classdef Organization < handle
         % Constructor, initializes the root node of the organization tree
         function self = Organization()
             self.file_path = fullfile(FT.tools.BaseDir,'assets','tree.mat');
-            % load the persistant tree from file or create it
+            % create a new persistent tree
+            self.root = FT.organize.SNode('root','analysis');
+            % if the tree can be loaded from file, use it
             if exist(self.file_path,'file')
                 load(self.file_path,'-mat','stree');
-                self.root = FT.organize.SNode(stree);
-            else
-                self.root = FT.organize.SNode('root','analysis');
-                self.savetree % write the new tree to file
+                if exist('stree','var')
+                    self.root = FT.organize.SNode(stree);
+                end
             end
+            self.savetree % write the tree to file
         end
 %-------------------------------------------------------------------------%
         % Returns the current study, template, subject, and dataset names.

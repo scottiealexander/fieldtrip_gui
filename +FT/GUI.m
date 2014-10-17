@@ -49,7 +49,7 @@ hFileMenu = uimenu(h,'Label','File');
 
 % Study operations
 hManageMenu = uimenu(hFileMenu,'Label','Manage');
-uimenu(hManageMenu,'Label','Studies','Accelerator','S','Callback',@(varargin) FT.RunFunction(@() FT.organize.Manage('study')));
+uimenu(hManageMenu,'Label','Studies','Accelerator','U','Callback',@(varargin) FT.RunFunction(@() FT.organize.Manage('study')));
 uimenu(hManageMenu,'Label','Templates','Accelerator','T','Callback',@(varargin) FT.RunFunction(@() FT.organize.Manage('template')));
 uimenu(hManageMenu,'Label','Subjects','Accelerator','J','Callback',@(varargin) FT.RunFunction(@() FT.organize.Manage('subject')));
 uimenu(hManageMenu,'Label','Datasets','Accelerator','D','Callback',@(varargin) FT.RunFunction(@() FT.organize.Manage('dataset')));
@@ -80,13 +80,13 @@ uimenu(hFileMenu,'Label','Quit','Accelerator','Q','Callback',@(varargin) QuitGUI
 
 % View operations
 hViewMenu = uimenu(h,'Label','View');
-uimenu(hViewMenu,'Label','Data Info','Callback',@(varargin) FT.RunFunction(@FT.DataSummary));
-uimenu(hViewMenu,'Label','Plot Time Series','Callback',@(varargin) FT.RunFunction(@FT.PlotData));
-uimenu(hViewMenu,'Label','Plot Average ERP','Callback',@(varargin) FT.RunFunction(@FT.PlotERP));
-uimenu(hViewMenu,'Label','ERP Image','Callback',@(varargin) FT.RunFunction(@FT.ERPImage));
-uimenu(hViewMenu,'Label','Plot PSD','Callback',@(varargin) FT.RunFunction(@FT.PlotPSD));
-uimenu(hViewMenu,'Label','Channel Correlations','Callback',@(varargin) FT.RunFunction(@FT.ChannelCorr));
-uimenu(hViewMenu,'Label','Channel Coherence','Callback',@(varargin) FT.RunFunction(@FT.Coherence));    
+uimenu(hViewMenu,'Label','Data Info','Callback',@(varargin) FT.RunFunction(@FT.view.DataSummary));
+uimenu(hViewMenu,'Label','Plot Time Series','Callback',@(varargin) FT.RunFunction(@FT.view.PlotData));
+uimenu(hViewMenu,'Label','Plot Average ERP','Callback',@(varargin) FT.RunFunction(@FT.view.PlotERP));
+uimenu(hViewMenu,'Label','ERP Image','Callback',@(varargin) FT.RunFunction(@FT.view.ERPImage));
+uimenu(hViewMenu,'Label','Plot PSD','Callback',@(varargin) FT.RunFunction(@FT.view.PlotPSD));
+uimenu(hViewMenu,'Label','Channel Correlations','Callback',@(varargin) FT.RunFunction(@FT.view.ChannelCorr));
+uimenu(hViewMenu,'Label','Channel Coherence','Callback',@(varargin) FT.RunFunction(@FT.view.Coherence));    
 uimenu(hViewMenu,'Label','Redraw GUI Display','Callback',@(varargin) FT.RunFunction(@FT.RedrawGUI));
 
 % Preprocessing

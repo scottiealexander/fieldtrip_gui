@@ -35,7 +35,7 @@ if b
     cCor = cellfun(@corr,cD,'uni',false);
     nCond = numel(cCor);
     
-    pFig = GetFigPosition(1200,500);
+    pFig = FT.tools.GetFigPosition(1200,500);
     h = figure('Units','pixels','MenuBar','none','Position',pFig,...
                'NumberTitle','off','Name','Channel Correlations',...
                'KeyPressFcn',@KeyPress);
