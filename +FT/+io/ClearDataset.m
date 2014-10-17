@@ -50,6 +50,7 @@ if ~opt.cleartemplate
     FT_DATA.template = template;
 end
 FT_DATA.organization = organization;
+FT_DATA.organization.clearfrom('dataset'); % clear the current dataset node
 
 %update the GUI
 FT.UpdateGUI;

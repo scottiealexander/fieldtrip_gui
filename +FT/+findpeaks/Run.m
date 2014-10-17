@@ -33,7 +33,7 @@ try
         % --- OUTPUT PATH --- %
         if ~isempty(FT_DATA.path.dataset)
             [~,current_dataset] = fileparts(FT_DATA.path.dataset);
-        elseif ~isemtpy(FT_DATA.path.raw_file)
+        elseif ~isempty(FT_DATA.path.raw_file)
             [~,current_dataset] = fileparts(FT_DATA.path.raw_file);
         else
             current_dataset = '';

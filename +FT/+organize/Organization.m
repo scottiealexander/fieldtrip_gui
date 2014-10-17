@@ -171,20 +171,18 @@ classdef Organization < handle
             % Make sure the loaded dataset, current template, and current
             % nodes match the one specified to load.
             elseif strcmpi(win.res.btn,'load')
+                % update the current node
                 current = self.(parent).children(inds(win.res.child));
-                % check if the specified node is already the current
-                if (self.(type) == current)
-                    % do nothing
-                else % otherwise, update the analysis to match the target node
-                    self.clearfrom(type);
-                    self.(type) = current;
-                    if strcmpi(type,'dataset')
-                        FT.io.Read(current.name);
-                    elseif strcmpi(type,'template')
-                        FT.template.Load(current.name);
-                    else
-                        FT.io.ClearDataset('cleartemplate',strcmpi(type,'study'));
-                    end
+                self.clearfrom(type);
+                self.(type) = current;
+                
+                % reload or clear data from associated files
+                if strcmpi(type,'dataset')
+                    FT.io.Read(current.name);
+                elseif strcmpi(type,'template')
+                    FT.template.Load(current.name);
+                else
+                    FT.io.ClearDataset('cleartemplate',strcmpi(type,'study'));
                 end
             end
             
