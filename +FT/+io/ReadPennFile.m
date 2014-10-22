@@ -4,9 +4,9 @@ function ReadPennFile(strPath)
 [base,name,~] = fileparts(strPath);
 
 %% Get data format
-samplerate = 256.03; % default for BioLogic
+samplerate = 400; % defaults: TJ->400, UP->512, BioLogic->256.03
 gain = 1; % default for BioLogic
-dataformat = 'short';
+dataformat = 'int16'; % defaults: TJ->int16, Biologic->short
 
 % Load from a file if possible
 paramfile = fullfile(base,'params.txt');
@@ -76,9 +76,33 @@ data = data(bGood);
 data = cellfun(@(x) reshape(x,1,[]),data,'uni',false);
 data = cat(1,data{:});
 
+%% Load electrode labels
+% Label channels based on their numbers by default
+labels = ext;
+
+% Find the subject's base directory
+strDirSubj = fileparts(fileparts(base));
+[~,strSubj] = fileparts(strDirSubj);
+
+% Look for a .mat file with electrode labels
+strPathLabels = fullfile(strDirSubj,[strSubj '_talLocs_database.mat']);
+if exist(strPathLabels,'file')
+    load(strPathLabels,'subjTalEvents')
+    if exist('subjTalEvents','var')
+        chanNums = str2double(labels);
+        % get channel numbers and labels from the labels file
+        channels = [subjTalEvents.channel];
+        tagNames = {subjTalEvents.tagName};
+        % relabel channels whose numbers appear in the labels file
+        bCommon = arrayfun(@(x) any(x==channels),chanNums);
+        inds = arrayfun(@(x) find(x==channels,1,'first'),chanNums(bCommon));
+        labels(bCommon) = tagNames(inds);
+    end
+end
+
 %% Format data to be compatible with fieldtrip
 ftdat.hdr = struct;
-ftdat.label = ext';
+ftdat.label = labels';
 ftdat.fsample = samplerate;
 ftdat.trial = {data};
 ftdat.time = {(0:1:(size(data,2)-1))/samplerate};
