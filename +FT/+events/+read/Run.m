@@ -57,6 +57,24 @@ try
                         'max_pulse'   , params.max_pulse   ,...
                         'evt_at_start', params.evt_at_start ...
                         );
+    elseif strcmpi(params.type,'penn')
+        % load events formatted for eeg_toolbox_v1.3.2
+        strDirEvt = fileparts(FT_DATA.path.base_directory);
+        % find and check the filepath
+        strPathEvt = fullfile(strDirEvt,'events.mat');
+        if ~exist(strPathEvt,'file')
+            error('[Error]: no events.mat file found.')
+        end
+        % load the events struct
+        f = load(strPathEvt,'events');
+        if ~isfield(f,'events') || ~isa(f.events,'struct')
+            error('[Error]: invalid events.mat file.')
+        end
+        events = f.events;
+        % select the fields of interest to construct the new event struct
+        FT_DATA.event = arrayfun(@(e) struct('type',[e.period '-' e.type],...
+            'value',[e.period '-' e.type],'sample',e.eegoffset,...
+            'duration',1,'offset',[]),events);
     else
         %just let fieldtrip read the events...
         cfg.continuous = 'yes';
@@ -77,7 +95,7 @@ try
                 evt.value(cellfun(@isempty,evt.value)) = {NaN};
                 evt.value = cat(1,evt.value{:});
             else
-                error('Poorly formated event code values. Please contact the developer with the circumstances of this error'); 
+                error('[Error]: Poorly formated event code values. Please contact the developer with the circumstances of this error'); 
             end
         end
         FT_DATA.event = FT.ReStruct(evt);

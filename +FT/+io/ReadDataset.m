@@ -22,9 +22,12 @@ try
     % clear old data if needed
     FT.io.ClearDataset;
     
-    if ~params.raw  
+    if strcmpi(params.type,'set') 
         FT.io.ReadSetFile(params.full);
         FT_DATA.path.dataset = params.full;
+    elseif strcmpi(params.type,'penn')
+        FT.io.ReadPennFile(params.full);
+        FT_DATA.path.raw_file = fullfile(params.path,[params.name '.penn']);
     else
         FT.io.ReadRawFile(params.full);
         FT_DATA.path.raw_file = params.full;
@@ -37,7 +40,7 @@ try
     FT_DATA.organization.addnode('dataset',params.full);
     
     % Update gui display fields
-    if params.raw || strcmpi(FT_DATA.gui.display_mode,'init')
+    if ~strcmpi(params.type,'set') || strcmpi(FT_DATA.gui.display_mode,'init')
 	    FT_DATA.gui.display_mode = 'preproc';
     end
 catch me

@@ -17,8 +17,6 @@ function params = Read(strPath)
 %
 % Please report bugs to: scottiealexander11@gmail.com
 
-global FT_DATA;
-
 sep = filesep;
 if sep == '\'
     sep = '\\';
@@ -27,14 +25,23 @@ end
 [strBase,strName,ext] = fileparts(regexprep(strPath,[sep '$'],''));
 ext = regexprep(ext,'^\.','');
 
+% Datafile type
+if any(strcmpi(ext,{'mat','set'}))
+    type = 'set';
+elseif ~isnan(str2double(ext))
+    type = 'penn';
+else
+    type = 'raw';
+end
+
 % Neuralynx file
-if strcmpi('ncs',ext)
+if strcmpi(ext,'ncs')
     [strBase,strName] = fileparts(strBase);
     strPath = fullfile(strBase,strName);
 end
 
-params = struct('name',strName,'path',strBase,'full',strPath,'ext',ext);
-params.raw = ~any(strcmpi(params.ext,{'mat','set'}));
+params = struct('name',strName,'path',strBase,'full',strPath,'ext',ext,...
+    'type',type);
 
 hMsg = FT.UserInput('Reading data from file, plese wait...',1);
 
@@ -47,7 +54,7 @@ end
 
 if ~isa(me,'MException')
     %process events? important if the data is from an edf file...
-    if params.raw
+    if ~strcmpi(params.type,'set')
         if strcmpi(params.ext,'edf')
             resp = FT.UserInput(['\bf[\color{red}WARNING\color{black}]\n',...
                 'It is highly recomended that you process events\n',...
