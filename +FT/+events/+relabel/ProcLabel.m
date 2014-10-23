@@ -30,19 +30,19 @@ else
     % The given string matches an .evta file in the current base directory
     if exist(strPath,'file') == 2
         % Try to load the file
-        err = []; try map = load(strPath,'-mat','evta'); catch err; end
+        err = []; try load(strPath,'-mat','evta'); catch err; end
 
-        if isa(err,'MException') || isempty(map) || ~iscellstr(map.evta)
+        if isa(err,'MException') || ~exist('evta','var') || ~iscellstr(evta)
             % Invalid event array file
             label = {str};
             color = [.8 1 .8]; %[1 1 .8]; % yellow
-        elseif (length(map.evta) ~= sum(strcmpi(tag,evts))) && (length(map.evta) ~= 1)
+        elseif (length(evta) ~= sum(strcmpi(tag,evts))) && (length(evta) ~= 1)
             % Length of event array doesn't match the # of event occurances
             label = {str};
             color = [.8 1 .8]; %[1 .8 .8]; % red
         else
             % The given string corresponds to a valid event array file
-            label = map.evta;
+            label = evta;
             color = [.8 1 1]; % blue
         end
     else

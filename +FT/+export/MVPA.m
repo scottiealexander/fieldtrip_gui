@@ -20,6 +20,9 @@ end
 % Get the filepath the user wants
 strPathDef = fullfile(FT_DATA.path.base_directory,'data.mat');
 [strName,strPath] = uiputfile('*.mat','Export Data As...',strPathDef);
+if isequal(strName,0) || isequal(strPath,0)
+    return; % user selected cancel
+end
 strPathOut = fullfile(strPath,strName);
 
 %% Convert data to MVPA format
@@ -42,9 +45,9 @@ if FT_DATA.done.tfd
     ds.fa = struct('chan',chan,'time',time,'freq',freq);
     
     % General attributes
-    ds.a.dim.values{1} = reshape(FT_DATA.power.label,1,[]);
-    ds.a.dim.values{2} = reshape(FT_DATA.power.time,1,[]);
-    ds.a.dim.values{3} = reshape(FT_DATA.power.centers,1,[]);
+    ds.a.fdim.values{1} = reshape(FT_DATA.power.label,1,[]);
+    ds.a.fdim.values{2} = reshape(FT_DATA.power.time,1,[]);
+    ds.a.fdim.values{3} = reshape(FT_DATA.power.centers,1,[]);
 else
     % Data dimensions
     nCond = numel(FT_DATA.data);
@@ -63,13 +66,13 @@ else
     ds.fa = struct('chan',chan,'time',time);
     
     % General attributes
-    ds.a.dim.values{1} = reshape(FT_DATA.data{1}.label,1,[]);
-    ds.a.dim.values{2} = reshape(FT_DATA.data{1}.time{1},1,[]);
+    ds.a.fdim.values{1} = reshape(FT_DATA.data{1}.label,1,[]);
+    ds.a.fdim.values{2} = reshape(FT_DATA.data{1}.time{1},1,[]);
 end
 
 % General attributes
-ds.a.dim.labels = reshape(fieldnames(ds.fa),1,[]);
-ds.a.vol.dim = cellfun(@(x) numel(x),ds.a.dim.values);
+ds.a.fdim.labels = reshape(fieldnames(ds.fa),1,[]);
+ds.a.vol.fdim = cellfun(@(x) numel(x),ds.a.fdim.values);
 
 % Sample attributes [nSample x 1]
 targets = arrayfun(@(x,y) x*ones(y,1),(1:nCond)',nTrial,'uni',false);
