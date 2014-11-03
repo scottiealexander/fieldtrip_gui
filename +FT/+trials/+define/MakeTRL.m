@@ -1,4 +1,4 @@
-function trl = MakeTRL(sOpt)
+function [trl,evtifo] = MakeTRL(sOpt)
 
 % FT.MakeTRL
 %
@@ -52,5 +52,8 @@ trl(:,3) = zeros(nEvt,1) - sOpt.pre;
 bad_trials = (trl(:,1) < 1) | (trl(:,2) > size(FT_DATA.data.trial{1},2));
 %%% bad_trials = (trl(:,1) < FT_DATA.data.sampleinfo(1)) | (trl(:,2) > FT_DATA.data.sampleinfo(2));
 trl = trl(~bad_trials,:);
+
+evtifo = FT_DATA.event(kEvt);
+evtifo = evtifo(~bad_trials);
 
 end

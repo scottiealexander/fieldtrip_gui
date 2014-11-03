@@ -72,9 +72,16 @@ try
         end
         events = f.events;
         % select the fields of interest to construct the new event struct
-        FT_DATA.event = arrayfun(@(e) struct('type',[e.period '_' e.type],...
-            'value',[e.period '_' e.type],'sample',e.eegoffset,...
-            'duration',1,'offset',[]),events);
+%         FT_DATA.event = arrayfun(@(e) struct('type',[e.period '_' e.type],...
+%             'value',[e.period '_' e.type],'sample',e.eegoffset,...
+%             'duration',1,'offset',[]),events);
+        evt = FT.ReStruct(events);
+        evt.type = cellfun(@(x,y) [x '_' y],evt.period,evt.type,'uni',false);
+        evt.value = evt.type;
+        evt.sample = evt.eegoffset;
+        evt.duration = ones(size(evt.sample));
+        evt.offset = cell(size(evt.sample));
+        FT_DATA.event = FT.ReStruct(evt);
     else
         %just let fieldtrip read the events...
         cfg.continuous = 'yes';

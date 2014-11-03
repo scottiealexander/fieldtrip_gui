@@ -75,6 +75,10 @@ ds.a.fdim.labels = reshape(fieldnames(ds.fa),1,[]);
 ds.a.vol.fdim = cellfun(@(x) numel(x),ds.a.fdim.values);
 
 % Sample attributes [nSample x 1]
+if isfield(FT_DATA.epoch{1},'evtifo')
+    evtifo = cellfun(@(epoch) reshape(epoch.evtifo,[],1),FT_DATA.epoch,'uni',false);
+    ds.sa = FT.ReStruct(cat(1,evtifo{:}));
+end
 targets = arrayfun(@(x,y) x*ones(y,1),(1:nCond)',nTrial,'uni',false);
 targets = cat(1,targets{:});
 chunks = ones(size(targets));

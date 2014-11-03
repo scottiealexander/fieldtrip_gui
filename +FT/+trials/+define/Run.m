@@ -27,7 +27,7 @@ try
     j = 0;
     for i = 1:numel(params)
         % Make trial definitions for the ith condition
-        trl = FT.trials.define.MakeTRL(params(i));
+        [trl,evtifo] = FT.trials.define.MakeTRL(params(i));
         
         % If there are any valid trials
         if ~isempty(trl)
@@ -36,6 +36,7 @@ try
             epoch{j}.name = params(i).name;
             epoch{j}.trl = trl;
             epoch{j}.ifo = params(i);
+            epoch{j}.evtifo = evtifo;
         end
     end
 

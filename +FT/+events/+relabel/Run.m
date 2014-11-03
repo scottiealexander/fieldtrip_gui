@@ -51,6 +51,17 @@ try
             bSet = strcmpi(evtVals,values{i});
             labels = FT.events.relabel.ProcLabel(params.(values{i}),values{i},evtVals);
             events.type(bSet) = labels(:);
+            
+            % Add fields to the structure with .evta labels
+            field = params.(values{i});
+            % Make sure the field doesn't share the name of a critical one
+            if ~ismember(field,{'type','value','sample'}) && (numel(labels) > 1)
+                % Initialize the field if it doesn't yet exist
+                if ~isfield(events,field)
+                    events.(field) = cell(size(events.type));
+                end
+                events.(field)(bSet) = labels(:);
+            end
         end
     end
 
