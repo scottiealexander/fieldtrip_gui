@@ -125,8 +125,11 @@ end
 function FromFileCB(varargin)
     if win.GetElementProp('fromfile','Value')
         win.SetElementProp('max_pulse','Enable','off');
+        win.SetElementProp('loc','value',1);
+        win.SetElementProp('loc','Enable','off');
     else
         win.SetElementProp('max_pulse','Enable','on');
+        win.SetElementProp('loc','Enable','on');
     end
 end
 %-------------------------------------------------------------------------%

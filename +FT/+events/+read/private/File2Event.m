@@ -17,7 +17,7 @@ while (1)
         return; % user selected cancel
     end
 
-    strPathEvt = fullfile(strPath,strName);        
+    strPathEvt = fullfile(strPath,strName);
     % check the file's contents
     err = []; try evts = load(strPathEvt,'-mat','evts'); catch err; end
     if ~isa(err,'MException') && exist('evts','var')
@@ -75,7 +75,8 @@ end
 % Find the offset between the events file and stim channel time axes
 [xc,off] = xcorr(data,x);
 off = off(xc == max(xc));
-samples = round((times + t(off))*fs); % event samples adjusted for the offset
+% samples = round((times + t(off))*fs); % event samples adjusted for the offset
+samples = round(times*fs+off); % event samples adjusted for the offset
 
 %% Generate events
 % Remove invalid samples
