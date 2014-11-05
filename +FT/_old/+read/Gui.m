@@ -63,14 +63,12 @@ if strcmpi(ext,'edf')
         {'edit','String','8','tag','max_pulse','valfun',{'inrange',1,inf,true}};...
         {'text','string','Events occur at pulse train:'},...
         {'listbox','String',evtLocation,'value',2,'tag','loc','Callback'};...
-        {'text','string','Load events from file?'},...
-        {'checkbox','value',false,'tag','fromfile','Callback',@FromFileCB};...
         {'pushbutton','String','Run'},...
         {'pushbutton','String','Cancel','validate',false};...
         };
 
     win = FT.tools.Win(c,'title','Event-Processing Parameters');
-    uiwait(win.h);
+    win.Wait;
     
     if strcmpi(win.res.btn,'cancel')
         return;
@@ -80,11 +78,10 @@ if strcmpi(ext,'edf')
     params.interval = win.res.interval;
     params.max_pulse = win.res.max_pulse;
     params.evt_at_start = strcmpi(evtLocation{win.res.loc},'start');
-    params.fromfile = win.res.fromfile;
     
 elseif strcmpi(ext,'')
     params.type = 'ncs';
-    resp = FT.UserInput('Collapse Neuralynx Events?',1,'button',{'Yes','No'},'title','Event-Processing');
+    resp = FT.UserInput('Collapse Neuralynx Events?',1,'button',{'Yes','No'},'title','MESSAGE');
     params.collapse_nlx = strcmpi(resp,'yes');
 end
 
@@ -122,12 +119,4 @@ function SelectChannel(obj,~)
     end
 end
 %------------------------------------------------------------------------------%
-function FromFileCB(varargin)
-    if win.GetElementProp('fromfile','Value')
-        win.SetElementProp('max_pulse','Enable','off');
-    else
-        win.SetElementProp('max_pulse','Enable','on');
-    end
-end
-%-------------------------------------------------------------------------%
 end

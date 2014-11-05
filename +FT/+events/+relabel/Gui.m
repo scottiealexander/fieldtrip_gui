@@ -106,7 +106,7 @@ end
 %-----------------------------------------------------------------------------%
 % Load labels from a .evtc (event code) file
 function Load(~,varargin)
-    % Choose an event code file to load
+    % Choose an event code file to load (repeats code from FT.io.Gui)
     strDir = pwd;
     if isdir(FT_DATA.path.base_directory)
         cd(FT_DATA.path.base_directory);

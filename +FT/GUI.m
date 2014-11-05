@@ -88,6 +88,7 @@ uimenu(hViewMenu,'Label','Plot Time Series','Callback',@(varargin) FT.RunFunctio
 uimenu(hViewMenu,'Label','Plot Average ERP','Callback',@(varargin) FT.RunFunction(@FT.view.PlotERP));
 uimenu(hViewMenu,'Label','ERP Image','Callback',@(varargin) FT.RunFunction(@FT.view.ERPImage));
 uimenu(hViewMenu,'Label','Plot PSD','Callback',@(varargin) FT.RunFunction(@FT.view.PlotPSD));
+uimenu(hViewMenu,'Label','Plot Average PSD','Callback',@(varargin) FT.RunFunction(@FT.view.PlotPSDAvg));
 uimenu(hViewMenu,'Label','Channel Correlations','Callback',@(varargin) FT.RunFunction(@FT.view.ChannelCorr));
 uimenu(hViewMenu,'Label','Channel Coherence','Callback',@(varargin) FT.RunFunction(@FT.view.Coherence));    
 uimenu(hViewMenu,'Label','Redraw GUI Display','Callback',@(varargin) FT.RunFunction(@FT.RedrawGUI));

@@ -28,24 +28,35 @@ cfg = FT.tools.CFGDefault;
 
 try
     if strcmpi(params.type,'edf')
-        % save information about pulse-decoding parameters
-        FT_DATA.pulse_evts = rmfield(params,'type');
-        
-        % the stimulus channel
-        bStimChan = strcmpi(params.channel,FT_DATA.data.label);
-        
-        if params.fromfile
-            % align events from a file with the stimulus channel
-            FT_DATA.event = File2Event(FT_DATA.data.trial{1}(bStimChan,:),...
-                FT_DATA.data.fsample,FT_DATA.pulse_evts);
-        else
-            % detect and translate events from the stimulus channel
-            FT_DATA.event = Pulse2Event(FT_DATA.data.trial{1}(bStimChan,:),...
-                FT_DATA.data.fsample,FT_DATA.pulse_evts);
-        end
-        if isempty(FT_DATA.event)
-            return;
-        end
+        %auto convert pulses to events
+        %the stim channel needs to be filtered to detect events
+        cfg.channel     = params.channel;
+        cfg.hpfilter 	= 'yes';
+        cfg.lpfilter    = 'yes';
+        cfg.hpfreq      = 2;
+        cfg.lpfreq      = 15;
+        cfg.lpfilttype  = 'but'; %butterworth type filter
+        cfg.hpfilttype  = 'but';
+        cfg.hpfiltdir   = 'twopass'; %forward+reverse filtering
+        cfg.lpfiltdir   = 'twopass';
+
+        %perform the filtering
+        datChan = ft_preprocessing(cfg,FT_DATA.data); % why not FT.filter.Run(cfg)?
+
+        %overwirte the old stim channel with the filtered one
+        FT_DATA.data.trial{1}(strcmpi(params.channel,FT_DATA.data.label),:) = datChan.trial{1}(1,:);
+        FT_DATA.pulse_evts.channel = params.channel;
+        FT_DATA.pulse_evts.width = params.width;
+        FT_DATA.pulse_evts.interval = params.interval;
+        FT_DATA.pulse_evts.max_pulse = params.max_pulse;
+        FT_DATA.pulse_evts.fs = FT_DATA.data.fsample;                
+        %detect and translate events
+        FT_DATA.event = Pulse2Event(datChan.trial{1}(1,:),FT_DATA.data.fsample,...
+                        'width'       , params.width       ,...
+                        'interval'    , params.interval    ,...
+                        'max_pulse'   , params.max_pulse   ,...
+                        'evt_at_start', params.evt_at_start ...
+                        );
     elseif strcmpi(params.type,'penn')
         % load events formatted for eeg_toolbox_v1.3.2
         strDirEvt = fileparts(FT_DATA.path.base_directory);
@@ -60,7 +71,10 @@ try
             error('[Error]: invalid events.mat file.')
         end
         events = f.events;
-        % make events struct have the required fields for later operations
+        % select the fields of interest to construct the new event struct
+%         FT_DATA.event = arrayfun(@(e) struct('type',[e.period '_' e.type],...
+%             'value',[e.period '_' e.type],'sample',e.eegoffset,...
+%             'duration',1,'offset',[]),events);
         evt = FT.ReStruct(events);
         evt.type = cellfun(@(x,y) [x '_' y],evt.period,evt.type,'uni',false);
         evt.value = evt.type;

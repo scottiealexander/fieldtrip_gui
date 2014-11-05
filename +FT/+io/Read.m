@@ -43,7 +43,7 @@ end
 params = struct('name',strName,'path',strBase,'full',strPath,'ext',ext,...
     'type',type);
 
-hMsg = FT.UserInput('Reading data from file, plese wait...',1);
+hMsg = FT.UserInput('Reading data from file, please wait...',1);
 
 % read new data    
 me = FT.io.ReadDataset(params);
