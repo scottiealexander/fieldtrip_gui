@@ -54,6 +54,11 @@ try
             
             % Add fields to the structure with .evta labels
             field = params.(values{i});
+            if str2double(ver(1:4)) >= 2014
+                field = matlab.lang.makeValidName(field);
+            else
+                field = genvarname(field);
+            end
             % Make sure the field doesn't share the name of a critical one
             if ~ismember(field,{'type','value','sample'}) && (numel(labels) > 1)
                 % Initialize the field if it doesn't yet exist
