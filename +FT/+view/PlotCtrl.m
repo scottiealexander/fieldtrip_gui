@@ -120,7 +120,7 @@ function SaveBtn(obj,varargin)
     if isequal(strName,0)
         return;
     end
-    plot2svg(fullfile(strDir,strName),hFIG);    
+    FT.plot2svg(fullfile(strDir,strName),hFIG);    
 end
 %------------------------------------------------------------------------------%
 function StepBtn(obj,varargin)

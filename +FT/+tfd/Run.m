@@ -51,7 +51,11 @@ try
     cellfun(@SegmentData,data_raw,num2cell(1:params.n)','uni',false);
 
     %add to the data struct
-    FT_DATA.power.raw     = FT.ROA(cat(3,data_raw{:}));
+    if params.surrogate && (params.nsurrogate > 0)
+        FT_DATA.power.raw     = FT.ROA(cat(3,data_raw{:}));
+    else
+        FT_DATA.power.raw = [];
+    end
     FT_DATA.power.data    = data;
     FT_DATA.power.centers = centers;
     FT_DATA.power.bands   = cBands;

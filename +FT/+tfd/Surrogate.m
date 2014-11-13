@@ -28,8 +28,7 @@ function Surrogate(nITER)
 global FT_DATA;
 
 if ~isfield(FT_DATA,'power') || ~isfield(FT_DATA.power,'raw') || isempty(FT_DATA.power.raw)
-    msg = ['\bf[\color{red}ERROR\color{black}]: Hilbert decomposition has not been ',...
-           'performed on this data set!'];
+    msg = '\bf[\color{red}ERROR\color{black}]: Raw spectral data could not be found.';
     FT.UserInput(msg,0,'button','OK');
     return;
 end
