@@ -70,7 +70,7 @@ function DoPlot(~,varargin)
             return;
         elseif isempty(me)
             FT.UpdateGUI;            
-            FT.PlotERP;            
+            FT.view.PlotERP;            
         end
     end    
 end
