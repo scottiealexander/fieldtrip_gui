@@ -22,6 +22,10 @@ me = [];
 try
     % Restructure the events struct
     events = FT.ReStruct(FT_DATA.event);
+    
+    % Make sure type field is a cellstr (need to fix if numel(events)=1)
+    if ~iscell(events.type), events.type = {events.type}; end
+    
     evtVals = events.value;
     
     % Make sure the evtVals is a cell of strings that can be field names

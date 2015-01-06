@@ -113,6 +113,11 @@ try
         events.type = cellfun(@(x) num2str(x),events.value,'uni',false);
     end
     FT_DATA.event = FT.ReStruct(events);
+    
+    % If there are no events
+    if (numel(FT_DATA.event) == 1) && isempty(FT_DATA.event.sample)
+        FT_DATA.event = struct('type','Dummy Event','value',0,'sample',1,'duration',0,'offset',[]);
+    end
 
 catch me
 end

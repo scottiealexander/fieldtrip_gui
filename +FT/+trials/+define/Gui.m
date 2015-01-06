@@ -26,6 +26,9 @@ end
 
 % Create list of types along with # occurances
 events = FT.ReStruct(FT_DATA.event); % events
+% Make sure type field is a cellstr (need to fix if numel(events)=1)
+if ~iscell(events.type), events.type = {events.type}; end
+    
 types = unique(events.type); % event types
 strList = cellfun(@(x) [x ' (' num2str(sum(strcmpi(x,events.type))) ')'],types,'uni',false);
 

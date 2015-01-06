@@ -28,6 +28,9 @@ global FT_DATA;
 
 %get the field from the event struct that we are interested in
 evt = FT.ReStruct(FT_DATA.event);
+% Make sure type field is a cellstr (need to fix if numel(events)=1)
+if ~iscell(evt.type), evt.type = {evt.type}; end
+
 evt_types = evt.type(:);
 
 % Convert pre/post times from seconds to samples
