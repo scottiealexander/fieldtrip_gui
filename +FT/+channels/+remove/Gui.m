@@ -23,7 +23,7 @@ if ~FT.tools.Validate('remove_channels','warn',{'read_events'},'todo',{'segment_
     return;
 end
 
-ch_rem = FT.tools.DataBrowser(FT_DATA.data.time{1},FT_DATA.data.trial{1},'trial',4,FT_DATA.data.label);
+ch_rem = FT.tools.DataBrowser(FT_DATA.data.time{1},FT_DATA.data.trial{1},'trial',FT_DATA.data.label);
 params.remove = FT_DATA.data.label(ch_rem);
 
 if ~isempty(params.remove)

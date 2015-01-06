@@ -38,7 +38,7 @@ end
 i = win.res.condition;
 
 params.condition = i;
-params.tr_rem = FT.tools.DataBrowser(FT_DATA.data{i}.time{1},cat(3,FT_DATA.data{i}.trial{:}),'channel',4,FT_DATA.data{i}.label);
+params.tr_rem = FT.tools.DataBrowser(FT_DATA.data{i}.time{1},cat(3,FT_DATA.data{i}.trial{:}),'channel',FT_DATA.data{i}.label);
 
 if ~isempty(params.tr_rem)
     hMsg = FT.UserInput('Removing trials...',1);

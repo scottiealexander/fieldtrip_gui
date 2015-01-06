@@ -1,4 +1,4 @@
-function varargout = DataBrowser(time,data,group_by,lChan,lTrial)
+function varargout = DataBrowser(time,data,group_by,n,lChan,lTrial)
 % FT.tools.DataBrowser
 %
 % Description: plot time series data and allow the user to mark channels or
@@ -33,13 +33,19 @@ function varargout = DataBrowser(time,data,group_by,lChan,lTrial)
 % Updated: 2014-10-09
 % Peter Horak
 
+%Updates
+%   2014-10-09: give the figure a better title than 'figure 2', make figure wider
+
 marks = [];
 
 % Minimal input checking
-if nargin < 3
-    group_by = 'trial';
-    if nargin < 2
-        error('Not enough input arguments.');
+if nargin < 4
+    n = 4; % number of additional time series to plot on either side of current
+    if nargin < 3
+        group_by = 'trial';
+        if nargin < 2
+            error('Not enough input arguments.');
+        end
     end
 end
 
@@ -78,8 +84,18 @@ if ~exist('lTrial','var') || length(lTrial) ~= nTrial
     lTrial = cellfun(@(x) ['tr' num2str(x)],num2cell(1:nTrial),'uni',false);
 end
 
-Fs = 1/median(diff(time));
-box = [];
+std_avg = 0; % std. dev. of data averaged over all trials and channels
+
+% De-mean each time series
+for i = 1:size(data,1)
+    for j = 1:size(data,3)
+%         data(i,:,j) = data(i,:,j) - mean(data(i,:,j));
+        std_avg = std_avg + std(data(i,:,j));
+    end
+end
+std_avg = std_avg/numel(data(:,1,:));
+
+span = 4*std_avg; % spacing (offset) of time series plotted in the same figure
 
 % Create the plot (data viewer) and set its dimensions
 f = figure('NumberTitle','off','Name','Data Browser');
@@ -88,7 +104,7 @@ ww = wDims(3); wh = wDims(4);
 set(f,'Position',round([ww*.25,wh*.1,ww*.7,wh*.8]));
 
 % Set the coloring scheme for plotting multiple data series simultaneously
-set(f,'DefaultAxesColorOrder',[0,0,1]);
+% set(f,'DefaultAxesColorOrder',[0,0,1;0,.5,0;1,0,0;0,.75,.75;.75,0,.75;.75,.75,0;.25,.25,.25;1,.5,0;0,1,0]);
 
 hAx = axes; % handle to plot axis object
 set(f,'DeleteFcn',@FigDeleteFcn);
@@ -97,33 +113,28 @@ set(f,'KeyPressFcn',@FigKeyFcn);
 c = {% Channel Browsing
      {'text','string',' Chan:'},...
 	 {'edit','string',num2str(chan),'len',floor(log10(nChan))+1,'tag','channel'},...
-	 {'pushbutton','string','Prev','Callback',@(x,y) IncrementChan(-1)},...
-     {'pushbutton','string','Next','Callback',@(x,y) IncrementChan(+1)};...
+	 {'pushbutton','string','Prev','Callback',@PrevC},...
+     {'pushbutton','string','Next','Callback',@NextC};...
      % Trial Browsing
      {'text','string','Trial:'},...
 	 {'edit','string',num2str(trial),'len',floor(log10(nTrial))+1,'tag','trial'},...
-	 {'pushbutton','string','Prev','Callback',@(x,y) IncrementTrial(-1)},...
-     {'pushbutton','string','Next','Callback',@(x,y) IncrementTrial(+1)};...
-     % Amplitude Scaling
-     {'text','string','Amplitude Scale:'},...
-     {'text','string',''},...
-     {'pushbutton','string','+','Callback',@(x,y) Zoom('y',0.8,true)},...
-     {'pushbutton','string','-','Callback',@(x,y) Zoom('y',1.2,true)};...
+	 {'pushbutton','string','Prev','Callback',@PrevT},...
+     {'pushbutton','string','Next','Callback',@NextT};...
      % Amplitude Zooming
-     {'text','string',' Amplitude Zoom:'},...
+     {'text','string','Amplitude Zoom:'},...
      {'text','string',''},...
-     {'pushbutton','string','+','Callback',@(x,y) Zoom('y',0.8,false)},...
-     {'pushbutton','string','-','Callback',@(x,y) Zoom('y',1.2,false)};...
+     {'pushbutton','string','+','Callback',@MagV},...
+     {'pushbutton','string','-','Callback',@MinV};...
      % Time Zooming
-     {'text','string','      Time Zoom:'},...
+     {'text','string','     Time Zoom:'},...
      {'text','string',''},...
-     {'pushbutton','string','+','Callback',@(x,y) Zoom('x',0.8,false),'ToolTipString','Shortcut: +'},...
-	 {'pushbutton','string','-','Callback',@(x,y) Zoom('x',1.2,false),'ToolTipString','Shortcut: -'};...
+     {'pushbutton','string','+','Callback',@MagH,'ToolTipString','Shortcut: +'},...
+	 {'pushbutton','string','-','Callback',@MinH,'ToolTipString','Shortcut: -'};...
      % Scrolling
-     {'pushbutton','string','<<','Callback',@(x,y) Scroll(-1)},...
-     {'pushbutton','string','<','Callback',@(x,y) Scroll(-0.1),'ToolTipString','Shortcut: <'},...
-	 {'pushbutton','string','>','Callback',@(x,y) Scroll(0.1),'ToolTipString','Shortcut: >'},...
-	 {'pushbutton','string','>>','Callback',@(x,y) Scroll(1)};...
+     {'pushbutton','string','<<','Callback',@(x,y) Backward(x,y,1)},...
+     {'pushbutton','string','<','Callback',@(x,y) Backward(x,y,.1),'ToolTipString','Shortcut: <'},...
+	 {'pushbutton','string','>','Callback',@(x,y) Forward(x,y,.1),'ToolTipString','Shortcut: >'},...
+	 {'pushbutton','string','>>','Callback',@(x,y) Forward(x,y,1)};...
      % Marking
      {'text','string',''},...
      {'pushbutton','string',' Mark All','Callback',@Toggle},...
@@ -136,8 +147,8 @@ c = {% Channel Browsing
 	 {'pushbutton','string','Apply','validate',false}...
 	};
 if (nargout < 1)
-    c{8,4} = {'text','string',''};
-    c(7,:) = [];
+    c{7,4} = {'text','string',''};
+    c(6,:) = [];
 end
 if (nTrial == 1)
     c(2,:) = [];
@@ -148,7 +159,7 @@ end
 
 w = FT.tools.Win(c,'position',[-ww*.25-100 0],'focus','close','title','Plot Control'); % user input/control window
 set(w.h,'KeyPressFcn',@FigKeyFcn);
-ResetZoom();
+ResetLimits();
 UpdatePlot();
 
 % Wait for the user to close the control window
@@ -173,46 +184,64 @@ function FigDeleteFcn(~,~)
     end
 end
 %-------------------------------------------------------------------------%
+function ResetLimits()
+%     span = 4*std_avg; % reset the spacing of the series
+    ylim(hAx,[-(n+.5)*span,(n+.5)*span]);
+    xlim(hAx,[time(1),min(time(end),time(1)+10)]);
+end
+%-------------------------------------------------------------------------%
 
 % Update the plot (data viewer)
 function UpdatePlot()
-    % Determine samples in time window
-%     xr = find((box.t-box.dt) <= time,1,'first'):find(time <= (box.t+box.dt),1,'last');
-    xr = max(1,round((box.t-box.dt-time(1))*Fs)):min(N,round((box.t+box.dt-time(1))*Fs));
-    xdata = time(xr);
+    atmp = axis(hAx); % remember the current plot limits
     
-    % Plot nearby channels in the same window...
+    % Plot nearby channels on the same plot...
     if group_chan
-        % Determine channels to show and plot visible data
-        ntraces = floor(box.da/box.d);
-        yr = max(1,chan-ntraces):min(nChan,chan+ntraces);
-        ydata = data(yr,xr,trial)+box.d*((chan-yr)'*ones(1,numel(xr)));
-        p = plot(hAx,xdata,ydata);
-        if ~isempty(p), set(p(find(yr==chan,1,'first')),'Color',[1,0,0]); end
-
-        % Plot title and legend of text boxes
+        % Don't attempt to plot channels outside the valid range
+        pred = -min(n,chan-1);
+        succ = min(n,nChan-chan);
+        range = pred:succ;
+        
+        % Color all channels blue except the current, which is red
+        defColOrd = zeros(numel(range),3);
+        defColOrd(:,3) = 1;
+        defColOrd(range == 0,:) = [1,0,0];
+        set(f,'DefaultAxesColorOrder',defColOrd);
+        
+        % Plot the channels spaced along the y-axis of a single plot
+        plot(hAx,time,data(range+chan,:,trial)-span*range'*ones(1,N));
         title(hAx,['Trial: ' lTrial{trial}]);
-        for k = 1:numel(yr)
-            text(box.t+box.dt,box.d*(chan-yr(k)),[' ' lChan{yr(k)}],'parent',hAx,'color',[yr(k)==chan,0,yr(k)~=chan]);
+        
+        % Add a legend of text boxes
+        xlegend = atmp(2);
+        for kR = 1:numel(range)
+            text(xlegend,-span*range(kR),[' ' lChan{range(kR)+chan}],'parent',hAx,'color',defColOrd(kR,:));
         end
     else % ...or nearby trials
-        % Determine trials to show and plot visible data
-        ntraces = floor(box.da/box.d);
-        yr = max(1,trial-ntraces):min(nTrial,trial+ntraces);
-        ydata = permute(data(chan,xr,yr),[3,2,1])+box.d*((trial-yr)'*ones(1,numel(xr)));
-        p = plot(hAx,xdata,ydata);
-        if ~isempty(p), set(p(find(yr==trial,1,'first')),'Color',[1,0,0]); end
-
-        % Plot title and legend of text boxes
+        % Don't attempt to plot trials outside the valid range
+        pred = -min(n,trial-1);
+        succ = min(n,nTrial-trial);
+        range = pred:succ;
+        
+        % Color all trials blue except the current, which is red
+        defColOrd = zeros(numel(range),3); defColOrd(:,3) = 1;
+        defColOrd(range == 0,:) = [1,0,0];
+        set(f,'DefaultAxesColorOrder',defColOrd);
+        
+        % Plot the trials spaced along the y-axis of a single plot
+        plot(hAx,time,permute(data(chan,:,range+trial),[3,2,1])-span*range'*ones(1,N));
         title(hAx,['Channel: ' lChan{chan}]);
-        for k = 1:numel(yr)
-            text(box.t+box.dt,box.d*(trial-yr(k)),[' ' lTrial{yr(k)}],'parent',hAx,'color',[yr(k)==trial,0,yr(k)~=trial]);
+        
+        % Add a legend of text boxes
+        xlegend = atmp(2);
+        for kR = 1:numel(range)
+            text(xlegend,-span*range(kR),[' ' lTrial{range(kR)+trial}],'parent',hAx,'color',defColOrd(kR,:));
         end
     end
     
-    % Set the axes and axis labels
-    axis(hAx,[box.t-box.dt,box.t+box.dt,-box.da,box.da]);
-    xlabel(hAx,'time (sec)'); ylabel(hAx,'Amplitude (\muV)');
+    % Plot labels and restore the current plot limits
+    xlabel(hAx,'time'); ylabel(hAx,'Amplitude (\muV)');
+    axis(hAx,atmp);
     
     % Update checkbox to reflect the state of the current channel or trial
     if group_chan
@@ -226,20 +255,40 @@ end
 %                         TRIAL & CHANNEL BROWSING                        %
 %-------------------------------------------------------------------------%
 
-% Change the current channel
-function IncrementChan(amount)
-    if (1 <= chan+amount) && (chan+amount <= nChan)
-        chan = chan + amount;
+% Plot the previous channel if there is one
+function PrevC(~,~)
+    if (1 < chan)
+        chan = chan-1;
         % update current channel # to match
         w.SetElementProp('channel','string',num2str(chan));
         UpdatePlot();
     end
 end
 
-% Change the current trial
-function IncrementTrial(amount)
-    if (1 <= trial+amount) && (trial+amount <= nTrial)
-        trial = trial + amount;
+% Plot the next channel if there is one
+function NextC(~,~)
+    if (chan < nChan)
+        chan = chan+1;
+        % update current channel # to match
+        w.SetElementProp('channel','string',num2str(chan));
+        UpdatePlot();
+    end
+end
+
+% Plot the previous trial if there is one
+function PrevT(~,~)
+    if (1 < trial)
+        trial = trial-1;
+        % update current trial # to match
+        w.SetElementProp('trial','string',num2str(trial));
+        UpdatePlot();
+    end
+end
+
+% Plot the next trial if there is one
+function NextT(~,~)
+    if (trial < nTrial)
+        trial = trial+1;
         % update current trial # to match
         w.SetElementProp('trial','string',num2str(trial));
         UpdatePlot();
@@ -275,42 +324,54 @@ function Plot(~,~)
     end
     
     % Reset the spacing of series to the default and update the plot
-    ResetZoom();
+    ResetLimits();
     UpdatePlot();
 end
 
 %-------------------------------------------------------------------------%
-%                           WINDOW CONTROLS                               %
+%                              NAVIGATION                                 %
 %-------------------------------------------------------------------------%
 
-% Reset the plot axes
-function ResetZoom()
-    box.d = 10*std(data(chan,1:min(end,5000),trial)); % spacing (offset) of time series plotted in the same figure
-    box.da = box.d*3; % extent of window above (and below) y=0
-    box.t = min(time(1)+5,time(1)+(time(end)-time(1))/2); % time the window is centered on
-    box.dt = min(5,(time(end)-time(1))/2); % extent of window left (and right) of box.t
+% Magnify the vertical axis
+function MagV(~,~)
+    limits = ylim(hAx);
+    ylim(hAx,limits+diff(limits)*[.1,-.1]);
+    UpdatePlot
 end
 
-% Zoom and scale controls
-function Zoom(axis,scale,adjust_spacing)
-    % Adjust the time scale (x axis) or amplitude scale (y axis)
-    if strcmpi(axis,'x')
-        box.dt = box.dt*scale;
-    elseif strcmpi(axis,'y')
-        box.da = box.da*scale;
-        % Scale the vertical spacing of the traces
-        if adjust_spacing
-            box.d = box.d*scale;
-        end
-    end
-    UpdatePlot();
+% Minify the vertical axis
+function MinV(~,~)
+    limits = ylim(hAx);
+    ylim(hAx,limits+diff(limits)*[-.1,.1]);
+    UpdatePlot
 end
 
-% Scroll forward/backward along the time axis
-function Scroll(amount)
-    box.t = box.t + amount*2*box.dt;
-    box.t = min(max(time(1),box.t),time(end));
-    UpdatePlot();
+% Magnify the time axis
+function MagH(~,~)
+    limits = xlim(hAx);
+    xlim(hAx,limits+diff(limits)*[.1,-.1]);
+    UpdatePlot;
+end
+
+% Minify the time axis
+function MinH(~,~)
+    limits = xlim(hAx);
+    xlim(hAx,limits+diff(limits)*[-.1,.1]);
+    UpdatePlot;
+end
+
+% Scroll backward along the time axis
+function Backward(~,~,amount)
+    limits = xlim(hAx);
+    xlim(hAx,limits-diff(limits)*amount);
+    UpdatePlot
+end
+
+% Scroll forward along the time axis
+function Forward(~,~,amount)
+    limits = xlim(hAx);
+    xlim(hAx,limits+diff(limits)*amount);
+    UpdatePlot
 end
 
 %-------------------------------------------------------------------------%
@@ -340,19 +401,19 @@ end
 %-------------------------------------------------------------------------%
 %                           KEYBOARD SHORTCUTS                            %
 %-------------------------------------------------------------------------%
-function FigKeyFcn(~,evt)
+function FigKeyFcn(obj,evt)
     switch lower(evt.Key)        
         case 'rightarrow'
             if group_chan
-                IncrementTrial(+1);
+                NextT;
             else
-                IncrementChan(+1);
+                NextC;
             end
         case 'leftarrow'
             if group_chan
-                IncrementTrial(-1);
+                PrevT;
             else
-                IncrementChan(-1);
+                PrevC;
             end
         case 'escape'
             uiresume(w.h);
@@ -369,13 +430,13 @@ function FigKeyFcn(~,evt)
         otherwise
             switch (evt.Character)
                 case '+'
-                    Zoom('x',0.8,false);
+                    MagH;
                 case '-'
-                    Zoom('x',1.2,false);
+                    MinH;
                 case '<'
-                    Scroll(-0.1);
+                    Backward(obj,evt,.1);
                 case '>'
-                    Scroll(0.1);
+                    Forward(obj,evt,.1);
                 otherwise
                     % other
             end
