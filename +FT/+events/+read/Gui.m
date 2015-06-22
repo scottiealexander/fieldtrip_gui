@@ -86,6 +86,27 @@ elseif strcmpi(ext,'')
     params.type = 'ncs';
     resp = FT.UserInput('Collapse Neuralynx Events?',1,'button',{'Yes','No'},'title','Event-Processing');
     params.collapse_nlx = strcmpi(resp,'yes');
+elseif strcmpi(ext,'penn')
+    %move to the analysis base dir
+    strDirCur = pwd;
+    if isdir(FT_DATA.path.base_directory)
+        cd(FT_DATA.path.base_directory);
+    end
+
+    %user-selected file
+    [strName,strPath] = uigetfile('.mat','Select Events File');
+
+    % move back to the original directory
+    cd(strDirCur);
+
+    if isequal(strName,0) || isequal(strPath,0)
+        return; % user selected cancel
+    end
+
+    %full path to the file
+    strPath = fullfile(strPath,strName);
+    
+    params.evtsfile = strPath;
 end
 
 hMsg = FT.UserInput('Reading events...',1);

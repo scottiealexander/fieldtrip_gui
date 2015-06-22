@@ -48,9 +48,10 @@ try
         end
     elseif strcmpi(params.type,'penn')
         % load events formatted for eeg_toolbox_v1.3.2
-        strDirEvt = fileparts(FT_DATA.path.base_directory);
-        % find and check the filepath
-        strPathEvt = fullfile(strDirEvt,'events.mat');
+%         strDirEvt = fileparts(FT_DATA.path.base_directory);
+%         % find and check the filepath
+%         strPathEvt = fullfile(strDirEvt,'events.mat');
+        strPathEvt = params.evtsfile;
         if ~exist(strPathEvt,'file')
             error('[Error]: no events.mat file found.')
         end
@@ -62,11 +63,21 @@ try
         events = f.events;
         % make events struct have the required fields for later operations
         evt = FT.ReStruct(events);
-        evt.type = cellfun(@(x,y) [x '_' y],evt.period,evt.type,'uni',false);
+%         evt.type = cellfun(@(x,y) [x '_' y],evt.period,evt.type,'uni',false);
         evt.value = evt.type;
         evt.sample = evt.eegoffset;
         evt.duration = ones(size(evt.sample));
         evt.offset = cell(size(evt.sample));
+        
+        % Remove any array fields that resulted in an inconsistent number
+        % of values when concatenated into an array
+        nEvt = numel(evt.type);
+        fields = fieldnames(evt);
+        for i = 1:numel(fields)
+           if numel(evt.(fields{i})) ~= nEvt
+               evt = rmfield(evt,fields{i});
+           end
+        end
         FT_DATA.event = FT.ReStruct(evt);
     else
         %just let fieldtrip read the events...
